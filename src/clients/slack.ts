@@ -1,3 +1,4 @@
+/* eslint-disable no-process-env */
 import { WebClient, ConversationsHistoryResponse } from "@slack/web-api";
 import moment from "moment";
 
