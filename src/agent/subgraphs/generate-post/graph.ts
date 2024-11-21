@@ -1,9 +1,9 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
 import { GraphAnnotation, VerifyContentAnnotation } from "./state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
-import { verifyGeneralContent } from "./nodes/general.js";
-import { verifyYouTubeContent } from "./nodes/youtube.js";
-import { verifyGitHubContent } from "./nodes/github.js";
+import { verifyGeneralContent } from "./nodes/verify-general.js";
+import { verifyYouTubeContent } from "./nodes/verify-youtube.js";
+import { verifyGitHubContent } from "./nodes/verify-github.js";
 import { generateLinkedinPost } from "./nodes/generate-post/linkedin.js";
 import { generateTwitterPost } from "./nodes/generate-post/twitter.js";
 import { schedulePost } from "./nodes/schedule-post.js";
