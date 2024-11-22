@@ -28,10 +28,10 @@ export const GraphAnnotation = Annotation.Root({
    */
   report: MainGraphAnnotation.spec.report,
   /**
-   * Video summaries generated inside the verifyYouTubeContent node.
-   * These are saved here to be used in the generateContentReport node.
+   * Page content used in the verification nodes. Will be used in the report
+   * generation node.
    */
-  videoSummaries: Annotation<YouTubeVideoSummary[]>({
+  pageContents: Annotation<string[]>({
     reducer: (state, update) => state.concat(update),
     default: () => [],
   }),
