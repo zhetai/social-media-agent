@@ -24,6 +24,7 @@
   "dependencies": {
     "@langchain/anthropic": "^0.3.8",
     "@langchain/core": "^0.3.18",
+    "@langchain/google-vertexai-web": "^0.1.2",
     "@langchain/langgraph": "^0.2.22",
     "@slack/web-api": "^7.7.0",
     "moment": "^2.30.1"

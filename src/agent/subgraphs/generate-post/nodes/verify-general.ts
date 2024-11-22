@@ -3,6 +3,7 @@ import { GraphAnnotation } from "../state.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
+  pageContents: (typeof GraphAnnotation.State)["pageContents"];
 };
 
 /**
