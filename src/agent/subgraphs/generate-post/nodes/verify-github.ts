@@ -34,7 +34,7 @@ For context, LangChain has three main products you should be looking out for:
 - **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
 
 Given this context, examine the Readme closely, and determine if the repository implements LangChain's products.
-You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`
+You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
 /**
  * Verifies the content provided is relevant to LangChain products.
@@ -49,7 +49,7 @@ export async function verifyGitHubContent(
   }).withStructuredOutput(RELEVANCY_SCHEMA, {
     name: "relevancy",
   });
-  
+
   let baseGitHubRepoUrl = "";
   try {
     const githubUrl = new URL(state.link);
@@ -71,7 +71,9 @@ export async function verifyGitHubContent(
     readmeContent = await fetch(rawMainReadmeLink).then((res) => res.text());
   } catch (_) {
     try {
-      readmeContent = await fetch(rawMasterReadmeLink).then((res) => res.text());
+      readmeContent = await fetch(rawMasterReadmeLink).then((res) =>
+        res.text(),
+      );
     } catch (_) {
       readmeContent = await fetch(state.link).then((res) => res.text());
     }
