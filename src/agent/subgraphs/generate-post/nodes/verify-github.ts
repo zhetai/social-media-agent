@@ -13,12 +13,12 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the content is or isn't relevant to LangChain's products.",
+        "Reasoning for why the Readme of the GitHub repository is or isn't relevant to LangChain's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the content is relevant to LangChain's products.",
+        "Whether or not the Readme of the GitHub repository is relevant to LangChain's products.",
       ),
   })
   .describe("The relevancy of the content to LangChain's products.");
@@ -33,8 +33,8 @@ For context, LangChain has three main products you should be looking out for:
   LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
 - **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
 
-Given this context, examine the readme closely, and determine if the content is relevant to LangChain's products.
-You should provide reasoning as to why or why not the content is relevant to LangChain's products, then a simple true or false for whether or not it's relevant.`
+Given this context, examine the Readme closely, and determine if the repository implements LangChain's products.
+You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`
 
 /**
  * Verifies the content provided is relevant to LangChain products.
