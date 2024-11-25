@@ -47,6 +47,10 @@ export const GraphAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+  /**
+   * The content of the Tweet/LinkedIn post.
+   */
+  post: Annotation<string>,
 });
 
 export const VerifyContentAnnotation = Annotation.Root({
@@ -54,4 +58,8 @@ export const VerifyContentAnnotation = Annotation.Root({
    * The link to the content to verify.
    */
   link: Annotation<string>,
+  /**
+   * The message to use for generating a post.
+   */
+  slackMessage: Annotation<SimpleSlackMessageWithLinks>,
 });

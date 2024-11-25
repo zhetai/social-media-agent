@@ -31,3 +31,12 @@ export const GraphAnnotation = Annotation.Root({
    */
   twitterPost: Annotation<string>,
 });
+
+export const ConfigurableAnnotation = Annotation.Root({
+  maxMessages: Annotation<number>({
+    reducer: (_state, update) => update,
+    default: () => 100,
+  }),
+  slackChannelName: Annotation<string | undefined>,
+  slackChannelId: Annotation<string | undefined>,
+});

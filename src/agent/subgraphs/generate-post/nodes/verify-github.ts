@@ -2,6 +2,8 @@ import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
+import { hasFileExtension } from "../../../utils.js";
 
 type VerifyGitHubContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -13,28 +15,43 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the Readme of the GitHub repository is or isn't relevant to LangChain's products.",
+        "Reasoning for why the content from the GitHub repository is or isn't relevant to LangChain's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the Readme of the GitHub repository is relevant to LangChain's products.",
+        "Whether or not the content from the GitHub repository is relevant to LangChain's products.",
       ),
   })
   .describe("The relevancy of the content to LangChain's products.");
 
 const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You're given the Readme of a GitHub repository and need to verify the repository implements LangChain's products.
+You're given a {file_type} from a GitHub repository and need to verify the repository implements LangChain's products.
 You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
-Given this context, examine the Readme closely, and determine if the repository implements LangChain's products.
+Given this context, examine the  {file_type} closely, and determine if the repository implements LangChain's products.
 You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`;
+
+
+const tryGetReadmeContents = async (urls: string[]): Promise<string | undefined> => {
+  let content: string | undefined = undefined;
+  for await (const url of urls) {
+    if (content) {
+      break;
+    }
+
+    try {
+      content = await fetch(url).then((res) => res.text());
+    } catch (_) {
+      // no-op
+    }
+  }
+
+  return content;
+}
 
 /**
  * Verifies the content provided is relevant to LangChain products.
@@ -63,20 +80,33 @@ export async function verifyGitHubContent(
     };
   }
 
-  const rawMainReadmeLink = `${baseGitHubRepoUrl}/refs/heads/main/README.md`;
-  const rawMasterReadmeLink = `${baseGitHubRepoUrl}/refs/heads/master/README.md`;
-  // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
-  let readmeContent = "";
-  try {
-    readmeContent = await fetch(rawMainReadmeLink).then((res) => res.text());
-  } catch (_) {
-    try {
-      readmeContent = await fetch(rawMasterReadmeLink).then((res) =>
-        res.text(),
-      );
-    } catch (_) {
-      readmeContent = await fetch(state.link).then((res) => res.text());
-    }
+  let pageContent: string | undefined = undefined;
+  let fileType = "README file";
+
+  if (hasFileExtension(state.link) && state.slackMessage.attachments?.[0].text) {
+    // Use the `text` field of the attachment as the content
+    pageContent = state.slackMessage.attachments[0].text;
+    fileType = "code file";
+  } else {
+    const rawMainReadmeLink = `${baseGitHubRepoUrl}/refs/heads/main/README.md`;
+    const rawMainReadmeLinkLowercase = `${baseGitHubRepoUrl}/refs/heads/main/readme.md`;
+    const rawMasterReadmeLink = `${baseGitHubRepoUrl}/refs/heads/master/README.md`;
+    const rawMasterReadmeLinkLowercase = `${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
+    // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
+    pageContent = await tryGetReadmeContents([
+      rawMainReadmeLink,
+      rawMainReadmeLinkLowercase,
+      rawMasterReadmeLink,
+      rawMasterReadmeLinkLowercase,
+      state.link,
+    ])
+  }
+
+  if (!pageContent) {
+    return {
+      relevantLinks: [],
+      pageContents: [],
+    };
   }
 
   const { relevant } = await relevancyModel
@@ -86,11 +116,11 @@ export async function verifyGitHubContent(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT,
+        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll("{file_type}", fileType),
       },
       {
         role: "user",
-        content: readmeContent,
+        content: pageContent,
       },
     ]);
 
@@ -98,7 +128,7 @@ export async function verifyGitHubContent(
     return {
       // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
-      pageContents: [readmeContent],
+      pageContents: [pageContent],
     };
   }
 

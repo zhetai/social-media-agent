@@ -4,8 +4,7 @@ import { generateContentReport } from "./nodes/generate-content-report.js";
 import { verifyGeneralContent } from "./nodes/verify-general.js";
 import { verifyYouTubeContent } from "./nodes/verify-youtube.js";
 import { verifyGitHubContent } from "./nodes/verify-github.js";
-import { generateLinkedinPost } from "./nodes/generate-post/linkedin.js";
-import { generateTwitterPost } from "./nodes/generate-post/twitter.js";
+import { generatePosts } from "./nodes/generate-post.js";
 import { schedulePost } from "./nodes/schedule-post.js";
 
 /**
@@ -35,14 +34,17 @@ function routeContentTypes(state: typeof GraphAnnotation.State) {
     if (link.includes("youtube.com")) {
       return new Send("verifyYouTubeContent", {
         link,
+        slackMessage: state.slackMessage,
       });
     } else if (link.includes("github.com")) {
       return new Send("verifyGitHubContent", {
         link,
+        slackMessage: state.slackMessage,
       });
     } else {
       return new Send("verifyGeneralContent", {
         link,
+        slackMessage: state.slackMessage,
       });
     }
   });
@@ -50,9 +52,9 @@ function routeContentTypes(state: typeof GraphAnnotation.State) {
 
 function routeAfterGeneratingReport(
   state: typeof GraphAnnotation.State,
-): "generateLinkedinPost" | typeof END {
+): "generatePosts" | typeof END {
   if (state.report) {
-    return "generateLinkedinPost";
+    return "generatePosts";
   }
   return END;
 }
@@ -69,10 +71,8 @@ const generatePostBuilder = new StateGraph(GraphAnnotation)
     input: VerifyContentAnnotation,
   })
 
-  // Generates a post on the content for LinkedIn.
-  .addNode("generateLinkedinPost", generateLinkedinPost)
-  // Generates a post on the content for Twitter.
-  .addNode("generateTwitterPost", generateTwitterPost)
+  // Generates a Tweet/LinkedIn post based on the report content.
+  .addNode("generatePosts", generatePosts)
   // Interrupts the node for human in the loop, then schedules the
   // post for Twitter/LinkedIn.
   .addNode("schedulePost", schedulePost)
@@ -92,15 +92,13 @@ const generatePostBuilder = new StateGraph(GraphAnnotation)
 
   // Once generating a report, we should confirm the report exists (meaning the content is relevant).
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [
-    "generateLinkedinPost",
+    "generatePosts",
     END,
   ])
 
-  // After generating the LinkedIn post, generate the Twitter post.
-  .addEdge("generateLinkedinPost", "generateTwitterPost")
   // Finally, schedule the post. This will also throw an interrupt
   // so a human can edit the post before scheduling.
-  .addEdge("generateTwitterPost", "schedulePost")
+  .addEdge("generatePosts", "schedulePost")
 
   // If the schedule post is successful, end the graph.
   .addEdge("schedulePost", END);

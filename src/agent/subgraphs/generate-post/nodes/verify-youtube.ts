@@ -4,6 +4,7 @@ import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -16,10 +17,7 @@ Specifically, you should be focusing on the technical details, why people should
 You should also focus on the LangChain products the video might talk about (although not all videos will have LangChain content).
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the YouTube videos contents closely, and generate a report on the video.
 For context, this report will be used to generate a Tweet and LinkedIn post promoting the video and the LangChain products it uses, if any.
@@ -30,10 +28,7 @@ You're given a summary/report on some content a third party submitted to you in 
 You need to verify if the content is relevant to LangChain's products before approving or denying the request.
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the summary/report closely, and determine if the content is relevant to LangChain's products.
 You should provide reasoning as to why or why not the content is relevant to LangChain's products, then a simple true or false for whether or not it's relevant.

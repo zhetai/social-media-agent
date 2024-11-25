@@ -3,6 +3,7 @@ import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -30,10 +31,7 @@ Your task is to carefully read over the entire page, and determine whether or no
 You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the webpage content closely, and determine if the content implements LangChain's products.
 You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
@@ -76,7 +74,6 @@ export async function verifyGeneralContent(
 
   if (relevant) {
     return {
-      // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
       pageContents: [pageContent],
     };

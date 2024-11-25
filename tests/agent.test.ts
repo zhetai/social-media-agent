@@ -15,3 +15,10 @@ test("Can extract multiple URLs from Slack-style message text", () => {
   expect(urls[0]).toBe("https://github.com/karimulla0908/capstone_repo");
   expect(urls[1]).toBe("https://www.youtube.com/watch?v=OyDfr0xIhss");
 });
+
+test("Can extract URLs when they do not have a label", () => {
+  const urlWithoutLabelText = `<https://github.com/ReddyNitheeesh/AI-Lc-Lg-examples/blob/main/code_assistant_lg.py>`;
+  const urls = extractUrlsFromSlackText(urlWithoutLabelText);
+  expect(urls).toHaveLength(1);
+  expect(urls[0]).toBe("https://github.com/ReddyNitheeesh/AI-Lc-Lg-examples/blob/main/code_assistant_lg.py");
+})
