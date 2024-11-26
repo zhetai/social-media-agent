@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../state.js";
+import { GraphAnnotation } from "../generate-post-state.js";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 

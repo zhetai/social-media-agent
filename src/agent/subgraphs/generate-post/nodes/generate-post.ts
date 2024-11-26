@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../state.js";
+import { GraphAnnotation } from "../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
 const GENERATE_POST_PROMPT = `You are a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn page.

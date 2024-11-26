@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
+import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { hasFileExtension } from "../../../utils.js";
+import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyGitHubContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -54,42 +55,32 @@ const tryGetReadmeContents = async (
   return content;
 };
 
-/**
- * Verifies the content provided is relevant to LangChain products.
- */
-export async function verifyGitHubContent(
-  state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<VerifyGitHubContentReturn> {
-  const relevancyModel = new ChatAnthropic({
-    model: "claude-3-5-sonnet-20241022",
-    temperature: 0,
-  }).withStructuredOutput(RELEVANCY_SCHEMA, {
-    name: "relevancy",
-  });
+export async function getGitHubContentsAndTypeFromUrl(
+  url: string,
+  messageAttachments?: string,
+): Promise<
+  | {
+      contents: string;
+      fileType: string;
+    }
+  | undefined
+> {
+  let pageContent: string | undefined = undefined;
+  let fileType = "README file";
 
   let baseGitHubRepoUrl = "";
   try {
-    const githubUrl = new URL(state.link);
+    const githubUrl = new URL(url);
     // Ensure the url only contains the owner/repo path
     baseGitHubRepoUrl = githubUrl.pathname.split("/").slice(0, 3).join("/");
   } catch (e) {
     console.error("Failed to parse GitHub URL", e);
-    return {
-      relevantLinks: [],
-      pageContents: [],
-    };
+    return undefined;
   }
 
-  let pageContent: string | undefined = undefined;
-  let fileType = "README file";
-
-  if (
-    hasFileExtension(state.link) &&
-    state.slackMessage.attachments?.[0].text
-  ) {
+  if (hasFileExtension(url) && messageAttachments) {
     // Use the `text` field of the attachment as the content
-    pageContent = state.slackMessage.attachments[0].text;
+    pageContent = messageAttachments;
     fileType = "code file";
   } else {
     const rawMainReadmeLink = `${baseGitHubRepoUrl}/refs/heads/main/README.md`;
@@ -102,16 +93,30 @@ export async function verifyGitHubContent(
       rawMainReadmeLinkLowercase,
       rawMasterReadmeLink,
       rawMasterReadmeLinkLowercase,
-      state.link,
+      url,
     ]);
   }
 
   if (!pageContent) {
-    return {
-      relevantLinks: [],
-      pageContents: [],
-    };
+    return undefined;
   }
+
+  return {
+    contents: pageContent,
+    fileType,
+  };
+}
+
+export async function verifyGitHubContentIsRelevant(
+  contents: string,
+  fileType: string,
+): Promise<boolean> {
+  const relevancyModel = new ChatAnthropic({
+    model: "claude-3-5-sonnet-20241022",
+    temperature: 0,
+  }).withStructuredOutput(RELEVANCY_SCHEMA, {
+    name: "relevancy",
+  });
 
   const { relevant } = await relevancyModel
     .withConfig({
@@ -127,15 +132,39 @@ export async function verifyGitHubContent(
       },
       {
         role: "user",
-        content: pageContent,
+        content: contents,
       },
     ]);
+  return relevant;
+}
 
+/**
+ * Verifies the content provided is relevant to LangChain products.
+ */
+export async function verifyGitHubContent(
+  state: typeof VerifyContentAnnotation.State,
+  _config: LangGraphRunnableConfig,
+): Promise<VerifyGitHubContentReturn> {
+  const contentsAndType = await getGitHubContentsAndTypeFromUrl(
+    state.link,
+    state.slackMessage.attachments?.[0].text,
+  );
+  if (!contentsAndType) {
+    return {
+      relevantLinks: [],
+      pageContents: [],
+    };
+  }
+
+  const relevant = await verifyGitHubContentIsRelevant(
+    contentsAndType.contents,
+    contentsAndType.fileType,
+  );
   if (relevant) {
     return {
       // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
-      pageContents: [pageContent],
+      pageContents: [contentsAndType.contents],
     };
   }
 

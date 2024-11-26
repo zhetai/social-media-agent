@@ -1,9 +1,10 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
+import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -36,26 +37,24 @@ ${LANGCHAIN_PRODUCTS_CONTEXT}
 Given this context, examine the webpage content closely, and determine if the content implements LangChain's products.
 You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
-/**
- * Verifies the content provided is relevant to LangChain products.
- */
-export async function verifyGeneralContent(
-  state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<VerifyGeneralContentReturn> {
+export async function getUrlContents(url: string): Promise<string> {
+  const loader = new FireCrawlLoader({
+    url,
+    mode: "scrape",
+  });
+  const docs = await loader.load();
+  return docs.map((d) => d.pageContent).join("\n");
+}
+
+export async function verifyGeneralContentIsRelevant(
+  content: string,
+): Promise<boolean> {
   const relevancyModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
   }).withStructuredOutput(RELEVANCY_SCHEMA, {
     name: "relevancy",
   });
-
-  const loader = new FireCrawlLoader({
-    url: state.link, // The URL to scrape
-    mode: "crawl",
-  });
-  const docs = await loader.load();
-  const pageContent = docs.map((d) => d.pageContent).join("\n");
 
   const { relevant } = await relevancyModel
     .withConfig({
@@ -68,9 +67,21 @@ export async function verifyGeneralContent(
       },
       {
         role: "user",
-        content: pageContent,
+        content: content,
       },
     ]);
+  return relevant;
+}
+
+/**
+ * Verifies the content provided is relevant to LangChain products.
+ */
+export async function verifyGeneralContent(
+  state: typeof VerifyContentAnnotation.State,
+  _config: LangGraphRunnableConfig,
+): Promise<VerifyGeneralContentReturn> {
+  const pageContent = await getUrlContents(state.link);
+  const relevant = await verifyGeneralContentIsRelevant(pageContent);
 
   if (relevant) {
     return {

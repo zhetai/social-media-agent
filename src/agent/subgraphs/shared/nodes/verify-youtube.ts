@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
+import {
+  GraphAnnotation,
+  VerifyContentAnnotation,
+} from "../../generate-post/generate-post-state.js";
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -49,13 +52,7 @@ const RELEVANCY_SCHEMA = z
   })
   .describe("The relevancy of the content to LangChain's products.");
 
-/**
- * Verifies the content provided is relevant to LangChain products.
- */
-export async function verifyYouTubeContent(
-  state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<VerifyYouTubeContentReturn> {
+export async function generateVideoSummary(url: string): Promise<string> {
   const model = new ChatVertexAI({
     model: "gemini-1.5-flash",
     temperature: 0,
@@ -65,7 +62,7 @@ export async function verifyYouTubeContent(
     content: [
       {
         type: "media",
-        fileUri: state.link,
+        fileUri: url,
       },
     ],
   });
@@ -81,7 +78,12 @@ export async function verifyYouTubeContent(
       },
       mediaMessage,
     ]);
+  return summaryResult.content as string;
+}
 
+export async function verifyYouTubeContentIsRelevant(
+  summary: string,
+): Promise<boolean> {
   const relevancyModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
@@ -100,15 +102,26 @@ export async function verifyYouTubeContent(
       },
       {
         role: "user",
-        content: summaryResult.content,
+        content: summary,
       },
     ]);
+  return relevant;
+}
+
+/**
+ * Verifies the content provided is relevant to LangChain products.
+ */
+export async function verifyYouTubeContent(
+  state: typeof VerifyContentAnnotation.State,
+  _config: LangGraphRunnableConfig,
+): Promise<VerifyYouTubeContentReturn> {
+  const videoSummary = await generateVideoSummary(state.link);
+  const relevant = await verifyYouTubeContentIsRelevant(videoSummary);
 
   if (relevant) {
     return {
-      // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
-      pageContents: [summaryResult.content as string],
+      pageContents: [videoSummary as string],
     };
   }
 

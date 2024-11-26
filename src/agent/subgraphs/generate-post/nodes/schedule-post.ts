@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig, NodeInterrupt } from "@langchain/langgraph";
-import { GraphAnnotation } from "../state.js";
+import { GraphAnnotation } from "../generate-post-state.js";
 
 export async function schedulePost(
   _state: typeof GraphAnnotation.State,

@@ -52,14 +52,3 @@ export const GraphAnnotation = Annotation.Root({
    */
   post: Annotation<string>,
 });
-
-export const VerifyContentAnnotation = Annotation.Root({
-  /**
-   * The link to the content to verify.
-   */
-  link: Annotation<string>,
-  /**
-   * The message to use for generating a post.
-   */
-  slackMessage: Annotation<SimpleSlackMessageWithLinks>,
-});
