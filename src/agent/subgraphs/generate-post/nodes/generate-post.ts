@@ -7,8 +7,6 @@ You've been provided with a report on some content that you need to turn into a 
 
 You should use the given report to generate an engaging, professional, and informative LinkedIn post that will be used to promote the content and LangChain's products.
 
-Focus on what their content covers, aims to achieve, and how it uses LangChain's product(s) to do that. You should also include a call to action to encourage engagement with the post and the content.
-
 The following are examples of LinkedIn posts on third party content that have done well, and you should use them as inspiration for your post:
 
 <example index="1">
@@ -26,7 +24,7 @@ https://podcastfy.ai
 
 Waii is a toolkit that provides text-to-SQL and text-to-chart capabilities
 
-This post focuses on Waii’s approach to handling complex joins in databases, doing so within LangGraph
+This post focuses on Waii's approach to handling complex joins in databases, doing so within LangGraph
 
 https://waii.com
 </example>
@@ -41,9 +39,26 @@ Chat with your repositories using natural language to get insights, generate doc
 https://repogpt.com
 </example>
 
+Now that you've seen some examples, lets's cover the structure of the LinkedIn post you should follow:
+<structure instructions>
+1. Post header. This should be a very short header, no more than 5 words that describes the content. This should ideally include one to two emojis, the name of the content provided (if applicable), and the LangChain product(s) the content uses.
+2. Post body. This should be a two part body. The first part should be a concise, high level overview of the content and what it does, or aims to achieve. The second part should be a high level overview of how it uses LangChain's product(s) to do that. Ensure both of these are short, totally no more than 3 shorter sentences in total. Ensure these two parts are split with a newline between them.
+3. Call to action. This should be a short sentence that encourages the reader to click the link to the content being promoted. This should include the link to the content being promoted. Optionally, you can include an emoji here.
+</structure instructions>
 
-Given these examples, and the content provided by the user, curate a LinkedIn post that is engaging and follows the structure of the examples provided.
-Remember to include one link provided by the user in the post, so that viewers can access the content being promoted.
+This structure should ALWAYS be followed. And remember, the shorter and more engaging the post, the better (your bonus depends on this!!).
+
+Here are a set of rules and guidelines you should strictly follow when creating the LinkedIn post:
+<rules>
+- Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
+- Do not include technical details unless it is the entire focus of the content.
+- Keep posts short, concise and engaging
+- Limit the use of emojis to the post header, and optionally in the call to action.
+- NEVER use hashtags in the post.
+- Include the link to the content being promoted in the call to action section of the post.
+</rules>
+
+Given these examples, rules, and the content provided by the user, curate a LinkedIn post that is engaging and follows the structure of the examples provided.
 
 Finally, ensure your response ONLY includes the LinkedIn post content, and does not include any additional information.`;
 
@@ -56,8 +71,8 @@ ${report}
 And here is the link to the content I'd like promoted:
 <link>
 ${link}
-</link>`
-}
+</link>`;
+};
 
 export async function generatePosts(
   state: typeof GraphAnnotation.State,
@@ -72,10 +87,9 @@ export async function generatePosts(
   const postModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
-  })
+  });
 
   const prompt = formatPrompt(state.report, state.relevantLinks[0]);
-
 
   const result = await postModel.invoke([
     {
@@ -85,10 +99,10 @@ export async function generatePosts(
     {
       role: "user",
       content: prompt,
-    }
+    },
   ]);
 
   return {
     post: result.content as string,
-  }
+  };
 }

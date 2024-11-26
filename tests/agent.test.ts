@@ -20,5 +20,7 @@ test("Can extract URLs when they do not have a label", () => {
   const urlWithoutLabelText = `<https://github.com/ReddyNitheeesh/AI-Lc-Lg-examples/blob/main/code_assistant_lg.py>`;
   const urls = extractUrlsFromSlackText(urlWithoutLabelText);
   expect(urls).toHaveLength(1);
-  expect(urls[0]).toBe("https://github.com/ReddyNitheeesh/AI-Lc-Lg-examples/blob/main/code_assistant_lg.py");
-})
+  expect(urls[0]).toBe(
+    "https://github.com/ReddyNitheeesh/AI-Lc-Lg-examples/blob/main/code_assistant_lg.py",
+  );
+});

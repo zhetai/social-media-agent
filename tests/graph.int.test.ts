@@ -1,18 +1,31 @@
-import { describe, it, expect } from "@jest/globals";
-import { graph } from "../src/agent/graph.js";
+import { describe, it } from "@jest/globals";
+import { generatePostGraph } from "../src/agent/subgraphs/generate-post/graph.js";
+import { GITHUB_URL_STATE } from "./states.js";
 
-describe("Graph", () => {
-  it("should process input through the graph", async () => {
-    const input = "What is the capital of France?";
-    const result = await graph.invoke({ input });
+describe("GeneratePostGraph", () => {
+  it("Should be able to generate posts from a GitHub URL slack message", async () => {
+    console.log("Starting graph test");
+    const result = await generatePostGraph.stream(GITHUB_URL_STATE, {
+      streamMode: "values",
+    });
 
-    expect(result).toBeDefined();
-    expect(typeof result).toBe("object");
-    expect(result.messages).toBeDefined();
-    expect(Array.isArray(result.messages)).toBe(true);
-    expect(result.messages.length).toBeGreaterThan(0);
+    let post = "";
+    for await (const value of result) {
+      console.log(
+        "Event occurred",
+        Object.entries(value).map(([k, v]) => ({
+          [k]: !!v,
+        })),
+      );
 
-    const lastMessage = result.messages[result.messages.length - 1];
-    expect(lastMessage.content.toString().toLowerCase()).toContain("hi");
-  }, 30000); // Increased timeout to 30 seconds
+      if (value.post) {
+        post = value.post;
+      }
+    }
+
+    if (post) {
+      console.log("\nPOST:\n");
+      console.log(post);
+    }
+  }, 60000); // Timeout to 60 seconds
 });

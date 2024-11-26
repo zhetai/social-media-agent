@@ -35,8 +35,9 @@ ${LANGCHAIN_PRODUCTS_CONTEXT}
 Given this context, examine the  {file_type} closely, and determine if the repository implements LangChain's products.
 You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
-
-const tryGetReadmeContents = async (urls: string[]): Promise<string | undefined> => {
+const tryGetReadmeContents = async (
+  urls: string[],
+): Promise<string | undefined> => {
   let content: string | undefined = undefined;
   for await (const url of urls) {
     if (content) {
@@ -51,7 +52,7 @@ const tryGetReadmeContents = async (urls: string[]): Promise<string | undefined>
   }
 
   return content;
-}
+};
 
 /**
  * Verifies the content provided is relevant to LangChain products.
@@ -83,7 +84,10 @@ export async function verifyGitHubContent(
   let pageContent: string | undefined = undefined;
   let fileType = "README file";
 
-  if (hasFileExtension(state.link) && state.slackMessage.attachments?.[0].text) {
+  if (
+    hasFileExtension(state.link) &&
+    state.slackMessage.attachments?.[0].text
+  ) {
     // Use the `text` field of the attachment as the content
     pageContent = state.slackMessage.attachments[0].text;
     fileType = "code file";
@@ -99,7 +103,7 @@ export async function verifyGitHubContent(
       rawMasterReadmeLink,
       rawMasterReadmeLinkLowercase,
       state.link,
-    ])
+    ]);
   }
 
   if (!pageContent) {
@@ -116,7 +120,10 @@ export async function verifyGitHubContent(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll("{file_type}", fileType),
+        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll(
+          "{file_type}",
+          fileType,
+        ),
       },
       {
         role: "user",

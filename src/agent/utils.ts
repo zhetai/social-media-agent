@@ -17,4 +17,4 @@ export function extractUrlsFromSlackText(text: string): string[] {
  */
 export function hasFileExtension(str: string): boolean {
   return /\.[a-zA-Z0-9]+$/.test(str);
-};
+}
