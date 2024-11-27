@@ -20,8 +20,8 @@ const evaluatePost = (run: Run, example?: Example): EvaluationResult => {
   if (!run.outputs) {
     throw new Error("No run outputs provided");
   }
-  console.dir(run.outputs, { depth: null });
-  console.dir(example.outputs, { depth: null });
+  console.log("\n\nGENERATED POST:\n", run.outputs.posts.join("\n---\n"));
+  console.log("\nEXAMPLE POST:\n", example.outputs.post);
 
   return {
     key: "correct_generation",
