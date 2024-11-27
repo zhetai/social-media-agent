@@ -1,6 +1,6 @@
 import { describe, it } from "@jest/globals";
 import { generatePostGraph } from "../agent/subgraphs/generate-post/graph.js";
-import { GITHUB_URL_STATE, TWITTER_NESTED_GITHUB_MESSAGE } from "./states.js";
+import { GITHUB_MESSAGE, GITHUB_URL_STATE, TWITTER_NESTED_GITHUB_MESSAGE } from "./states.js";
 import { TwitterApi } from "twitter-api-v2";
 import { resolveTwitterUrl } from "../agent/subgraphs/verify-tweet/utils.js";
 import { getGitHubContentsAndTypeFromUrl } from "../agent/subgraphs/shared/nodes/verify-github.js";
@@ -60,11 +60,42 @@ test("Can get the proper markdown from a github URL", async () => {
   expect(contents.contents).toBe(EXPECTED_README);
 });
 
-describe.only("generate via twitter posts", () => {
+describe("generate via twitter posts", () => {
   it("Can generate a post from a tweet with a github link", async () => {
     console.log("Starting graph test");
     const result = await generatePostGraph.stream(
       TWITTER_NESTED_GITHUB_MESSAGE,
+      {
+        streamMode: "values",
+      },
+    );
+
+    let post = "";
+    for await (const value of result) {
+      console.log(
+        "Event occurred",
+        Object.entries(value).map(([k, v]) => ({
+          [k]: !!v,
+        })),
+      );
+
+      if (value.post) {
+        post = value.post;
+      }
+    }
+
+    if (post) {
+      console.log("\nPOST:\n");
+      console.log(post);
+    }
+  }, 60000);
+});
+
+describe.only("generate via github repos", () => {
+  it("Can generate a post from a github repo", async () => {
+    console.log("Starting graph test");
+    const result = await generatePostGraph.stream(
+      GITHUB_MESSAGE,
       {
         streamMode: "values",
       },

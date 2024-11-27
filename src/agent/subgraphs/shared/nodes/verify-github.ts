@@ -48,14 +48,10 @@ const tryGetReadmeContents = async (
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        console.log("Failed to fetch URL", url);
-      } else {
-        content = await response.text();
-        if (content) {
-          console.log("got content from url", url);
-          console.log(content);
-        }
+        return undefined;
       }
+
+      content = await response.text();
     } catch (_) {
       // no-op
     }
@@ -86,7 +82,6 @@ export async function getGitHubContentsAndTypeFromUrl(
     console.error("Failed to parse GitHub URL", e);
     return undefined;
   }
-  console.log("baseGitHubRepoUrl", baseGitHubRepoUrl);
 
   if (hasFileExtension(url) && messageAttachments) {
     // Use the `text` field of the attachment as the content
