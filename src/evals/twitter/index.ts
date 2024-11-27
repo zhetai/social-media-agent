@@ -5,7 +5,7 @@ import "dotenv/config";
 import { generatePostGraph } from "../../agent/subgraphs/generate-post/graph.js";
 
 const runGraph = async (
-  input: Record<string, any>
+  input: Record<string, any>,
 ): Promise<Record<string, any>> => {
   return await generatePostGraph.invoke(input);
 };
@@ -30,7 +30,7 @@ async function runEval() {
   await evaluate(runGraph, {
     data: datasetName,
     evaluators: [evaluatePost],
-    experimentPrefix: "Post Generation - Twitter",
+    experimentPrefix: "Post Generation-Twitter",
   });
 }
 

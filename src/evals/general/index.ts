@@ -5,7 +5,7 @@ import "dotenv/config";
 import { generatePostGraph } from "../../agent/subgraphs/generate-post/graph.js";
 
 const runGraph = async (
-  input: Record<string, any>
+  input: Record<string, any>,
 ): Promise<Record<string, any>> => {
   return await generatePostGraph.invoke(input);
 };
@@ -30,10 +30,13 @@ async function runEval() {
   await evaluate(runGraph, {
     data: datasetName,
     evaluators: [evaluatePost],
-    experimentPrefix: "Post Generation - General",
+    experimentPrefix: "Post Generation-General",
   });
 }
 
 runEval().catch(console.error);
 
 // https://x.com/LangChainAI/status/1858311912091476455
+// https://x.com/LangChainAI/status/1857811436984217835
+// https://x.com/LangChainAI/status/1856026604180242636
+// https://x.com/LangChainAI/status/1855437724536504482

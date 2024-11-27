@@ -101,7 +101,7 @@ export class SlackMessageFetcher {
     }
 
     try {
-      const oldest = moment().subtract(24, 'hours').unix().toString();
+      const oldest = moment().subtract(24, "hours").unix().toString();
       const messages: SlackMessage[] = [];
       let cursor: string | undefined;
 

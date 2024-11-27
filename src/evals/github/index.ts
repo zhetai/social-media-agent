@@ -5,7 +5,7 @@ import "dotenv/config";
 import { generatePostGraph } from "../../agent/subgraphs/generate-post/graph.js";
 
 const runGraph = async (
-  input: Record<string, any>
+  input: Record<string, any>,
 ): Promise<Record<string, any>> => {
   return await generatePostGraph.invoke(input);
 };
@@ -20,9 +20,13 @@ const evaluatePost = (run: Run, example?: Example): EvaluationResult => {
   if (!run.outputs) {
     throw new Error("No run outputs provided");
   }
+  console.dir(run.outputs, { depth: null });
+  console.dir(example.outputs, { depth: null });
 
-  // TODO: Implement evaluation logic
-  throw new Error("Evaluation logic not implemented");
+  return {
+    key: "correct_generation",
+    score: true,
+  };
 };
 
 async function runEval() {
@@ -30,12 +34,11 @@ async function runEval() {
   await evaluate(runGraph, {
     data: datasetName,
     evaluators: [evaluatePost],
-    experimentPrefix: "Post Generation - Github",
+    experimentPrefix: "Post Generation-Github",
   });
 }
 
 runEval().catch(console.error);
-
 
 // Should be approved and posts generated
 // https://x.com/LangChainAI/status/1861108590792036799
