@@ -1,5 +1,6 @@
 import { type Example, Run } from "langsmith";
 import { evaluate, EvaluationResult } from "langsmith/evaluation";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import "dotenv/config";
 import { generatePostGraph } from "../../agent/subgraphs/generate-post/graph.js";
 
@@ -33,4 +34,4 @@ async function runEval() {
   });
 }
 
-runEval();
+runEval().catch(console.error);
