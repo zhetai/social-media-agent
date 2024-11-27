@@ -80,7 +80,7 @@ const CONTENT_SUMMARY_PROMPT = `This section will contain the main content of th
 It should focus on what the content does, or the problem it solves. Also include details on how the content implements LangChain's product(s) and why these products are important to the application.
 Ensure this is short, no more than 3 sentences. You should NOT make the main focus of this on LangChain, but instead on the content itself. Remember, the content/product/service outlined in the marketing report is the main focus of this post.`;
 
-const BULLET_POINT_PROMPT = `This section will contain the main content of the post. The post body should contain 2-5 bullet points that covert the main points of the content/product/service outlines in the marketing report.
+const BULLET_POINT_PROMPT = `This section will contain the main content of the post. The post body should contain 2-5 bullet points that cover the main points of the content/product/service outlines in the marketing report.
 Each bullet point should have an emoji, and should be very concise, less than a single sentence. When thinking about what content to use for the bullet points, you should think from the point of view of a developer/CTO, and why they would benefit from the content.
 Using this thinking, carefully craft your bullet points. At least one of these bullet points should cover how it uses LangChain's product(s). Remember, the content/product/service outlined in the marketing report is the main focus of this post.`;
 
