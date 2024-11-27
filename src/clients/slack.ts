@@ -1,4 +1,3 @@
-/* eslint-disable no-process-env */
 import { WebClient, ConversationsHistoryResponse } from "@slack/web-api";
 import moment from "moment";
 
@@ -102,8 +101,7 @@ export class SlackMessageFetcher {
     }
 
     try {
-      // const oldest = moment().subtract(24, 'hours').unix().toString();
-      const oldest = moment().subtract(1, "month").unix().toString();
+      const oldest = moment().subtract(24, "hours").unix().toString();
       const messages: SlackMessage[] = [];
       let cursor: string | undefined;
 

@@ -6,6 +6,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
+import { getYouTubeVideoDuration } from "./youtube.utils.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -113,6 +114,21 @@ export async function verifyYouTubeContent(
   state: typeof VerifyContentAnnotation.State,
   _config: LangGraphRunnableConfig,
 ): Promise<VerifyYouTubeContentReturn> {
+  const videoDurationS = await getYouTubeVideoDuration(state.link);
+
+  if (videoDurationS === undefined) {
+    // TODO: Handle this better
+    throw new Error("Failed to get video duration");
+  }
+
+  // 1800 = 30 minutes
+  if (videoDurationS > 1800) {
+    // TODO: Replace with interrupt requesting user confirm if they want to continue
+    throw new Error(
+      "Video is longer than 30 minutes, please confirm you want to continue.",
+    );
+  }
+
   const videoSummary = await generateVideoSummary(state.link);
   const relevant = await verifyYouTubeContentIsRelevant(videoSummary);
 

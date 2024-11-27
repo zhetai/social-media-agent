@@ -48,14 +48,10 @@ const tryGetReadmeContents = async (
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        console.log("Failed to fetch URL", url);
-      } else {
-        content = await response.text();
-        if (content) {
-          console.log("got content from url", url);
-          console.log(content);
-        }
+        return undefined;
       }
+
+      content = await response.text();
     } catch (_) {
       // no-op
     }
@@ -86,7 +82,6 @@ export async function getGitHubContentsAndTypeFromUrl(
     console.error("Failed to parse GitHub URL", e);
     return undefined;
   }
-  console.log("baseGitHubRepoUrl", baseGitHubRepoUrl);
 
   if (hasFileExtension(url) && messageAttachments) {
     // Use the `text` field of the attachment as the content
@@ -99,10 +94,8 @@ export async function getGitHubContentsAndTypeFromUrl(
     const rawMasterReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
     // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
     pageContent = await tryGetReadmeContents([
-      // rawMainReadmeLink,
-      // rawMainReadmeLinkLowercase,
-      rawMainReadmeLinkLowercase,
       rawMainReadmeLink,
+      rawMainReadmeLinkLowercase,
       rawMasterReadmeLink,
       rawMasterReadmeLinkLowercase,
       url,
@@ -122,6 +115,7 @@ export async function getGitHubContentsAndTypeFromUrl(
 export async function verifyGitHubContentIsRelevant(
   contents: string,
   fileType: string,
+  config: LangGraphRunnableConfig,
 ): Promise<boolean> {
   const relevancyModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
@@ -134,19 +128,22 @@ export async function verifyGitHubContentIsRelevant(
     .withConfig({
       runName: "check-github-relevancy-model",
     })
-    .invoke([
-      {
-        role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll(
-          "{file_type}",
-          fileType,
-        ),
-      },
-      {
-        role: "user",
-        content: contents,
-      },
-    ]);
+    .invoke(
+      [
+        {
+          role: "system",
+          content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT.replaceAll(
+            "{file_type}",
+            fileType,
+          ),
+        },
+        {
+          role: "user",
+          content: contents,
+        },
+      ],
+      config,
+    );
   return relevant;
 }
 
@@ -155,13 +152,14 @@ export async function verifyGitHubContentIsRelevant(
  */
 export async function verifyGitHubContent(
   state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
+  config: LangGraphRunnableConfig,
 ): Promise<VerifyGitHubContentReturn> {
   const contentsAndType = await getGitHubContentsAndTypeFromUrl(
     state.link,
     state.slackMessage.attachments?.[0].text,
   );
   if (!contentsAndType) {
+    console.warn("No contents found for GitHub URL", state.link);
     return {
       relevantLinks: [],
       pageContents: [],
@@ -171,15 +169,16 @@ export async function verifyGitHubContent(
   const relevant = await verifyGitHubContentIsRelevant(
     contentsAndType.contents,
     contentsAndType.fileType,
+    config,
   );
   if (relevant) {
     return {
-      // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
       pageContents: [contentsAndType.contents],
     };
   }
 
+  console.log("Content is not relevant", state.link);
   // Not relevant, return empty arrays so this URL is not included.
   return {
     relevantLinks: [],

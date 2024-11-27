@@ -72,3 +72,14 @@ export const TWITTER_NESTED_GENERAL_MESSAGE = {
     links: ["https://x.com/KaranVaidya6/status/1861037496295137314"],
   },
 };
+
+export const GITHUB_MESSAGE = {
+  slackMessage: {
+    id: "e4fd6d66-7a47-4457-b532-14facfe93bb0",
+    timestamp: "1729953413.037949",
+    user: "U04N0HGF869",
+    text: "<https://github.com/starpig1129/AI-Data-Analysis-MultiAgent>",
+    type: "message",
+    links: ["https://github.com/starpig1129/AI-Data-Analysis-MultiAgent"],
+  },
+};

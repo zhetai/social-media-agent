@@ -27,7 +27,6 @@ export async function ingestData(
   const client = new SlackMessageFetcher({
     channelId: channelId,
   });
-  console.log("Before fetching messages");
   const recentMessages = await client.fetchLast24HoursMessages(
     config.configurable?.maxMessages,
   );
@@ -44,7 +43,7 @@ export async function ingestData(
       links,
     };
   });
-  console.log("returning", messagesWithUrls.length, " messages");
+
   return {
     slackMessages: messagesWithUrls,
   };

@@ -48,7 +48,7 @@ export const GraphAnnotation = Annotation.Root({
     default: () => [],
   }),
   /**
-   * The content of the Tweet/LinkedIn post.
+   * The generated posts for LinkedIn/Twitter. Contains an array of different posts to choose from.
    */
-  post: Annotation<string>,
+  posts: Annotation<string[]>,
 });
