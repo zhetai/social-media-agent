@@ -1,5 +1,5 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
-import { GraphAnnotation } from "./state.js";
+import { ConfigurableAnnotation, GraphAnnotation } from "./state.js";
 import { ingestData } from "./nodes/ingest-data.js";
 import { generatePostGraph } from "./subgraphs/generate-post/graph.js";
 
@@ -23,7 +23,7 @@ function routeAfterIdentifyContent(
   });
 }
 
-const builder = new StateGraph(GraphAnnotation)
+const builder = new StateGraph(GraphAnnotation, ConfigurableAnnotation)
   // Ingests posts from Slack channel.
   .addNode("ingestData", ingestData)
   // Subgraph which is invoked once for each message.

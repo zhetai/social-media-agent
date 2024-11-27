@@ -1,8 +1,10 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
+import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -30,34 +32,29 @@ Your task is to carefully read over the entire page, and determine whether or no
 You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the webpage content closely, and determine if the content implements LangChain's products.
 You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
-/**
- * Verifies the content provided is relevant to LangChain products.
- */
-export async function verifyGeneralContent(
-  state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<VerifyGeneralContentReturn> {
+export async function getUrlContents(url: string): Promise<string> {
+  const loader = new FireCrawlLoader({
+    url,
+    mode: "scrape",
+  });
+  const docs = await loader.load();
+  return docs.map((d) => d.pageContent).join("\n");
+}
+
+export async function verifyGeneralContentIsRelevant(
+  content: string,
+): Promise<boolean> {
   const relevancyModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
   }).withStructuredOutput(RELEVANCY_SCHEMA, {
     name: "relevancy",
   });
-
-  const loader = new FireCrawlLoader({
-    url: state.link, // The URL to scrape
-    mode: "crawl",
-  });
-  const docs = await loader.load();
-  const pageContent = docs.map((d) => d.pageContent).join("\n");
 
   const { relevant } = await relevancyModel
     .withConfig({
@@ -70,13 +67,24 @@ export async function verifyGeneralContent(
       },
       {
         role: "user",
-        content: pageContent,
+        content: content,
       },
     ]);
+  return relevant;
+}
+
+/**
+ * Verifies the content provided is relevant to LangChain products.
+ */
+export async function verifyGeneralContent(
+  state: typeof VerifyContentAnnotation.State,
+  _config: LangGraphRunnableConfig,
+): Promise<VerifyGeneralContentReturn> {
+  const pageContent = await getUrlContents(state.link);
+  const relevant = await verifyGeneralContentIsRelevant(pageContent);
 
   if (relevant) {
     return {
-      // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
       pageContents: [pageContent],
     };

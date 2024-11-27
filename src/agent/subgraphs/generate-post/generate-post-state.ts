@@ -47,11 +47,8 @@ export const GraphAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
-});
-
-export const VerifyContentAnnotation = Annotation.Root({
   /**
-   * The link to the content to verify.
+   * The content of the Tweet/LinkedIn post.
    */
-  link: Annotation<string>,
+  post: Annotation<string>,
 });

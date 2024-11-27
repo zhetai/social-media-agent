@@ -1,5 +1,5 @@
 import { test, expect } from "@jest/globals";
-import { SlackMessageFetcher } from "../src/clients/slack.js";
+import { SlackMessageFetcher } from "../clients/slack.js";
 
 // NOTE: Change this to your specific channel name and ID.
 const TEST_CHANNEL_NAME = "external-community-content";

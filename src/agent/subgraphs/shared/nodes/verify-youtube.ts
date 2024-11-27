@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "../state.js";
+import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
+import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -16,10 +18,7 @@ Specifically, you should be focusing on the technical details, why people should
 You should also focus on the LangChain products the video might talk about (although not all videos will have LangChain content).
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the YouTube videos contents closely, and generate a report on the video.
 For context, this report will be used to generate a Tweet and LinkedIn post promoting the video and the LangChain products it uses, if any.
@@ -30,10 +29,7 @@ You're given a summary/report on some content a third party submitted to you in 
 You need to verify if the content is relevant to LangChain's products before approving or denying the request.
 
 For context, LangChain has three main products you should be looking out for:
-- **LangChain** - the main open source libraries developers use for building AI applications. These are open source Python/JavaScript/TypeScript libraries.
-- **LangGraph** - an open source library for building agentic AI applications. This is a Python/JavaScript/TypeScript library.
-  LangChain also offers a hosted cloud platform called 'LangGraph Cloud' or 'LangGraph Platform' which developers can use to host their LangGraph applications in production.
-- **LangSmith** - this is LangChain's SaaS product for building AI applications. It offers solutions for evaluating AI systems, observability, datasets and testing.
+${LANGCHAIN_PRODUCTS_CONTEXT}
 
 Given this context, examine the summary/report closely, and determine if the content is relevant to LangChain's products.
 You should provide reasoning as to why or why not the content is relevant to LangChain's products, then a simple true or false for whether or not it's relevant.
@@ -54,13 +50,7 @@ const RELEVANCY_SCHEMA = z
   })
   .describe("The relevancy of the content to LangChain's products.");
 
-/**
- * Verifies the content provided is relevant to LangChain products.
- */
-export async function verifyYouTubeContent(
-  state: typeof VerifyContentAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<VerifyYouTubeContentReturn> {
+export async function generateVideoSummary(url: string): Promise<string> {
   const model = new ChatVertexAI({
     model: "gemini-1.5-flash",
     temperature: 0,
@@ -70,7 +60,7 @@ export async function verifyYouTubeContent(
     content: [
       {
         type: "media",
-        fileUri: state.link,
+        fileUri: url,
       },
     ],
   });
@@ -86,7 +76,12 @@ export async function verifyYouTubeContent(
       },
       mediaMessage,
     ]);
+  return summaryResult.content as string;
+}
 
+export async function verifyYouTubeContentIsRelevant(
+  summary: string,
+): Promise<boolean> {
   const relevancyModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
@@ -105,15 +100,26 @@ export async function verifyYouTubeContent(
       },
       {
         role: "user",
-        content: summaryResult.content,
+        content: summary,
       },
     ]);
+  return relevant;
+}
+
+/**
+ * Verifies the content provided is relevant to LangChain products.
+ */
+export async function verifyYouTubeContent(
+  state: typeof VerifyContentAnnotation.State,
+  _config: LangGraphRunnableConfig,
+): Promise<VerifyYouTubeContentReturn> {
+  const videoSummary = await generateVideoSummary(state.link);
+  const relevant = await verifyYouTubeContentIsRelevant(videoSummary);
 
   if (relevant) {
     return {
-      // TODO: Replace with actual relevant link/page content (summary in this case)
       relevantLinks: [state.link],
-      pageContents: [summaryResult.content as string],
+      pageContents: [videoSummary as string],
     };
   }
 

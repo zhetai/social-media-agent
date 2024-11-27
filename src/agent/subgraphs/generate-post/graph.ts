@@ -1,30 +1,17 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
-import { GraphAnnotation, VerifyContentAnnotation } from "./state.js";
+import { GraphAnnotation } from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
-import { verifyGeneralContent } from "./nodes/verify-general.js";
-import { verifyYouTubeContent } from "./nodes/verify-youtube.js";
-import { verifyGitHubContent } from "./nodes/verify-github.js";
-import { generateLinkedinPost } from "./nodes/generate-post/linkedin.js";
-import { generateTwitterPost } from "./nodes/generate-post/twitter.js";
+import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
+import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
+import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
+import { generatePosts } from "./nodes/generate-post.js";
 import { schedulePost } from "./nodes/schedule-post.js";
+import { VerifyContentAnnotation } from "../shared/shared-state.js";
+import { verifyTweetGraph } from "../verify-tweet/graph.js";
 
-/**
- * Should do the following:
- * Handle youtube videos
- * Handle GitHub repos
- * Handle all other content (general purpose web scraping)
- *
- * YouTube videos:
- * 1. use gemini 1.5 flash to ingest youtube video & create a summary
- * 2. pass the summary to claude and have claude identify if it's langchain content
- *
- * GitHub repos:
- * 1a. Pull the readme from the repo, pass to claude and ask to identify if it's LangChain content.
- * 1b. iterate over the first 100 .js|jsx|ts|tsx or .py files, use regex to extract all imports, verify it has LangChain imports.
- *
- * All others:
- * Mayb FireCrawl to scrape the page content. Then pass to an LLM to identify if it's LangChain content.
- */
+const isTwitterUrl = (url: string) => {
+  return url.includes("twitter.com") || url.includes("x.com");
+};
 
 /**
  * This conditional edge will iterate over all the links in a slack message.
@@ -35,14 +22,22 @@ function routeContentTypes(state: typeof GraphAnnotation.State) {
     if (link.includes("youtube.com")) {
       return new Send("verifyYouTubeContent", {
         link,
+        slackMessage: state.slackMessage,
       });
     } else if (link.includes("github.com")) {
       return new Send("verifyGitHubContent", {
         link,
+        slackMessage: state.slackMessage,
+      });
+    } else if (isTwitterUrl(link)) {
+      return new Send("verifyTweetSubGraph", {
+        link,
+        slackMessage: state.slackMessage,
       });
     } else {
       return new Send("verifyGeneralContent", {
         link,
+        slackMessage: state.slackMessage,
       });
     }
   });
@@ -50,9 +45,9 @@ function routeContentTypes(state: typeof GraphAnnotation.State) {
 
 function routeAfterGeneratingReport(
   state: typeof GraphAnnotation.State,
-): "generateLinkedinPost" | typeof END {
+): "generatePosts" | typeof END {
   if (state.report) {
-    return "generateLinkedinPost";
+    return "generatePosts";
   }
   return END;
 }
@@ -68,11 +63,12 @@ const generatePostBuilder = new StateGraph(GraphAnnotation)
   .addNode("verifyGitHubContent", verifyGitHubContent, {
     input: VerifyContentAnnotation,
   })
+  .addNode("verifyTweetSubGraph", verifyTweetGraph, {
+    input: VerifyContentAnnotation,
+  })
 
-  // Generates a post on the content for LinkedIn.
-  .addNode("generateLinkedinPost", generateLinkedinPost)
-  // Generates a post on the content for Twitter.
-  .addNode("generateTwitterPost", generateTwitterPost)
+  // Generates a Tweet/LinkedIn post based on the report content.
+  .addNode("generatePosts", generatePosts)
   // Interrupts the node for human in the loop, then schedules the
   // post for Twitter/LinkedIn.
   .addNode("schedulePost", schedulePost)
@@ -83,24 +79,24 @@ const generatePostBuilder = new StateGraph(GraphAnnotation)
     "verifyYouTubeContent",
     "verifyGeneralContent",
     "verifyGitHubContent",
+    "verifyTweetSubGraph",
   ])
 
   // After verifying the different content types, we should generate a report on them.
   .addEdge("verifyYouTubeContent", "generateContentReport")
   .addEdge("verifyGeneralContent", "generateContentReport")
   .addEdge("verifyGitHubContent", "generateContentReport")
+  .addEdge("verifyTweetSubGraph", "generateContentReport")
 
   // Once generating a report, we should confirm the report exists (meaning the content is relevant).
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [
-    "generateLinkedinPost",
+    "generatePosts",
     END,
   ])
 
-  // After generating the LinkedIn post, generate the Twitter post.
-  .addEdge("generateLinkedinPost", "generateTwitterPost")
   // Finally, schedule the post. This will also throw an interrupt
   // so a human can edit the post before scheduling.
-  .addEdge("generateTwitterPost", "schedulePost")
+  .addEdge("generatePosts", "schedulePost")
 
   // If the schedule post is successful, end the graph.
   .addEdge("schedulePost", END);
