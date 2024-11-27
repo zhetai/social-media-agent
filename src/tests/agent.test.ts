@@ -72,4 +72,12 @@ https://example.com`;
     expect(urls[0]).toBe("https://t.co/GI4uWOGPO5");
     expect(urls[1]).toBe("https://example.com");
   });
+
+  it("Can extract URLs from a complex multi line string", () => {
+    const complexString = `🤖AI-Driven Research Assistant\n\nThis is an advanced AI-powered research assistant system that utilizes multiple specialized agents to assist in tasks such as data analysis, visualization, and report generation\n\nhttps://t.co/s5ChhuMOtK https://t.co/5H2VRjd9hN`;
+    const urls = extractUrls(complexString);
+    expect(urls).toHaveLength(2);
+    expect(urls[0]).toBe("https://t.co/s5ChhuMOtK");
+    expect(urls[1]).toBe("https://t.co/5H2VRjd9hN");
+  });
 });

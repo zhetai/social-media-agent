@@ -1,4 +1,4 @@
-import { TwitterApi } from "twitter-api-v2";
+import { TwitterApi, type TweetV2SingleResult } from "twitter-api-v2";
 import { GraphAnnotation } from "../verify-tweet-state.js";
 import { extractTweetId, extractUrls } from "../../../utils.js";
 import { resolveTwitterUrl } from "../utils.js";
@@ -17,7 +17,16 @@ export async function getTweetContent(state: typeof GraphAnnotation.State) {
     };
   }
 
-  const tweetContent = await twitterClient.v2.singleTweet(tweetId);
+  let tweetContent: TweetV2SingleResult;
+  try {
+    tweetContent = await twitterClient.v2.singleTweet(tweetId);
+    if (!tweetContent) {
+      throw new Error("No response given when fetching tweet content.");
+    }
+  } catch (e) {
+    console.error("Failed to fetch tweet content");
+    throw e;
+  }
 
   // Extract any links from inside the tweet content.
   // Then, fetch the content of those links to include in the main content.
@@ -41,10 +50,11 @@ export async function getTweetContent(state: typeof GraphAnnotation.State) {
         const resolvedUrl = await resolveTwitterUrl(url);
         if (
           !resolvedUrl ||
-          (!resolvedUrl.includes("https://t.co") &&
-            !resolvedUrl.includes("https://twitter.com") &&
-            !resolvedUrl.includes("https://x.com"))
+          resolvedUrl.includes("https://t.co") ||
+          resolvedUrl.includes("https://twitter.com") ||
+          resolvedUrl.includes("https://x.com")
         ) {
+          // Do not return twitter URLs.
           return [];
         }
         return resolvedUrl;

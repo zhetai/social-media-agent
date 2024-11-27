@@ -46,7 +46,16 @@ const tryGetReadmeContents = async (
     }
 
     try {
-      content = await fetch(url).then((res) => res.text());
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.log("Failed to fetch URL", url);
+      } else {
+        content = await response.text();
+        if (content) {
+          console.log("got content from url", url);
+          console.log(content);
+        }
+      }
     } catch (_) {
       // no-op
     }
@@ -77,20 +86,23 @@ export async function getGitHubContentsAndTypeFromUrl(
     console.error("Failed to parse GitHub URL", e);
     return undefined;
   }
+  console.log("baseGitHubRepoUrl", baseGitHubRepoUrl);
 
   if (hasFileExtension(url) && messageAttachments) {
     // Use the `text` field of the attachment as the content
     pageContent = messageAttachments;
     fileType = "code file";
   } else {
-    const rawMainReadmeLink = `${baseGitHubRepoUrl}/refs/heads/main/README.md`;
-    const rawMainReadmeLinkLowercase = `${baseGitHubRepoUrl}/refs/heads/main/readme.md`;
-    const rawMasterReadmeLink = `${baseGitHubRepoUrl}/refs/heads/master/README.md`;
-    const rawMasterReadmeLinkLowercase = `${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
+    const rawMainReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/README.md`;
+    const rawMainReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/readme.md`;
+    const rawMasterReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/README.md`;
+    const rawMasterReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
     // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
     pageContent = await tryGetReadmeContents([
-      rawMainReadmeLink,
+      // rawMainReadmeLink,
+      // rawMainReadmeLinkLowercase,
       rawMainReadmeLinkLowercase,
+      rawMainReadmeLink,
       rawMasterReadmeLink,
       rawMasterReadmeLinkLowercase,
       url,

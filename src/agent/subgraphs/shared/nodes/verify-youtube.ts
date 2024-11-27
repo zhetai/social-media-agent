@@ -1,13 +1,11 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import {
-  GraphAnnotation,
-  VerifyContentAnnotation,
-} from "../../generate-post/generate-post-state.js";
+import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];

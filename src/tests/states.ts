@@ -30,3 +30,45 @@ export const GITHUB_URL_STATE = {
     ],
   },
 };
+
+// Tweet with nested youtube video
+// https://x.com/LangChainAI/status/1851676266232950985
+
+// Tweet with nested github link
+// https://x.com/LangChainAI/status/1861108590792036799
+
+// Tweet with nested general link
+// https://x.com/KaranVaidya6/status/1861037496295137314
+
+export const TWITTER_NESTED_YOUTUBE_MESSAGE = {
+  slackMessage: {
+    id: "e4fd6d66-7a47-4457-b532-14facfe93bb0",
+    timestamp: "1729953413.037949",
+    user: "U04N0HGF869",
+    text: "<https://x.com/LangChainAI/status/1851676266232950985>",
+    type: "message",
+    links: ["https://x.com/LangChainAI/status/1851676266232950985"],
+  },
+};
+
+export const TWITTER_NESTED_GITHUB_MESSAGE = {
+  slackMessage: {
+    id: "e4fd6d66-7a47-4457-b532-14facfe93bb0",
+    timestamp: "1729953413.037949",
+    user: "U04N0HGF869",
+    text: "<https://x.com/LangChainAI/status/1861108590792036799>",
+    type: "message",
+    links: ["https://x.com/LangChainAI/status/1861108590792036799"],
+  },
+};
+
+export const TWITTER_NESTED_GENERAL_MESSAGE = {
+  slackMessage: {
+    id: "e4fd6d66-7a47-4457-b532-14facfe93bb0",
+    timestamp: "1729953413.037949",
+    user: "U04N0HGF869",
+    text: "<https://x.com/KaranVaidya6/status/1861037496295137314>",
+    type: "message",
+    links: ["https://x.com/KaranVaidya6/status/1861037496295137314"],
+  },
+};
