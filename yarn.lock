@@ -825,10 +825,10 @@
     p-retry "4"
     uuid "^9.0.0"
 
-"@langchain/langgraph@^0.2.22":
-  version "0.2.22"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.2.22.tgz#32834e147f16def2e9b491b2c09ecd349714d7f9"
-  integrity sha512-iXA8p9xaWfGviBbZ6nOETqvGz2misjZ4xGxrWla98FF2aE8mq1jfMzWuEX37KZIfuQPCqt1iIh/Zit60T4mG3Q==
+"@langchain/langgraph@^0.2.23":
+  version "0.2.23"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.2.23.tgz#b892ae642c2ac49a44599ce18ab1897b14554f9f"
+  integrity sha512-aUD3G2cUSmrOb6xtJkd0AUctmHJXuyNPIzMR86JMEN591AtkHTVe2OhTxo15S8PPAQxJ7HrCJyMFd0EQECRASw==
   dependencies:
     "@langchain/langgraph-checkpoint" "~0.0.12"
     "@langchain/langgraph-sdk" "~0.0.21"
