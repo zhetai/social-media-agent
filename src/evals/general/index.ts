@@ -35,3 +35,5 @@ async function runEval() {
 }
 
 runEval().catch(console.error);
+
+// https://x.com/LangChainAI/status/1858311912091476455

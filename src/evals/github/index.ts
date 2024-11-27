@@ -35,3 +35,15 @@ async function runEval() {
 }
 
 runEval().catch(console.error);
+
+
+// Should be approved and posts generated
+// https://x.com/LangChainAI/status/1861108590792036799
+// https://x.com/LangChainAI/status/1860760295188185246
+// https://x.com/LangChainAI/status/1860745200668201148
+// https://x.com/LangChainAI/status/1860714493661106562
+// https://x.com/LangChainAI/status/1860485484683911584
+// https://x.com/LangChainAI/status/1860397908451033240
+
+// Would need review:
+// https://x.com/LangChainAI/status/1858175010612916272
