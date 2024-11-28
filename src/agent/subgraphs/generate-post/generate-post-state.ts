@@ -50,5 +50,8 @@ export const GraphAnnotation = Annotation.Root({
   /**
    * The generated posts for LinkedIn/Twitter. Contains an array of different posts to choose from.
    */
-  posts: Annotation<string[]>,
+  posts: Annotation<string[]>({
+    reducer: (state, update) => state.concat(update),
+    default: () => [],
+  }),
 });
