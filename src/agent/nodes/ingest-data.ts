@@ -16,9 +16,16 @@ const getChannelIdFromConfig = async (
 };
 
 export async function ingestData(
-  _state: typeof GraphAnnotation.State,
+  state: typeof GraphAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GraphAnnotation.State>> {
+  if (config.configurable?.skipIngest) {
+    if (state.slackMessages.length === 0) {
+      throw new Error("Can not skip ingest with no messages");
+    }
+    return {};
+  }
+
   const channelId = await getChannelIdFromConfig(config);
   if (!channelId) {
     throw new Error("Channel ID not found");

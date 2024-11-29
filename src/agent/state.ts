@@ -33,4 +33,10 @@ export const ConfigurableAnnotation = Annotation.Root({
   }),
   slackChannelName: Annotation<string | undefined>,
   slackChannelId: Annotation<string | undefined>,
+  /**
+   * Whether or not to skip ingesting messages from Slack.
+   * This will throw an error if slack messages are not
+   * pre-provided in state.
+   */
+  skipIngest: Annotation<boolean>,
 });
