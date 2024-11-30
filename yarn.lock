@@ -810,7 +810,7 @@
   dependencies:
     uuid "^10.0.0"
 
-"@langchain/langgraph-sdk@~0.0.21":
+"@langchain/langgraph-sdk@^0.0.29", "@langchain/langgraph-sdk@~0.0.21":
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.29.tgz#268c891bacdcaacc50530c7ceb18f833f435cbf0"
   integrity sha512-qI+583YJhyj8CKTXI6VAIwYxp6qnjt5kyCV3igvl8mQhySfKRBZowoONRAoMjI42MsbbvF4GyazsUJvnWMsQ2g==

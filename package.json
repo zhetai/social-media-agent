@@ -33,6 +33,7 @@
     "@langchain/core": "^0.3.18",
     "@langchain/google-vertexai-web": "^0.1.2",
     "@langchain/langgraph": "^0.2.23",
+    "@langchain/langgraph-sdk": "^0.0.29",
     "@mendable/firecrawl-js": "0.0.36",
     "@slack/web-api": "^7.7.0",
     "cheerio": "^1.0.0",

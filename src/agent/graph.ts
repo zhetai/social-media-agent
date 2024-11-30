@@ -1,26 +1,34 @@
-import { END, Send, START, StateGraph } from "@langchain/langgraph";
+import {
+  END,
+  LangGraphRunnableConfig,
+  START,
+  StateGraph,
+} from "@langchain/langgraph";
 import { ConfigurableAnnotation, GraphAnnotation } from "./state.js";
 import { ingestData } from "./nodes/ingest-data.js";
-import { generatePostGraph } from "./subgraphs/generate-post/graph.js";
+import { Client } from "@langchain/langgraph-sdk";
 
-/**
- * Other thinking
- * 1. ingest data
- * 2. invoke a subgraph for each message
- *  inside the subgraph, identify the content, generate a report, generate a post, and schedule a post (interrupt beforehand)
- */
-
-function routeAfterIdentifyContent(
+async function generatePostFromMessages(
   state: typeof GraphAnnotation.State,
-): Array<Send> {
-  return state.slackMessages.flatMap((m) => {
+  config: LangGraphRunnableConfig,
+) {
+  const client = new Client();
+  for await (const m of state.slackMessages) {
     if (m.links.length) {
-      return new Send("generatePostGraph", {
-        slackMessage: m,
+      const thread = await client.threads.create();
+      await client.runs.create(thread.thread_id, "generate_post", {
+        input: {
+          slackMessage: m,
+        },
+        config: {
+          configurable: {
+            ...config.configurable,
+          },
+        },
       });
     }
-    return [];
-  });
+  }
+  return {};
 }
 
 const builder = new StateGraph(GraphAnnotation, ConfigurableAnnotation)
@@ -30,14 +38,11 @@ const builder = new StateGraph(GraphAnnotation, ConfigurableAnnotation)
   // This subgraph will verify content is relevant to
   // LangChain, generate a report on the content, and
   // finally generate and schedule a post.
-  .addNode("generatePostGraph", generatePostGraph)
-
+  .addNode("generatePostGraph", generatePostFromMessages)
   // Start node
   .addEdge(START, "ingestData")
   // After ingesting data, route to the subgraph for each message.
-  .addConditionalEdges("ingestData", routeAfterIdentifyContent, [
-    "generatePostGraph",
-  ])
+  .addEdge("ingestData", "generatePostGraph")
   // Finish after generating the Twitter post.
   .addEdge("generatePostGraph", END);
 
