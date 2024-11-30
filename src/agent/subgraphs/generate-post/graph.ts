@@ -1,5 +1,8 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
-import { GraphAnnotation, ConfigurableAnnotation } from "./generate-post-state.js";
+import {
+  GraphAnnotation,
+  ConfigurableAnnotation,
+} from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
 import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
 import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
@@ -53,7 +56,10 @@ function routeAfterGeneratingReport(
 }
 
 // Finally, create the graph itself.
-const generatePostBuilder = new StateGraph(GraphAnnotation, ConfigurableAnnotation)
+const generatePostBuilder = new StateGraph(
+  GraphAnnotation,
+  ConfigurableAnnotation,
+)
   .addNode("verifyYouTubeContent", verifyYouTubeContent, {
     input: VerifyContentAnnotation,
   })

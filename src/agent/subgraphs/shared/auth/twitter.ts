@@ -48,7 +48,7 @@ If you have already authorized reading/posting on Twitter, please accept this in
 
     const authInterrupt: HumanInterrupt = {
       action_request: {
-        action: "Authorize Twitter",
+        action: "[AUTHORIZATION REQUIRED]: Twitter",
         args: {},
       },
       config: {

@@ -38,7 +38,7 @@ Post: ${authUrlPost}
 ----
 
 If you have already authorized posting on LinkedIn, please accept this interrupt event.`;
-    
+
     const authInterrupt: HumanInterrupt = {
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: LinkedIn",
