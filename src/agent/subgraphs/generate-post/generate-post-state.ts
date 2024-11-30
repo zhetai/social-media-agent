@@ -55,3 +55,15 @@ export const GraphAnnotation = Annotation.Root({
     default: () => [],
   }),
 });
+
+export const ConfigurableAnnotation = Annotation.Root({
+  /**
+   * The user ID or email of the user to use for fetching & posting Tweets.
+   */
+  twitterUserId: Annotation<string>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * content & posting on LinkedIn.
+   */
+  linkedInUserId: Annotation<string>
+});

@@ -12,7 +12,9 @@ async function generatePostFromMessages(
   state: typeof GraphAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const client = new Client();
+  const client = new Client({
+    apiUrl: `http://localhost:${process.env.PORT}`,
+  });
   for await (const m of state.slackMessages) {
     if (m.links.length) {
       const thread = await client.threads.create();
@@ -22,7 +24,8 @@ async function generatePostFromMessages(
         },
         config: {
           configurable: {
-            ...config.configurable,
+            twitterUserId: config.configurable?.twitterUserId,
+            linkedInUserId: config.configurable?.linkedInUserId,
           },
         },
       });

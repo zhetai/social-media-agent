@@ -39,4 +39,14 @@ export const ConfigurableAnnotation = Annotation.Root({
    * pre-provided in state.
    */
   skipIngest: Annotation<boolean>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * & posting Tweets.
+   */
+  twitterUserId: Annotation<string>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * content & posting on LinkedIn.
+   */
+  linkedInUserId: Annotation<string>
 });
