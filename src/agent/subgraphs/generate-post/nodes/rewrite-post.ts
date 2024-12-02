@@ -46,6 +46,6 @@ export async function rewritePost(
 
   return {
     post: revisePostResponse.content as string,
-    shouldRewritePost: false,
+    next: undefined,
   };
 }

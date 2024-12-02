@@ -1,7 +1,3 @@
-import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../generate-post-state.js";
-import { ChatAnthropic } from "@langchain/anthropic";
-
 const TWEET_EXAMPLES = `<example index="1">
 Podcastfy.ai 🎙️🤖
 
@@ -61,7 +57,7 @@ Features
 https://github.com/nirbar1985/ai-travel-agent
 </example>`;
 
-const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
+export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
 Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
 
@@ -108,66 +104,3 @@ Step 3. Lastly, write the LinkedIn/Twitter post. Use the notes and thoughts you 
 </writing-process>
 
 Given these examples, rules, and the content provided by the user, curate a LinkedIn/Twitter post that is engaging and follows the structure of the examples provided.`;
-
-/**
- * Parse the LLM generation to extract the report from inside the <report> tag.
- * If the report can not be parsed, the original generation is returned.
- * @param generation The text generation to parse
- * @returns The parsed generation, or the unmodified generation if it cannot be parsed
- */
-function parseGeneration(generation: string): string {
-  const reportMatch = generation.match(/<post>([\s\S]*?)<\/post>/);
-  if (!reportMatch) {
-    console.warn(
-      "Could not parse post from generation:\nSTART OF POST GENERATION\n\n",
-      generation,
-      "\n\nEND OF POST GENERATION",
-    );
-  }
-  return reportMatch ? reportMatch[1].trim() : generation;
-}
-
-const formatPrompt = (report: string, link: string) => {
-  return `Here is the report I wrote on the content I'd like promoted by LangChain:
-<report>
-${report}
-</report>
-
-And here is the link to the content I'd like promoted:
-<link>
-${link}
-</link>`;
-};
-
-export async function generatePosts(
-  state: typeof GraphAnnotation.State,
-  _config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
-  if (!state.report) {
-    throw new Error("No report found");
-  }
-  if (state.relevantLinks.length === 0) {
-    throw new Error("No relevant links found");
-  }
-  const postModel = new ChatAnthropic({
-    model: "claude-3-5-sonnet-20241022",
-    temperature: 0.5,
-  });
-
-  const prompt = formatPrompt(state.report, state.relevantLinks[0]);
-
-  const postResponse = await postModel.invoke([
-    {
-      role: "system",
-      content: GENERATE_POST_PROMPT,
-    },
-    {
-      role: "user",
-      content: prompt,
-    },
-  ]);
-
-  return {
-    post: parseGeneration(postResponse.content as string),
-  };
-}

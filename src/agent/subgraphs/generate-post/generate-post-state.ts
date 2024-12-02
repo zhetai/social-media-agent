@@ -1,4 +1,4 @@
-import { Annotation } from "@langchain/langgraph";
+import { Annotation, END } from "@langchain/langgraph";
 import {
   GraphAnnotation as MainGraphAnnotation,
   SimpleSlackMessageWithLinks,
@@ -52,15 +52,22 @@ export const GraphAnnotation = Annotation.Root({
    */
   post: Annotation<string>,
   /**
+   * The date to schedule the post for.
+   */
+  scheduleDate: Annotation<{
+    day: string;
+    time: string;
+    date: Date;
+  }>,
+  /**
    * Response from the user for the post. Typically used to request
    * changes to be made to the post.
    */
   userResponse: Annotation<string>,
   /**
-   * Whether or not to rewrite the post.
-   * Is always set to `false` after `rewritePost` is invoked.
+   * The node to execute next.
    */
-  shouldRewritePost: Annotation<boolean>,
+  next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
 });
 
 export const ConfigurableAnnotation = Annotation.Root({

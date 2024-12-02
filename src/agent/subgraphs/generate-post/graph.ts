@@ -7,8 +7,8 @@ import { generateContentReport } from "./nodes/generate-content-report.js";
 import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
 import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
 import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
-import { generatePosts } from "./nodes/generate-post.js";
-import { schedulePost } from "./nodes/schedule-post.js";
+import { generatePost } from "./nodes/geterate-post/index.js";
+import { humanNode } from "./nodes/human-node.js";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
 import { verifyTweetGraph } from "../verify-tweet/graph.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
@@ -49,18 +49,18 @@ function routeContentTypes(state: typeof GraphAnnotation.State) {
 
 function routeAfterGeneratingReport(
   state: typeof GraphAnnotation.State,
-): "generatePosts" | typeof END {
+): "generatePost" | typeof END {
   if (state.report) {
-    return "generatePosts";
+    return "generatePost";
   }
   return END;
 }
 
 function rewriteOrEndConditionalEdge(
   state: typeof GraphAnnotation.State,
-): "rewritePost" | typeof END {
-  if (state.shouldRewritePost) {
-    return "rewritePost";
+): "rewritePost" | "schedulePost" | typeof END {
+  if (state.next) {
+    return state.next;
   }
   return END;
 }
@@ -84,10 +84,10 @@ const generatePostBuilder = new StateGraph(
   })
 
   // Generates a Tweet/LinkedIn post based on the report content.
-  .addNode("generatePosts", generatePosts)
+  .addNode("generatePost", generatePost)
   // Interrupts the node for human in the loop, then schedules the
   // post for Twitter/LinkedIn.
-  .addNode("schedulePost", schedulePost)
+  .addNode("humanNode", humanNode)
   // Rewrite a post based on the user's response.
   .addNode("rewritePost", rewritePost)
 
@@ -108,18 +108,18 @@ const generatePostBuilder = new StateGraph(
 
   // Once generating a report, we should confirm the report exists (meaning the content is relevant).
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [
-    "generatePosts",
+    "generatePost",
     END,
   ])
 
   // Finally, schedule the post. This will also throw an interrupt
   // so a human can edit the post before scheduling.
-  .addEdge("generatePosts", "schedulePost")
-  // Always route back to `schedulePost` if the post was re-written.
-  .addEdge("rewritePost", "schedulePost")
+  .addEdge("generatePost", "humanNode")
+  // Always route back to `humanNode` if the post was re-written.
+  .addEdge("rewritePost", "humanNode")
 
   // If the schedule post is successful, end the graph.
-  .addConditionalEdges("schedulePost", rewriteOrEndConditionalEdge, [
+  .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
     "rewritePost",
     END,
   ]);
