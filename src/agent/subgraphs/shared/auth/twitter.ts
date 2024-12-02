@@ -1,7 +1,7 @@
 // @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { interrupt, type NodeInterrupt } from "@langchain/langgraph";
-import { HumanInterrupt } from "../../../types.js";
+import { HumanInterrupt, HumanResponse } from "../../../types.js";
 import Arcade from "@arcadeai/arcadejs";
 
 /**
@@ -53,7 +53,6 @@ If you have already authorized reading/posting on Twitter, please accept this in
       },
       config: {
         allow_ignore: true,
-        // TODO: Verify in UI what 'allow_accept' without args will do.
         allow_accept: true,
         allow_edit: false,
         allow_respond: false,
@@ -61,10 +60,18 @@ If you have already authorized reading/posting on Twitter, please accept this in
       description,
     };
 
-    // We do not need to extract the return value because the interrupt
-    // function will not be called after authorizing both
-
-    // TODO: Verify that the interrupt acts as expected when it's not called again after authorizing like in this instance.
-    interrupt([authInterrupt]);
+    const res = interrupt<HumanInterrupt[], HumanResponse[]>([
+      authInterrupt,
+    ])[0];
+    if (res.type === "accept") {
+      // This means that the user has accepted, however the
+      // authorization is still needed. Throw an error.
+      throw new Error(
+        "User accepted authorization, but authorization is still needed.",
+      );
+    } else if (res.type === "ignore") {
+      // Throw an error to end the graph.
+      throw new Error("Authorization denied by user.");
+    }
   }
 }

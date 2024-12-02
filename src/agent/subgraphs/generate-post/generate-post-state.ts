@@ -48,12 +48,19 @@ export const GraphAnnotation = Annotation.Root({
     default: () => [],
   }),
   /**
-   * The generated posts for LinkedIn/Twitter. Contains an array of different posts to choose from.
+   * The generated post for LinkedIn/Twitter.
    */
-  posts: Annotation<string[]>({
-    reducer: (state, update) => state.concat(update),
-    default: () => [],
-  }),
+  post: Annotation<string>,
+  /**
+   * Response from the user for the post. Typically used to request
+   * changes to be made to the post.
+   */
+  userResponse: Annotation<string>,
+  /**
+   * Whether or not to rewrite the post.
+   * Is always set to `false` after `rewritePost` is invoked.
+   */
+  shouldRewritePost: Annotation<boolean>,
 });
 
 export const ConfigurableAnnotation = Annotation.Root({

@@ -11,6 +11,7 @@ import { generatePosts } from "./nodes/generate-post.js";
 import { schedulePost } from "./nodes/schedule-post.js";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
 import { verifyTweetGraph } from "../verify-tweet/graph.js";
+import { rewritePost } from "./nodes/rewrite-post.js";
 
 const isTwitterUrl = (url: string) => {
   return url.includes("twitter.com") || url.includes("x.com");
@@ -55,6 +56,15 @@ function routeAfterGeneratingReport(
   return END;
 }
 
+function rewriteOrEndConditionalEdge(
+  state: typeof GraphAnnotation.State,
+): "rewritePost" | typeof END {
+  if (state.shouldRewritePost) {
+    return "rewritePost";
+  }
+  return END;
+}
+
 // Finally, create the graph itself.
 const generatePostBuilder = new StateGraph(
   GraphAnnotation,
@@ -78,6 +88,8 @@ const generatePostBuilder = new StateGraph(
   // Interrupts the node for human in the loop, then schedules the
   // post for Twitter/LinkedIn.
   .addNode("schedulePost", schedulePost)
+  // Rewrite a post based on the user's response.
+  .addNode("rewritePost", rewritePost)
 
   .addNode("generateContentReport", generateContentReport)
   // Start node
@@ -103,9 +115,14 @@ const generatePostBuilder = new StateGraph(
   // Finally, schedule the post. This will also throw an interrupt
   // so a human can edit the post before scheduling.
   .addEdge("generatePosts", "schedulePost")
+  // Always route back to `schedulePost` if the post was re-written.
+  .addEdge("rewritePost", "schedulePost")
 
   // If the schedule post is successful, end the graph.
-  .addEdge("schedulePost", END);
+  .addConditionalEdges("schedulePost", rewriteOrEndConditionalEdge, [
+    "rewritePost",
+    END,
+  ]);
 
 export const generatePostGraph = generatePostBuilder.compile();
 

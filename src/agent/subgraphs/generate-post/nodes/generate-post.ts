@@ -23,21 +23,9 @@ https://waii.com
 </example>
 
 <example index="3">
-🚀RepoGPT: AI-Powered GitHub Assistant 
-
-RepoGPT is an open-source, AI-powered assistant
-
-Chat with your repositories using natural language to get insights, generate documentation, or receive code suggestions
-
-https://repogpt.com
-</example>`;
-
-const TWEET_EXAMPLES_BULLET_POINT = `<example index="1">
 🌐 Build agents that can interact with any website
 
-Check out this video by 
-@DendriteSystems
- showing how to build an agent that can interact with websites just like a human would!
+Check out this video by @DendriteSystems showing how to build an agent that can interact with websites just like a human would!
 
 This video demonstrates a workflow that:
 
@@ -49,20 +37,17 @@ This video demonstrates a workflow that:
 🧠 Repo: https://github.com/dendrite-systems/dendrite-examples
 </example>
 
-<example index="2">
-🖋️AgentWrite LangGraph
+<example index="4">
+🚀RepoGPT: AI-Powered GitHub Assistant 
 
-Features
-- Automated content planning
-- Paragraph-by-paragraph content generation
-- Integration with multiple LLMs (OpenAI, GROQ, OLLaMA)
-- Flexible workflow management using LangGraph
-- Markdown output for generated content
+RepoGPT is an open-source, AI-powered assistant
 
-https://github.com/samwit/agent_tutorials/tree/main/agent_write
+Chat with your repositories using natural language to get insights, generate documentation, or receive code suggestions
+
+https://repogpt.com
 </example>
 
-<example index="3">
+<example index="5">
 ✈️AI Travel Agent
 
 This is one of the most comprehensive examples we've seen of a LangGraph agent. It's specifically designed to be a real world practical use case
@@ -76,25 +61,13 @@ Features
 https://github.com/nirbar1985/ai-travel-agent
 </example>`;
 
-const CONTENT_SUMMARY_PROMPT = `This section will contain the main content of the post. The post body should contain a concise, high-level overview of the content/product/service outlines in the marketing report.
-It should focus on what the content does, or the problem it solves. Also include details on how the content implements LangChain's product(s) and why these products are important to the application.
-Ensure this is short, no more than 3 sentences. You should NOT make the main focus of this on LangChain, but instead on the content itself. Remember, the content/product/service outlined in the marketing report is the main focus of this post.`;
-
-const BULLET_POINT_PROMPT = `This section will contain the main content of the post. The post body should contain 2-5 bullet points that cover the main points of the content/product/service outlines in the marketing report.
-Each bullet point should have an emoji, and should be very concise, less than a single sentence. When thinking about what content to use for the bullet points, you should think from the point of view of a developer/CTO, and why they would benefit from the content.
-Using this thinking, carefully craft your bullet points. At least one of these bullet points should cover how it uses LangChain's product(s). Remember, the content/product/service outlined in the marketing report is the main focus of this post.`;
-
-const BASE_GENERATE_POST_PROMPT = ({
-  bulletPointStyle,
-}: {
-  bulletPointStyle: boolean;
-}) => `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
+const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
 Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
 
 The following are examples of LinkedIn/Twitter posts on third-party LangChain content that have done well, and you should use them as style inspiration for your post:
 <examples>
-${bulletPointStyle ? TWEET_EXAMPLES_BULLET_POINT : TWEET_EXAMPLES}
+${TWEET_EXAMPLES}
 </examples>
 
 Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow. The post should have three main sections, outlined below:
@@ -104,7 +77,10 @@ The first part of the post is the header. This should be very short, no more tha
 </section>
 
 <section key="2">
-${bulletPointStyle ? BULLET_POINT_PROMPT : CONTENT_SUMMARY_PROMPT}
+This section will contain the main content of the post. The post body should contain a concise, high-level overview of the content/product/service outlines in the marketing report.
+It should focus on what the content does, or the problem it solves. Also include details on how the content implements LangChain's product(s) and why these products are important to the application.
+Ensure this is short, no more than 3 sentences. Optionally, if the content is very technical, you may include bullet points covering the main technical aspects of the content.
+You should NOT make the main focus of this on LangChain, but instead on the content itself. Remember, the content/product/service outlined in the marketing report is the main focus of this post.
 </section>
 
 <section key="3">
@@ -119,7 +95,7 @@ Here are a set of rules and guidelines you should strictly follow when creating 
 - Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
 - Do not make the post over technical as some of our audience may not be advanced developers, but ensure it is technical enough to engage developers.
 - Keep posts short, concise and engaging
-- Limit the use of emojis to the post header, ${bulletPointStyle ? "optionally in the call to action, and optionally in the bullet points." : "and optionally in the call to action."}
+- Limit the use of emojis to the post header, and optionally in the call to action.
 - NEVER use hashtags in the post.
 - ALWAYS include the link to the content being promoted in the call to action section of the post.
 </rules>
@@ -180,33 +156,18 @@ export async function generatePosts(
 
   const prompt = formatPrompt(state.report, state.relevantLinks[0]);
 
-  const [summaryPost, bulletPointsPost] = await Promise.all([
-    postModel.invoke([
-      {
-        role: "system",
-        content: BASE_GENERATE_POST_PROMPT({ bulletPointStyle: false }),
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]),
-    postModel.invoke([
-      {
-        role: "system",
-        content: BASE_GENERATE_POST_PROMPT({ bulletPointStyle: true }),
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]),
+  const postResponse = await postModel.invoke([
+    {
+      role: "system",
+      content: GENERATE_POST_PROMPT,
+    },
+    {
+      role: "user",
+      content: prompt,
+    },
   ]);
 
   return {
-    posts: [
-      parseGeneration(summaryPost.content as string),
-      parseGeneration(bulletPointsPost.content as string),
-    ],
+    post: parseGeneration(postResponse.content as string),
   };
 }
