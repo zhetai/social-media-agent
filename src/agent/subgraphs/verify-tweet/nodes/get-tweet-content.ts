@@ -1,32 +1,39 @@
-import { TwitterApi, type TweetV2SingleResult } from "twitter-api-v2";
+import { type TweetV2SingleResult } from "twitter-api-v2";
 import { GraphAnnotation } from "../verify-tweet-state.js";
 import { extractTweetId, extractUrls } from "../../../utils.js";
 import { resolveTwitterUrl } from "../utils.js";
+import Arcade from "@arcadeai/arcadejs";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
+import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 
-export async function getTweetContent(state: typeof GraphAnnotation.State) {
-  if (!process.env.TWITTER_BEARER_TOKEN) {
-    throw new Error("TWITTER_BEARER_TOKEN is not set");
+export async function getTweetContent(
+  state: typeof GraphAnnotation.State,
+  config: LangGraphRunnableConfig,
+) {
+  const twitterUserId = config.configurable?.twitterUserId;
+  if (!twitterUserId) {
+    throw new Error("Twitter user ID not found in configurable fields.");
   }
-  const twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
+
+  const arcade = new Arcade({
+    apiKey: process.env.ARCADE_API_KEY,
+  });
 
   const tweetId = extractTweetId(state.link);
   if (!tweetId) {
-    return {
-      relevantLinks: [],
-      pageContents: [],
-    };
+    return {};
   }
 
-  let tweetContent: TweetV2SingleResult;
-  try {
-    tweetContent = await twitterClient.v2.singleTweet(tweetId);
-    if (!tweetContent) {
-      throw new Error("No response given when fetching tweet content.");
-    }
-  } catch (e) {
-    console.error("Failed to fetch tweet content");
-    throw e;
-  }
+  await getTwitterAuthOrInterrupt(twitterUserId, arcade);
+
+  // Step 3: Execute the tool
+  const result = await arcade.tools.execute({
+    tool_name: "X.LookupTweetById",
+    inputs: { tweet_id: tweetId },
+    user_id: twitterUserId,
+  });
+
+  const tweetContent = result.output?.value as TweetV2SingleResult;
 
   // Extract any links from inside the tweet content.
   // Then, fetch the content of those links to include in the main content.

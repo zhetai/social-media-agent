@@ -1,7 +1,8 @@
 {
   "node_version": "20",
   "graphs": {
-    "social_media_agent": "./src/agent/graph.ts:graph"
+    "social_media_agent": "./src/agent/graph.ts:graph",
+    "generate_post": "./src/agent/subgraphs/generate-post/graph.ts:generatePostGraph"
   },
   "env": ".env",
   "dependencies": ["."]

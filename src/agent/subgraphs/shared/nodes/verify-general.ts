@@ -5,6 +5,8 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
+import { RunnableLambda } from "@langchain/core/runnables";
+import { getPageText } from "../../../utils.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
@@ -43,7 +45,16 @@ export async function getUrlContents(url: string): Promise<string> {
     mode: "scrape",
   });
   const docs = await loader.load();
-  return docs.map((d) => d.pageContent).join("\n");
+  const docsText = docs.map((d) => d.pageContent).join("\n");
+  if (docsText.length) {
+    return docsText;
+  }
+
+  const text = await getPageText(url);
+  if (text) {
+    return text;
+  }
+  throw new Error(`Failed to fetch content from ${url}.`);
 }
 
 export async function verifyGeneralContentIsRelevant(
@@ -76,11 +87,23 @@ export async function verifyGeneralContentIsRelevant(
 /**
  * Verifies the content provided is relevant to LangChain products.
  */
+/**
+ * Verifies if the general content from a provided URL is relevant to LangChain products.
+ *
+ * @param state - The current state containing the link to verify.
+ * @param _config - Configuration for the LangGraph runtime (unused in this function).
+ * @returns An object containing relevant links and page contents if the content is relevant;
+ * otherwise, returns empty arrays.
+ */
 export async function verifyGeneralContent(
   state: typeof VerifyContentAnnotation.State,
   _config: LangGraphRunnableConfig,
 ): Promise<VerifyGeneralContentReturn> {
-  const pageContent = await getUrlContents(state.link);
+  const pageContent = await new RunnableLambda<string, string>({
+    func: getUrlContents,
+  })
+    .withConfig({ runName: "get-url-contents" })
+    .invoke(state.link);
   const relevant = await verifyGeneralContentIsRelevant(pageContent);
 
   if (relevant) {

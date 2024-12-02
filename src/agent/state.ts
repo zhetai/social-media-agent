@@ -33,4 +33,20 @@ export const ConfigurableAnnotation = Annotation.Root({
   }),
   slackChannelName: Annotation<string | undefined>,
   slackChannelId: Annotation<string | undefined>,
+  /**
+   * Whether or not to skip ingesting messages from Slack.
+   * This will throw an error if slack messages are not
+   * pre-provided in state.
+   */
+  skipIngest: Annotation<boolean>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * & posting Tweets.
+   */
+  twitterUserId: Annotation<string>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * content & posting on LinkedIn.
+   */
+  linkedInUserId: Annotation<string>,
 });

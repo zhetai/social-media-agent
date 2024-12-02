@@ -10,6 +10,7 @@ import { resolveTwitterUrl } from "../agent/subgraphs/verify-tweet/utils.js";
 import { getGitHubContentsAndTypeFromUrl } from "../agent/subgraphs/shared/nodes/verify-github.js";
 import { EXPECTED_README } from "./expected.js";
 import { getYouTubeVideoDuration } from "../agent/subgraphs/shared/nodes/youtube.utils.js";
+import { getPageText } from "../agent/utils.js";
 
 describe.skip("GeneratePostGraph", () => {
   it.skip("Should be able to generate posts from a GitHub URL slack message", async () => {
@@ -129,4 +130,10 @@ test("Can get video duration", async () => {
     "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
   );
   expect(duration).toBe(91);
+});
+
+test("Can get page text", async () => {
+  const text = await getPageText("https://buff.ly/4g0ZRXI");
+  expect(text).toBeDefined();
+  expect(text?.length).toBeGreaterThan(100);
 });

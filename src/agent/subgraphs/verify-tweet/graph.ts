@@ -1,11 +1,14 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
-import { GraphAnnotation } from "./verify-tweet-state.js";
+import {
+  GraphAnnotation,
+  ConfigurableAnnotation,
+} from "./verify-tweet-state.js";
 import { getTweetContent } from "./nodes/get-tweet-content.js";
 import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
 import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
 import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
-import { verifyTwitterContent } from "./nodes/verify-tweet.js";
+import { validateTweetContent } from "./nodes/validate-tweet.js";
 
 /**
  * This conditional edge will iterate over all the links in a Tweet.
@@ -37,7 +40,10 @@ function routeTweetUrls(state: typeof GraphAnnotation.State) {
 }
 
 // Finally, create the graph itself.
-const verifyTweetBuilder = new StateGraph(GraphAnnotation)
+const verifyTweetBuilder = new StateGraph(
+  GraphAnnotation,
+  ConfigurableAnnotation,
+)
   // Calls the Twitter API to get the content, and extracts + validates any
   // URLs found in the Tweet content.
   .addNode("getTweetContent", getTweetContent)
@@ -55,7 +61,7 @@ const verifyTweetBuilder = new StateGraph(GraphAnnotation)
 
   // Validates the final Tweet content, including any content/summaries generated
   // or extracted from URLs inside the Tweet.
-  .addNode("validateTweet", verifyTwitterContent)
+  .addNode("validateTweet", validateTweetContent)
 
   // Start node
   .addEdge(START, "getTweetContent")

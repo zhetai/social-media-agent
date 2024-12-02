@@ -26,7 +26,15 @@ export const GraphAnnotation = Annotation.Root({
    * generation node.
    */
   pageContents: Annotation<string[]>({
-    reducer: (state, update) => state.concat(update),
+    reducer: (state, update) => {
+      if (update[0]?.startsWith("The following is the content of the Tweet:")) {
+        // This means the update is from validateTweetContent so we can remove
+        // all other state fields.
+        return update;
+      }
+
+      return state.concat(update);
+    },
     default: () => [],
   }),
   /**
@@ -41,4 +49,16 @@ export const GraphAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+});
+
+export const ConfigurableAnnotation = Annotation.Root({
+  /**
+   * The user ID or email of the user to use for fetching & posting Tweets.
+   */
+  twitterUserId: Annotation<string>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * content & posting on LinkedIn.
+   */
+  linkedInUserId: Annotation<string>,
 });

@@ -1,4 +1,4 @@
-import { Annotation } from "@langchain/langgraph";
+import { Annotation, END } from "@langchain/langgraph";
 import {
   GraphAnnotation as MainGraphAnnotation,
   SimpleSlackMessageWithLinks,
@@ -48,7 +48,32 @@ export const GraphAnnotation = Annotation.Root({
     default: () => [],
   }),
   /**
-   * The generated posts for LinkedIn/Twitter. Contains an array of different posts to choose from.
+   * The generated post for LinkedIn/Twitter.
    */
-  posts: Annotation<string[]>,
+  post: Annotation<string>,
+  /**
+   * The date to schedule the post for.
+   */
+  scheduleDate: Annotation<Date>,
+  /**
+   * Response from the user for the post. Typically used to request
+   * changes to be made to the post.
+   */
+  userResponse: Annotation<string>,
+  /**
+   * The node to execute next.
+   */
+  next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
+});
+
+export const ConfigurableAnnotation = Annotation.Root({
+  /**
+   * The user ID or email of the user to use for fetching & posting Tweets.
+   */
+  twitterUserId: Annotation<string>,
+  /**
+   * The user ID or email of the user to use for fetching
+   * content & posting on LinkedIn.
+   */
+  linkedInUserId: Annotation<string>,
 });
