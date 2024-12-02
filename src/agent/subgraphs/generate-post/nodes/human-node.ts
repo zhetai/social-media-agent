@@ -20,11 +20,14 @@ function constructDescription({
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
+  const additionalInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a'.`;
   const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
 - **Edit**: ${editInstructions}
 - **Respond**: ${respondInstructions}
 - **Accept**: ${acceptInstructions}
-- **Ignore**: ${ignoreInstructions}`;
+- **Ignore**: ${ignoreInstructions}
+
+${additionalInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
   const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
   const slackMsgText = `Here is the message that was sent to Slack:\n${slackMessage}`;
