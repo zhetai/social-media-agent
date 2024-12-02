@@ -4,7 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { GENERATE_POST_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
-import { getDayAndTimeAsDate } from "../../../../utils.js";
+import { getNextSaturdayDate } from "../../../../utils.js";
 
 export async function generatePost(
   state: typeof GraphAnnotation.State,
@@ -35,18 +35,15 @@ export async function generatePost(
   ]);
 
   // Randomly select a time from the allowed times
-  const postTime =
-    ALLOWED_TIMES[Math.floor(Math.random() * ALLOWED_TIMES.length)];
-  // Default to posting on Saturday.
-  const postDay = "Saturday";
-  const postDate = getDayAndTimeAsDate(postDay, postTime);
+  const [postHour, postMinute] = ALLOWED_TIMES[
+    Math.floor(Math.random() * ALLOWED_TIMES.length)
+  ]
+    .split(" ")[0]
+    .split(":");
+  const postDate = getNextSaturdayDate(Number(postHour), Number(postMinute));
 
   return {
     post: parseGeneration(postResponse.content as string),
-    scheduleDate: {
-      day: postDay,
-      time: postTime,
-      date: postDate,
-    },
+    scheduleDate: postDate,
   };
 }

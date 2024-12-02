@@ -8,7 +8,7 @@ import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
 import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
 import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
-import { verifyTwitterContent } from "./nodes/verify-tweet.js";
+import { validateTweetContent } from "./nodes/validate-tweet.js";
 
 /**
  * This conditional edge will iterate over all the links in a Tweet.
@@ -61,7 +61,7 @@ const verifyTweetBuilder = new StateGraph(
 
   // Validates the final Tweet content, including any content/summaries generated
   // or extracted from URLs inside the Tweet.
-  .addNode("validateTweet", verifyTwitterContent)
+  .addNode("validateTweet", validateTweetContent)
 
   // Start node
   .addEdge(START, "getTweetContent")

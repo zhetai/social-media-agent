@@ -12,6 +12,7 @@ import { humanNode } from "./nodes/human-node.js";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
 import { verifyTweetGraph } from "../verify-tweet/graph.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
+import { schedulePost } from "./nodes/schedule-post.js";
 
 const isTwitterUrl = (url: string) => {
   return url.includes("twitter.com") || url.includes("x.com");
@@ -85,9 +86,10 @@ const generatePostBuilder = new StateGraph(
 
   // Generates a Tweet/LinkedIn post based on the report content.
   .addNode("generatePost", generatePost)
-  // Interrupts the node for human in the loop, then schedules the
-  // post for Twitter/LinkedIn.
+  // Interrupts the node for human in the loop.
   .addNode("humanNode", humanNode)
+  // Schedules the post for Twitter/LinkedIn.
+  .addNode("schedulePost", schedulePost)
   // Rewrite a post based on the user's response.
   .addNode("rewritePost", rewritePost)
 
@@ -121,8 +123,11 @@ const generatePostBuilder = new StateGraph(
   // If the schedule post is successful, end the graph.
   .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
     "rewritePost",
+    "schedulePost",
     END,
-  ]);
+  ])
+  // Always end after scheduling the post.
+  .addEdge("schedulePost", END);
 
 export const generatePostGraph = generatePostBuilder.compile();
 

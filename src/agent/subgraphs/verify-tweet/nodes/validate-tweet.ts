@@ -79,7 +79,7 @@ ${pageContents.map((content, index) => `<webpage-content key="${index}">\n${cont
 /**
  * Verifies the Tweet & webpage contents provided is relevant to LangChain products.
  */
-export async function verifyTwitterContent(
+export async function validateTweetContent(
   state: typeof GraphAnnotation.State,
 ): Promise<Partial<typeof GraphAnnotation.State>> {
   const context = constructContext({

@@ -178,7 +178,6 @@ export async function verifyGitHubContent(
     };
   }
 
-  console.log("Content is not relevant", state.link);
   // Not relevant, return empty arrays so this URL is not included.
   return {
     relevantLinks: [],

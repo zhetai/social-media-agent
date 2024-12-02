@@ -1,4 +1,5 @@
-import { ALLOWED_DAYS } from "./subgraphs/generate-post/constants.js";
+import { nextSaturday, setHours, setMinutes, parse, isValid } from "date-fns";
+import * as cheerio from "cheerio";
 
 /**
  * Extracts URLs from Slack-style message text containing links in the format:
@@ -44,50 +45,101 @@ export function extractUrls(text: string): string[] {
 }
 
 /**
- * Converts a day of the week and time string into a Date object
- * @param day The day of the week (e.g., 'Monday', 'Tuesday', etc.)
- * @param time Time in 12-hour format (e.g., '01:23 PM')
- * @returns Date object representing the next occurrence of that day and time
- * @throws Error if invalid day or time format
+ * Get a date for the next Saturday at the specified hour
+ * @param {number} hour - The hour to set for the next Saturday (default: 12)
+ * @param {number} minute - The minute to set for the next Saturday (default: 0)
+ * @returns {Date} The date for the next Saturday at the specified hour
  */
-export function getDayAndTimeAsDate(day: string, time: string): Date {
-  const days = ALLOWED_DAYS.map((day) => day.toLowerCase());
-  const targetDay = days.indexOf(day.toLowerCase());
+export function getNextSaturdayDate(hour = 12, minute = 0): Date {
+  const saturday = nextSaturday(new Date());
+  return setMinutes(setHours(saturday, hour), minute);
+}
 
-  if (targetDay === -1) {
-    throw new Error("Invalid day of week");
+/**
+ * Validates a date string in the format 'MM/dd/yyyy hh:mm a'
+ * @param dateString - The date string to validate
+ * @returns {boolean} - Whether the date string is valid
+ */
+export function isValidDateString(dateString: string): boolean {
+  try {
+    const parsedDate = parse(dateString, "MM/dd/yyyy hh:mm a", new Date());
+    return isValid(parsedDate);
+  } catch (e) {
+    console.error("Failed to parse date string:", e);
+    return false;
   }
+}
 
-  // Parse time components
-  const timeMatch = time.match(/^(\d{2}):(\d{2}) (AM|PM)$/i);
-  if (!timeMatch) {
-    throw new Error('Invalid time format. Expected "HH:MM AM/PM"');
+/**
+ * Fetches and extracts the main text content from a webpage by removing common non-content elements.
+ *
+ * @param {string} url - The URL of the webpage to fetch and extract text from.
+ * @returns {Promise<string | undefined>} The cleaned text content of the webpage, or undefined if an error occurs.
+ *
+ * @throws {TypeError} When the provided URL is invalid.
+ * @throws {Error} When there's a network error during the request.
+ *
+ * @example
+ * ```typescript
+ * const text = await getPageText('https://example.com');
+ * if (text) {
+ *   console.log('Page content:', text);
+ * } else {
+ *   console.log('Failed to fetch page content');
+ * }
+ * ```
+ */
+export async function getPageText(url: string): Promise<string | undefined> {
+  try {
+    // Validate URL
+    new URL(url); // Will throw if URL is invalid
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Remove unwanted elements
+    $("script").remove();
+    $("style").remove();
+    $("head").remove();
+    $("nav").remove();
+    $("footer").remove();
+    $("header").remove();
+
+    // Get text content and clean it up
+    const text = $("body")
+      .text()
+      .replace(/\s+/g, " ")
+      .replace(/\n+/g, " ")
+      .trim();
+
+    return text;
+  } catch (error) {
+    if (error instanceof Error) {
+      // Handle specific error types
+      if (error.message.includes("HTTP error")) {
+        console.error(`Network error: ${error.message}`);
+        return undefined;
+      } else if (error instanceof TypeError) {
+        console.error(`Invalid URL: ${error.message}`);
+        return undefined;
+      }
+
+      console.error(`Unknown error: ${error.message}`);
+      return undefined;
+    }
+
+    console.error("Unknown error:", error);
+    return undefined;
   }
-
-  let [_, hours, minutes, period] = timeMatch;
-  let hour = parseInt(hours);
-
-  // Convert to 24-hour format
-  if (period.toUpperCase() === "PM" && hour !== 12) {
-    hour += 12;
-  } else if (period.toUpperCase() === "AM" && hour === 12) {
-    hour = 0;
-  }
-
-  // Get current date
-  const now = new Date();
-  const currentDay = now.getDay();
-
-  // Calculate days to add
-  let daysToAdd = targetDay - currentDay;
-  if (daysToAdd <= 0) {
-    daysToAdd += 7;
-  }
-
-  // Create target date
-  const targetDate = new Date(now);
-  targetDate.setDate(now.getDate() + daysToAdd);
-  targetDate.setHours(hour, parseInt(minutes), 0, 0);
-
-  return targetDate;
 }

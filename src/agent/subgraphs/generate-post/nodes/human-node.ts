@@ -1,8 +1,8 @@
 import { END, LangGraphRunnableConfig, interrupt } from "@langchain/langgraph";
 import { GraphAnnotation } from "../generate-post-state.js";
 import { HumanInterrupt, HumanResponse } from "../../../types.js";
-import { ALLOWED_DAYS } from "../constants.js";
-import { getDayAndTimeAsDate } from "../../../utils.js";
+import { parse, format } from "date-fns";
+import { isValidDateString, getNextSaturdayDate } from "../../../utils.js";
 
 interface ConstructDescriptionArgs {
   report: string;
@@ -32,31 +32,6 @@ function constructDescription({
   return `${header}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}\n\n${slackMsgText}`;
 }
 
-function isDayAndTimeValid(day: string, time: string): boolean {
-  // Check day validity
-  if (!ALLOWED_DAYS.includes(day.toLowerCase())) {
-    return false;
-  }
-
-  // Remove any extra spaces and convert to uppercase for consistency
-  const cleanTime = time.trim().toUpperCase();
-
-  // Regular expression for XX:XX AM/PM format
-  const timeRegex = /^(0?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM)$/i;
-  const match = cleanTime.match(timeRegex);
-
-  if (!match) {
-    return false;
-  }
-
-  const [_, hours, minutes] = match;
-  const hour = parseInt(hours, 10);
-  const minute = parseInt(minutes, 10);
-
-  // Validate hour and minute ranges
-  return hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59;
-}
-
 export async function humanNode(
   state: typeof GraphAnnotation.State,
   _config: LangGraphRunnableConfig,
@@ -65,16 +40,15 @@ export async function humanNode(
     throw new Error("No post found");
   }
 
-  const defaultDay = state.scheduleDate.day || "Saturday";
-  const defaultTime = state.scheduleDate.time || "12:00 PM";
+  const defaultDate = state.scheduleDate || getNextSaturdayDate();
+  const defaultDateString = format(defaultDate, "MM/dd/yyyy hh:mm a");
 
   const interruptValue: HumanInterrupt = {
     action_request: {
       action: "Schedule Twitter/LinkedIn posts",
       args: {
         post: state.post,
-        day: defaultDay,
-        time: defaultTime,
+        date: defaultDateString,
       },
     },
     config: {
@@ -91,6 +65,7 @@ export async function humanNode(
     }),
   };
 
+  // TODO: Verify `interrupt` can be executed N times with different arguments.
   const response = interrupt<HumanInterrupt[], HumanResponse[]>([
     interruptValue,
   ])[0];
@@ -123,39 +98,42 @@ export async function humanNode(
   const castArgs = response.args as unknown as Record<string, string>;
 
   const responseOrPost = castArgs.post;
-  const postDay = castArgs.day || defaultDay;
-  const postTime = castArgs.time || defaultTime;
   if (!responseOrPost) {
     throw new Error(
       `Unexpected response args value: ${responseOrPost}. Must be defined.\n\nResponse args:\n${JSON.stringify(response.args, null, 2)}`,
     );
   }
 
-  if (!isDayAndTimeValid(postDay, postTime)) {
+  const postDateString = castArgs.date || defaultDateString;
+  const isDateValid = isValidDateString(postDateString);
+  if (!isDateValid) {
     // TODO: Handle invalid dates better
-    throw new Error("Invalid day or time provided.");
+    throw new Error("Invalid date provided.");
   }
+  const postDate: Date = parse(
+    postDateString,
+    "MM/dd/yyyy hh:mm a",
+    new Date(),
+  );
 
   if (response.type === "response") {
     return {
       userResponse: responseOrPost,
       next: "rewritePost",
-      scheduleDate: {
-        day: postDay,
-        time: postTime,
-        date: getDayAndTimeAsDate(postDay, postTime),
-      },
+      scheduleDate: postDate,
     };
   }
 
   // TODO: Implement scheduling tweets and LinkedIn posts once Arcade supports scheduling.
-  console.log("\n\nScheduling post:\n---\n", responseOrPost, "\n---\n\n");
+  console.log(
+    "\n\nScheduling post:\n---\n",
+    responseOrPost,
+    "\nFor date:",
+    postDateString,
+    "\n---\n\n",
+  );
   return {
     next: "schedulePost",
-    scheduleDate: {
-      day: postDay,
-      time: postTime,
-      date: getDayAndTimeAsDate(postDay, postTime),
-    },
+    scheduleDate: postDate,
   };
 }

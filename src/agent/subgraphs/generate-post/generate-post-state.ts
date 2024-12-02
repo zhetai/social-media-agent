@@ -54,11 +54,7 @@ export const GraphAnnotation = Annotation.Root({
   /**
    * The date to schedule the post for.
    */
-  scheduleDate: Annotation<{
-    day: string;
-    time: string;
-    date: Date;
-  }>,
+  scheduleDate: Annotation<Date>,
   /**
    * Response from the user for the post. Typically used to request
    * changes to be made to the post.
