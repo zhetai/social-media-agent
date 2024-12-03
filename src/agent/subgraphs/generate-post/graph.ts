@@ -13,6 +13,8 @@ import { VerifyContentAnnotation } from "../shared/shared-state.js";
 import { verifyTweetGraph } from "../verify-tweet/graph.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
 import { schedulePost } from "./nodes/schedule-post.js";
+import { condensePost } from "./nodes/condense-post.js";
+import { removeUrls } from "../../utils.js";
 
 const isTwitterUrl = (url: string) => {
   return url.includes("twitter.com") || url.includes("x.com");
@@ -66,6 +68,16 @@ function rewriteOrEndConditionalEdge(
   return END;
 }
 
+function condenseOrHumanConditionalEdge(
+  state: typeof GraphAnnotation.State,
+): "condensePost" | "humanNode" {
+  const cleanedPost = removeUrls(state.post || "");
+  if (cleanedPost.length > 300) {
+    return "condensePost";
+  }
+  return "humanNode";
+}
+
 // Finally, create the graph itself.
 const generatePostBuilder = new StateGraph(
   GraphAnnotation,
@@ -86,6 +98,8 @@ const generatePostBuilder = new StateGraph(
 
   // Generates a Tweet/LinkedIn post based on the report content.
   .addNode("generatePost", generatePost)
+  // Attempt to condense the post if it's too long.
+  .addNode("condensePost", condensePost)
   // Interrupts the node for human in the loop.
   .addNode("humanNode", humanNode)
   // Schedules the post for Twitter/LinkedIn.
@@ -114,9 +128,16 @@ const generatePostBuilder = new StateGraph(
     END,
   ])
 
-  // Finally, schedule the post. This will also throw an interrupt
-  // so a human can edit the post before scheduling.
-  .addEdge("generatePost", "humanNode")
+  // After generating the post for the first time, check if it's too long,
+  // and if so, condense it. Otherwise, route to the human node.
+  .addConditionalEdges("generatePost", condenseOrHumanConditionalEdge, [
+    "condensePost",
+    "humanNode",
+  ])
+
+  // After condensing the post, always route to the human node.
+  .addEdge("condensePost", "humanNode")
+
   // Always route back to `humanNode` if the post was re-written.
   .addEdge("rewritePost", "humanNode")
 
