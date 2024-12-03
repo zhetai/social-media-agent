@@ -45,6 +45,16 @@ export function extractUrls(text: string): string[] {
 }
 
 /**
+ * Removes all URLs from a given string
+ * @param text The string to remove URLs from
+ * @returns The input string with all URLs removed
+ */
+export function removeUrls(text: string): string {
+  const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+  return text.replace(urlRegex, "").replace(/\s+/g, " ").trim();
+}
+
+/**
  * Get a date for the next Saturday at the specified hour
  * @param {number} hour - The hour to set for the next Saturday (default: 12)
  * @param {number} minute - The minute to set for the next Saturday (default: 0)

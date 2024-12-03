@@ -57,18 +57,7 @@ Features
 https://github.com/nirbar1985/ai-travel-agent
 </example>`;
 
-export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
-You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
-Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
-
-The following are examples of LinkedIn/Twitter posts on third-party LangChain content that have done well, and you should use them as style inspiration for your post:
-<examples>
-${TWEET_EXAMPLES}
-</examples>
-
-Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow. The post should have three main sections, outlined below:
-<structure-instructions>
-<section key="1">
+export const STRUCTURE_INSTRUCTIONS = `<section key="1">
 The first part of the post is the header. This should be very short, no more than 5 words, and should include one to two emojis, and the name of the content provided. If the marketing report does not specify a name, you should get creative and come up with a catchy title for it.
 </section>
 
@@ -81,19 +70,35 @@ You should NOT make the main focus of this on LangChain, but instead on the cont
 
 <section key="3">
 The final section of the post should contain a call to action. This should be a short sentence that encourages the reader to click the link to the content being promoted. Optionally, you can include an emoji here.
-</section>
+</section>`;
+
+export const RULES = `- Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
+- Do not make the post over technical as some of our audience may not be advanced developers, but ensure it is technical enough to engage developers.
+- Keep posts short, concise and engaging
+- Limit the use of emojis to the post header, and optionally in the call to action.
+- NEVER use hashtags in the post.
+- ALWAYS use present tense to make announcements feel immediate (e.g., "Microsoft just launched..." instead of "Microsoft launches...").
+- ALWAYS include the link to the content being promoted in the call to action section of the post.`;
+
+export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
+You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
+Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
+
+The following are examples of LinkedIn/Twitter posts on third-party LangChain content that have done well, and you should use them as style inspiration for your post:
+<examples>
+${TWEET_EXAMPLES}
+</examples>
+
+Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow. The post should have three main sections, outlined below:
+<structure-instructions>
+${STRUCTURE_INSTRUCTIONS}
 </structure-instructions>
 
 This structure should ALWAYS be followed. And remember, the shorter and more engaging the post, the better (your yearly bonus depends on this!!).
 
 Here are a set of rules and guidelines you should strictly follow when creating the LinkedIn/Twitter post:
 <rules>
-- Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
-- Do not make the post over technical as some of our audience may not be advanced developers, but ensure it is technical enough to engage developers.
-- Keep posts short, concise and engaging
-- Limit the use of emojis to the post header, and optionally in the call to action.
-- NEVER use hashtags in the post.
-- ALWAYS include the link to the content being promoted in the call to action section of the post.
+${RULES}
 </rules>
 
 Lastly, you should follow the process below when writing the LinkedIn/Twitter post:
