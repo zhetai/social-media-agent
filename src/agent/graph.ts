@@ -20,7 +20,7 @@ async function generatePostFromMessages(
       const thread = await client.threads.create();
       await client.runs.create(thread.thread_id, "generate_post", {
         input: {
-          slackMessage: m,
+          links: m.links,
         },
         config: {
           configurable: {

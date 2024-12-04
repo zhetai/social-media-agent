@@ -1,8 +1,5 @@
 import { Annotation, END } from "@langchain/langgraph";
-import {
-  GraphAnnotation as MainGraphAnnotation,
-  SimpleSlackMessageWithLinks,
-} from "../../state.js";
+import { GraphAnnotation as MainGraphAnnotation } from "../../state.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 
@@ -19,9 +16,9 @@ export type YouTubeVideoSummary = {
 
 export const GraphAnnotation = Annotation.Root({
   /**
-   * The message to use for generating a post.
+   * The links to use to generate a post.
    */
-  slackMessage: Annotation<SimpleSlackMessageWithLinks>,
+  links: Annotation<string[]>,
   /**
    * The report generated on the content of the message. Used
    * as context for generating the post.

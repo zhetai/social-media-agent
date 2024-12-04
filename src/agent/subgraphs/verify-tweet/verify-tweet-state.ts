@@ -7,10 +7,6 @@ export const GraphAnnotation = Annotation.Root({
    */
   link: VerifyContentAnnotation.spec.link,
   /**
-   * The message to use for generating a post.
-   */
-  slackMessage: VerifyContentAnnotation.spec.slackMessage,
-  /**
    * The raw content of the Tweet
    */
   tweetContent: Annotation<string>,

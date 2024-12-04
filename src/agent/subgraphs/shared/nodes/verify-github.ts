@@ -3,7 +3,6 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
-import { hasFileExtension } from "../../../utils.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 
 type VerifyGitHubContentReturn = {
@@ -60,19 +59,13 @@ const tryGetReadmeContents = async (
   return content;
 };
 
-export async function getGitHubContentsAndTypeFromUrl(
-  url: string,
-  messageAttachments?: string,
-): Promise<
+export async function getGitHubContentsAndTypeFromUrl(url: string): Promise<
   | {
       contents: string;
       fileType: string;
     }
   | undefined
 > {
-  let pageContent: string | undefined = undefined;
-  let fileType = "README file";
-
   let baseGitHubRepoUrl = "";
   try {
     const githubUrl = new URL(url);
@@ -83,24 +76,18 @@ export async function getGitHubContentsAndTypeFromUrl(
     return undefined;
   }
 
-  if (hasFileExtension(url) && messageAttachments) {
-    // Use the `text` field of the attachment as the content
-    pageContent = messageAttachments;
-    fileType = "code file";
-  } else {
-    const rawMainReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/README.md`;
-    const rawMainReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/readme.md`;
-    const rawMasterReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/README.md`;
-    const rawMasterReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
-    // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
-    pageContent = await tryGetReadmeContents([
-      rawMainReadmeLink,
-      rawMainReadmeLinkLowercase,
-      rawMasterReadmeLink,
-      rawMasterReadmeLinkLowercase,
-      url,
-    ]);
-  }
+  const rawMainReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/README.md`;
+  const rawMainReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/main/readme.md`;
+  const rawMasterReadmeLink = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/README.md`;
+  const rawMasterReadmeLinkLowercase = `https://raw.githubusercontent.com${baseGitHubRepoUrl}/refs/heads/master/readme.md`;
+  // Attempt to fetch the contents of main, if it fails, try master, finally, just read the content of the original URL.
+  const pageContent = await tryGetReadmeContents([
+    rawMainReadmeLink,
+    rawMainReadmeLinkLowercase,
+    rawMasterReadmeLink,
+    rawMasterReadmeLinkLowercase,
+    url,
+  ]);
 
   if (!pageContent) {
     return undefined;
@@ -108,7 +95,7 @@ export async function getGitHubContentsAndTypeFromUrl(
 
   return {
     contents: pageContent,
-    fileType,
+    fileType: "README file",
   };
 }
 
@@ -154,10 +141,7 @@ export async function verifyGitHubContent(
   state: typeof VerifyContentAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<VerifyGitHubContentReturn> {
-  const contentsAndType = await getGitHubContentsAndTypeFromUrl(
-    state.link,
-    state.slackMessage.attachments?.[0].text,
-  );
+  const contentsAndType = await getGitHubContentsAndTypeFromUrl(state.link);
   if (!contentsAndType) {
     console.warn("No contents found for GitHub URL", state.link);
     return {
