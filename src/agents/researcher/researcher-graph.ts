@@ -1,4 +1,4 @@
-import { END, START, StateGraph } from "@langchain/langgraph";
+import { END, Send, START, StateGraph } from "@langchain/langgraph";
 import { ResearcherGraphAnnotation } from "./researcher-state.js";
 
 /**
@@ -28,27 +28,41 @@ import { ResearcherGraphAnnotation } from "./researcher-state.js";
  */
 
 const researcherWorkflow = new StateGraph(ResearcherGraphAnnotation)
-  .addNode("generateSearchPlan", () => {
+  .addNode("generateWebQueries", () => {
     throw new Error("Not implemented");
   })
-  .addNode("collectLinks", () => {
+  .addNode("generateTwitterQueries", () => {
     throw new Error("Not implemented");
   })
-  .addNode("generateReport", () => {
+  .addNode("searchWeb", () => {
     throw new Error("Not implemented");
   })
-  .addNode("combineReports", () => {
+  .addNode("searchTwitter", () => {
     throw new Error("Not implemented");
   })
-  .addNode("generatePost", () => {
+  .addNode("generateSubReport", () => {
     throw new Error("Not implemented");
   })
-  .addEdge(START, "generateSearchPlan")
-  .addEdge("generateSearchPlan", "collectLinks")
-  .addEdge("collectLinks", "generateReport")
-  .addEdge("generateReport", "combineReports")
-  .addEdge("combineReports", "generatePost")
-  .addEdge("generatePost", END);
+  .addNode("generateMasterReport", () => {
+    throw new Error("Not implemented");
+  })
+  .addConditionalEdges(START, () => {
+    const sends = [
+      new Send("generateWebQueries", {}),
+      new Send("generateTwitterQueries", {}),
+    ];
+
+    return sends;
+  }, ["generateWebQueries", "generateTwitterQueries"])
+
+  .addEdge("generateWebQueries", "searchWeb")
+  .addEdge("searchWeb", "generateSubReport")
+
+  .addEdge("generateTwitterQueries", "searchTwitter")
+  .addEdge("searchTwitter", "generateSubReport")
+
+  .addEdge("generateSubReport", "generateMasterReport")
+  .addEdge("generateMasterReport", END);
 
 export const researcherGraph = researcherWorkflow.compile();
 researcherGraph.name = "Researcher Graph";
