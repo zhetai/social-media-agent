@@ -1,8 +1,11 @@
 {
   "node_version": "20",
   "graphs": {
-    "social_media_agent": "./src/agent/graph.ts:graph",
-    "generate_post": "./src/agent/subgraphs/generate-post/graph.ts:generatePostGraph"
+    "ingest_data": "./src/agents/ingest-data/ingest-data-graph.ts:graph",
+    "generate_post": "./src/agents/generate-post/generate-post-graph.ts:generatePostGraph",
+    "verify_tweet": "./src/agents/verify-tweet/verify-tweet-graph.ts:verifyTweetGraph",
+    "verify_links": "./src/agents/verify-links/verify-links-graph.ts:verifyLinksGraph",
+    "researcher": "./src/agents/researcher/researcher-graph.ts:researcherGraph"
   },
   "env": ".env",
   "dependencies": ["."]

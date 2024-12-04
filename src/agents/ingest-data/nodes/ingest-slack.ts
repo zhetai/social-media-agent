@@ -1,7 +1,7 @@
-import { GraphAnnotation } from "../state.js";
+import { GraphAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { SlackMessageFetcher } from "../../clients/slack.js";
-import { extractUrlsFromSlackText } from "../utils.js";
+import { SlackMessageFetcher } from "../../../clients/slack.js";
+import { extractUrlsFromSlackText } from "../../utils.js";
 
 const getChannelIdFromConfig = async (
   config: LangGraphRunnableConfig,
@@ -15,13 +15,13 @@ const getChannelIdFromConfig = async (
   return config.configurable?.slackChannelId;
 };
 
-export async function ingestData(
+export async function ingestSlackData(
   state: typeof GraphAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GraphAnnotation.State>> {
   if (config.configurable?.skipIngest) {
-    if (state.slackMessages.length === 0) {
-      throw new Error("Can not skip ingest with no messages");
+    if (state.links.length === 0) {
+      throw new Error("Can not skip ingest with no links");
     }
     return {};
   }
@@ -40,18 +40,15 @@ export async function ingestData(
   if (recentMessages.length > 1) {
     throw new Error("More than one message found");
   }
-  const messagesWithUrls = recentMessages.flatMap((msg) => {
+  const links = recentMessages.flatMap((msg) => {
     const links = extractUrlsFromSlackText(msg.text);
     if (!links.length) {
       return [];
     }
-    return {
-      ...msg,
-      links,
-    };
+    return links;
   });
 
   return {
-    slackMessages: messagesWithUrls,
+    links,
   };
 }

@@ -1,16 +1,16 @@
 import { describe, it } from "@jest/globals";
-import { generatePostGraph } from "../agent/subgraphs/generate-post/graph.js";
 import {
   GITHUB_MESSAGE,
   GITHUB_URL_STATE,
   TWITTER_NESTED_GITHUB_MESSAGE,
 } from "./states.js";
 import { TwitterApi } from "twitter-api-v2";
-import { resolveTwitterUrl } from "../agent/subgraphs/verify-tweet/utils.js";
-import { getGitHubContentsAndTypeFromUrl } from "../agent/subgraphs/shared/nodes/verify-github.js";
+import { resolveTwitterUrl } from "../agents/verify-tweet/utils.js";
+import { getGitHubContentsAndTypeFromUrl } from "../agents/subgraphs/shared/nodes/verify-github.js";
 import { EXPECTED_README } from "./expected.js";
-import { getYouTubeVideoDuration } from "../agent/subgraphs/shared/nodes/youtube.utils.js";
-import { getPageText } from "../agent/utils.js";
+import { getPageText } from "../agents/utils.js";
+import { generatePostGraph } from "../agents/generate-post/generate-post-graph.js";
+import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
 
 describe.skip("GeneratePostGraph", () => {
   it.skip("Should be able to generate posts from a GitHub URL slack message", async () => {

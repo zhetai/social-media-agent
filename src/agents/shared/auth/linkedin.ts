@@ -1,8 +1,8 @@
 // @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { interrupt, type NodeInterrupt } from "@langchain/langgraph";
-import { HumanInterrupt, HumanResponse } from "../../../types.js";
 import Arcade from "@arcadeai/arcadejs";
+import { HumanInterrupt, HumanResponse } from "../../types.js";
 
 /**
  * Checks LinkedIn authorization status and triggers an interrupt if authorization is needed.

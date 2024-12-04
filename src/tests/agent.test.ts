@@ -3,7 +3,7 @@ import {
   extractTweetId,
   extractUrls,
   extractUrlsFromSlackText,
-} from "../agent/utils.js";
+} from "../agents/utils.js";
 
 describe("extractUrlsFromSlackText", () => {
   it("Can extract URL from Slack-style message text", () => {

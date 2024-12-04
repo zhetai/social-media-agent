@@ -1,6 +1,6 @@
 import { type TweetV2SingleResult } from "twitter-api-v2";
 import { GraphAnnotation } from "../verify-tweet-state.js";
-import { extractTweetId, extractUrls } from "../../../utils.js";
+import { extractTweetId, extractUrls } from "../../utils.js";
 import { resolveTwitterUrl } from "../utils.js";
 import Arcade from "@arcadeai/arcadejs";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";

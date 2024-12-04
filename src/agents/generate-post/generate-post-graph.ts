@@ -1,50 +1,17 @@
-import { END, Send, START, StateGraph } from "@langchain/langgraph";
+import { END, START, StateGraph } from "@langchain/langgraph";
 import {
   GraphAnnotation,
   ConfigurableAnnotation,
 } from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
-import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
-import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
-import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
 import { generatePost } from "./nodes/geterate-post/index.js";
 import { humanNode } from "./nodes/human-node.js";
-import { VerifyContentAnnotation } from "../shared/shared-state.js";
-import { verifyTweetGraph } from "../verify-tweet/graph.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
 import { schedulePost } from "./nodes/schedule-post.js";
 import { condensePost } from "./nodes/condense-post.js";
-import { removeUrls } from "../../utils.js";
-
-const isTwitterUrl = (url: string) => {
-  return url.includes("twitter.com") || url.includes("x.com");
-};
-
-/**
- * This conditional edge will iterate over all the links in a slack message.
- * It creates a `Send` for each link, which will invoke a node specific to that website.
- */
-function routeContentTypes(state: typeof GraphAnnotation.State) {
-  return state.links.map((link) => {
-    if (link.includes("youtube.com")) {
-      return new Send("verifyYouTubeContent", {
-        link,
-      });
-    } else if (link.includes("github.com")) {
-      return new Send("verifyGitHubContent", {
-        link,
-      });
-    } else if (isTwitterUrl(link)) {
-      return new Send("verifyTweetSubGraph", {
-        link,
-      });
-    } else {
-      return new Send("verifyGeneralContent", {
-        link,
-      });
-    }
-  });
-}
+import { removeUrls } from "../utils.js";
+import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
+import { VerifyLinksGraphSharedAnnotation } from "../verify-links/verify-links-state.js";
 
 function routeAfterGeneratingReport(
   state: typeof GraphAnnotation.State,
@@ -79,17 +46,8 @@ const generatePostBuilder = new StateGraph(
   GraphAnnotation,
   ConfigurableAnnotation,
 )
-  .addNode("verifyYouTubeContent", verifyYouTubeContent, {
-    input: VerifyContentAnnotation,
-  })
-  .addNode("verifyGeneralContent", verifyGeneralContent, {
-    input: VerifyContentAnnotation,
-  })
-  .addNode("verifyGitHubContent", verifyGitHubContent, {
-    input: VerifyContentAnnotation,
-  })
-  .addNode("verifyTweetSubGraph", verifyTweetGraph, {
-    input: VerifyContentAnnotation,
+  .addNode("verifyLinksSubGraph", verifyLinksGraph, {
+    input: VerifyLinksGraphSharedAnnotation,
   })
 
   // Generates a Tweet/LinkedIn post based on the report content.
@@ -102,21 +60,14 @@ const generatePostBuilder = new StateGraph(
   .addNode("schedulePost", schedulePost)
   // Rewrite a post based on the user's response.
   .addNode("rewritePost", rewritePost)
-
+  // Generates a report on the content.
   .addNode("generateContentReport", generateContentReport)
+
   // Start node
-  .addConditionalEdges(START, routeContentTypes, [
-    "verifyYouTubeContent",
-    "verifyGeneralContent",
-    "verifyGitHubContent",
-    "verifyTweetSubGraph",
-  ])
+  .addEdge(START, "verifyLinksSubGraph")
 
   // After verifying the different content types, we should generate a report on them.
-  .addEdge("verifyYouTubeContent", "generateContentReport")
-  .addEdge("verifyGeneralContent", "generateContentReport")
-  .addEdge("verifyGitHubContent", "generateContentReport")
-  .addEdge("verifyTweetSubGraph", "generateContentReport")
+  .addEdge("verifyLinksSubGraph", "generateContentReport")
 
   // Once generating a report, we should confirm the report exists (meaning the content is relevant).
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [

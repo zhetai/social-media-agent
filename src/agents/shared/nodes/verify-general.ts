@@ -6,7 +6,7 @@ import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firec
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { RunnableLambda } from "@langchain/core/runnables";
-import { getPageText } from "../../../utils.js";
+import { getPageText } from "../../utils.js";
 
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];

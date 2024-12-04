@@ -1,5 +1,5 @@
 import { Annotation, END } from "@langchain/langgraph";
-import { GraphAnnotation as MainGraphAnnotation } from "../../state.js";
+import { GraphAnnotation as MainGraphAnnotation } from "../ingest-data/ingest-data-state.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 

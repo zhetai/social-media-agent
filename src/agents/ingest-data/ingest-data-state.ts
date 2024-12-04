@@ -1,5 +1,5 @@
 import { Annotation } from "@langchain/langgraph";
-import { SimpleSlackMessage } from "../clients/slack.js";
+import { SimpleSlackMessage } from "../../clients/slack.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 export type SimpleSlackMessageWithLinks = SimpleSlackMessage & {
@@ -8,9 +8,9 @@ export type SimpleSlackMessageWithLinks = SimpleSlackMessage & {
 
 export const GraphAnnotation = Annotation.Root({
   /**
-   * The Slack messages to use for the content.
+   * The links to content to use for generating posts.
    */
-  slackMessages: Annotation<SimpleSlackMessageWithLinks[]>,
+  links: Annotation<string[]>,
   /**
    * A report generated on the content. Will be used in the main
    * graph when generating the post about this content.
@@ -38,15 +38,19 @@ export const ConfigurableAnnotation = Annotation.Root({
    * This will throw an error if slack messages are not
    * pre-provided in state.
    */
-  skipIngest: Annotation<boolean>,
+  skipIngest: Annotation<boolean | undefined>,
   /**
    * The user ID or email of the user to use for fetching
    * & posting Tweets.
    */
-  twitterUserId: Annotation<string>,
+  twitterUserId: Annotation<string | undefined>,
   /**
    * The user ID or email of the user to use for fetching
    * content & posting on LinkedIn.
    */
-  linkedInUserId: Annotation<string>,
+  linkedInUserId: Annotation<string | undefined>,
+  /**
+   * A Twitter username to use to ingest recent tweets.
+   */
+  ingestTwitterUsername: Annotation<string | undefined>,
 });
