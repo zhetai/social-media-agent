@@ -7,13 +7,11 @@ import { isValidDateString, getNextSaturdayDate } from "../../../utils.js";
 interface ConstructDescriptionArgs {
   report: string;
   relevantLinks: string[];
-  slackMessage: string;
 }
 
 function constructDescription({
   report,
   relevantLinks,
-  slackMessage,
 }: ConstructDescriptionArgs): string {
   const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn.`;
   const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
@@ -30,9 +28,8 @@ function constructDescription({
 ${additionalInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
   const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
-  const slackMsgText = `Here is the message that was sent to Slack:\n${slackMessage}`;
 
-  return `${header}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}\n\n${slackMsgText}`;
+  return `${header}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
 }
 
 export async function humanNode(
@@ -64,7 +61,6 @@ export async function humanNode(
     description: constructDescription({
       report: state.report,
       relevantLinks: state.relevantLinks,
-      slackMessage: state.slackMessage.text,
     }),
   };
 

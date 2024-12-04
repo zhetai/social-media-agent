@@ -23,17 +23,14 @@ function routeTweetUrls(state: typeof GraphAnnotation.State) {
     if (link.includes("youtube.com")) {
       return new Send("verifyYouTubeContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     } else if (link.includes("github.com")) {
       return new Send("verifyGitHubContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     } else {
       return new Send("verifyGeneralContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     }
   });

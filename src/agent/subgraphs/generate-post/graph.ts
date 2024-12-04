@@ -25,26 +25,22 @@ const isTwitterUrl = (url: string) => {
  * It creates a `Send` for each link, which will invoke a node specific to that website.
  */
 function routeContentTypes(state: typeof GraphAnnotation.State) {
-  return state.slackMessage.links.map((link) => {
+  return state.links.map((link) => {
     if (link.includes("youtube.com")) {
       return new Send("verifyYouTubeContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     } else if (link.includes("github.com")) {
       return new Send("verifyGitHubContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     } else if (isTwitterUrl(link)) {
       return new Send("verifyTweetSubGraph", {
         link,
-        slackMessage: state.slackMessage,
       });
     } else {
       return new Send("verifyGeneralContent", {
         link,
-        slackMessage: state.slackMessage,
       });
     }
   });
