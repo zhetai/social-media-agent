@@ -5,6 +5,7 @@
     "generate_post": "./src/agents/generate-post/generate-post-graph.ts:generatePostGraph",
     "verify_tweet": "./src/agents/verify-tweet/verify-tweet-graph.ts:verifyTweetGraph",
     "verify_links": "./src/agents/verify-links/verify-links-graph.ts:verifyLinksGraph",
+    "verify_reddit_post": "./src/agents/verify-reddit-post/verify-reddit-post-graph.ts:verifyRedditPostGraph",
     "researcher": "./src/agents/researcher/researcher-graph.ts:researcherGraph"
   },
   "env": ".env",

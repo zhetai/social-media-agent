@@ -1,9 +1,9 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
-import { VerifyContentAnnotation } from "../../shared/shared-state.js";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { z } from "zod";
+import { VerifyRedditPostAnnotation } from "../verify-reddit-post-state.js";
 
 /**
  * TODO: Support handling links in the main content of the reddit post
@@ -79,7 +79,7 @@ Given this, examine the Reddit post and associated content closely, and determin
 You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
 export async function getRedditPostContent(
-  state: typeof VerifyContentAnnotation.State,
+  state: typeof VerifyRedditPostAnnotation.State,
   _config: LangGraphRunnableConfig,
 ): Promise<VerifyRedditContentReturn> {
   const url = new URL(state.link);
