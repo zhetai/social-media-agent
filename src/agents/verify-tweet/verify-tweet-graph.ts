@@ -1,7 +1,7 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
 import {
-  GraphAnnotation,
-  ConfigurableAnnotation,
+  VerifyTweetAnnotation,
+  VerifyTweetConfigurableAnnotation,
 } from "./verify-tweet-state.js";
 import { getTweetContent } from "./nodes/get-tweet-content.js";
 import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
@@ -14,7 +14,7 @@ import { validateTweetContent } from "./nodes/validate-tweet.js";
  * This conditional edge will iterate over all the links in a Tweet.
  * It creates a `Send` for each link, which will invoke a node specific to that website.
  */
-function routeTweetUrls(state: typeof GraphAnnotation.State) {
+function routeTweetUrls(state: typeof VerifyTweetAnnotation.State) {
   if (!state.tweetContentUrls.length) {
     return "validateTweet";
   }
@@ -38,8 +38,8 @@ function routeTweetUrls(state: typeof GraphAnnotation.State) {
 
 // Finally, create the graph itself.
 const verifyTweetBuilder = new StateGraph(
-  GraphAnnotation,
-  ConfigurableAnnotation,
+  VerifyTweetAnnotation,
+  VerifyTweetConfigurableAnnotation,
 )
   // Calls the Twitter API to get the content, and extracts + validates any
   // URLs found in the Tweet content.
@@ -80,5 +80,12 @@ const verifyTweetBuilder = new StateGraph(
   .addEdge("validateTweet", END);
 
 export const verifyTweetGraph = verifyTweetBuilder.compile();
+
+console.log(
+  "verifyTweetGraph",
+  verifyTweetGraph.outputChannels,
+  verifyTweetGraph.streamChannels,
+  verifyTweetGraph.inputChannels,
+);
 
 verifyTweetGraph.name = "Verify Tweet Subgraph";

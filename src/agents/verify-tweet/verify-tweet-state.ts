@@ -1,7 +1,7 @@
 import { Annotation } from "@langchain/langgraph";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
 
-export const GraphAnnotation = Annotation.Root({
+export const VerifyTweetAnnotation = Annotation.Root({
   /**
    * The link to the content to verify.
    */
@@ -47,7 +47,7 @@ export const GraphAnnotation = Annotation.Root({
   }),
 });
 
-export const ConfigurableAnnotation = Annotation.Root({
+export const VerifyTweetConfigurableAnnotation = Annotation.Root({
   /**
    * The user ID or email of the user to use for fetching & posting Tweets.
    */

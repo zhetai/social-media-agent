@@ -6,7 +6,7 @@ export type SimpleSlackMessageWithLinks = SimpleSlackMessage & {
   links: string[];
 };
 
-export const GraphAnnotation = Annotation.Root({
+export const IngestDataAnnotation = Annotation.Root({
   /**
    * The links to content to use for generating posts.
    */
@@ -26,7 +26,7 @@ export const GraphAnnotation = Annotation.Root({
   twitterPost: Annotation<string>,
 });
 
-export const ConfigurableAnnotation = Annotation.Root({
+export const IngestDataConfigurableAnnotation = Annotation.Root({
   maxMessages: Annotation<number>({
     reducer: (_state, update) => update,
     default: () => 100,

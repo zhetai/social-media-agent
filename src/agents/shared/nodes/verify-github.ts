@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
+import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 
 type VerifyGitHubContentReturn = {
-  relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
-  pageContents: (typeof GraphAnnotation.State)["pageContents"];
+  relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
+  pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
 };
 
 const RELEVANCY_SCHEMA = z

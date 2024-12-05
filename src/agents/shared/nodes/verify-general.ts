@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
@@ -9,8 +9,8 @@ import { RunnableLambda } from "@langchain/core/runnables";
 import { getPageText } from "../../utils.js";
 
 type VerifyGeneralContentReturn = {
-  relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
-  pageContents: (typeof GraphAnnotation.State)["pageContents"];
+  relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
+  pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
 };
 
 const RELEVANCY_SCHEMA = z

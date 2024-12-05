@@ -6,18 +6,21 @@ import {
 } from "./states.js";
 import { TwitterApi } from "twitter-api-v2";
 import { resolveTwitterUrl } from "../agents/verify-tweet/utils.js";
-import { getGitHubContentsAndTypeFromUrl } from "../agents/subgraphs/shared/nodes/verify-github.js";
 import { EXPECTED_README } from "./expected.js";
 import { getPageText } from "../agents/utils.js";
 import { generatePostGraph } from "../agents/generate-post/generate-post-graph.js";
 import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
+import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
 
 describe.skip("GeneratePostGraph", () => {
   it.skip("Should be able to generate posts from a GitHub URL slack message", async () => {
     console.log("Starting graph test");
-    const result = await generatePostGraph.stream(GITHUB_URL_STATE, {
-      streamMode: "values",
-    });
+    const result = await generatePostGraph.stream(
+      { links: GITHUB_URL_STATE.slackMessage.links },
+      {
+        streamMode: "values",
+      },
+    );
 
     let post = "";
     for await (const value of result) {
@@ -70,7 +73,7 @@ describe("generate via twitter posts", () => {
   it("Can generate a post from a tweet with a github link", async () => {
     console.log("Starting graph test");
     const result = await generatePostGraph.stream(
-      TWITTER_NESTED_GITHUB_MESSAGE,
+      { links: TWITTER_NESTED_GITHUB_MESSAGE.slackMessage.links },
       {
         streamMode: "values",
       },
@@ -100,9 +103,12 @@ describe("generate via twitter posts", () => {
 describe("generate via github repos", () => {
   it("Can generate a post from a github repo", async () => {
     console.log("Starting graph test");
-    const result = await generatePostGraph.stream(GITHUB_MESSAGE, {
-      streamMode: "values",
-    });
+    const result = await generatePostGraph.stream(
+      { links: GITHUB_MESSAGE.slackMessage.links },
+      {
+        streamMode: "values",
+      },
+    );
 
     let post = "";
     for await (const value of result) {
@@ -136,4 +142,19 @@ test("Can get page text", async () => {
   const text = await getPageText("https://buff.ly/4g0ZRXI");
   expect(text).toBeDefined();
   expect(text?.length).toBeGreaterThan(100);
+});
+
+test.only("can generate post", async () => {
+  const result = await generatePostGraph.invoke(
+    {
+      links: ["https://x.com/eitanblumin/status/1861001933294653890"],
+    },
+    {
+      configurable: {
+        twitterUserId: "braceasproul@gmail.com",
+        linkedInUserId: "",
+      },
+    },
+  );
+  console.log(result);
 });

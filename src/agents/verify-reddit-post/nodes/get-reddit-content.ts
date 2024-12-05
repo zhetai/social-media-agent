@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { z } from "zod";
@@ -11,8 +11,8 @@ import { VerifyRedditPostAnnotation } from "../verify-reddit-post-state.js";
  */
 
 type VerifyRedditContentReturn = {
-  relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
-  pageContents: (typeof GraphAnnotation.State)["pageContents"];
+  relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
+  pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
 };
 
 function getImagesFromPost(post: Record<string, any>) {

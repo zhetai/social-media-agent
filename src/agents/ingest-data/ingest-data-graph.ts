@@ -5,14 +5,14 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import {
-  ConfigurableAnnotation,
-  GraphAnnotation,
+  IngestDataConfigurableAnnotation,
+  IngestDataAnnotation,
 } from "./ingest-data-state.js";
 import { ingestSlackData } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
 
 async function generatePostFromMessages(
-  state: typeof GraphAnnotation.State,
+  state: typeof IngestDataAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
   const client = new Client({
@@ -35,7 +35,10 @@ async function generatePostFromMessages(
   return {};
 }
 
-const builder = new StateGraph(GraphAnnotation, ConfigurableAnnotation)
+const builder = new StateGraph(
+  IngestDataAnnotation,
+  IngestDataConfigurableAnnotation,
+)
   // Ingests posts from Slack channel.
   .addNode("ingestSlackData", ingestSlackData)
   // Subgraph which is invoked once for each message.

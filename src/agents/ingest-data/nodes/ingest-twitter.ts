@@ -1,4 +1,4 @@
-import { GraphAnnotation } from "../ingest-data-state.js";
+import { IngestDataAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import Arcade from "@arcadeai/arcadejs";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
@@ -23,9 +23,9 @@ type TweetResult = {
  * @returns A partial update to the graph state with the ingested tweets.
  */
 export async function ingestTweets(
-  state: typeof GraphAnnotation.State,
+  state: typeof IngestDataAnnotation.State,
   config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+): Promise<Partial<typeof IngestDataAnnotation.State>> {
   if (config.configurable?.skipIngest) {
     if (state.links.length === 0) {
       throw new Error("Can not skip ingest with no links");

@@ -1,5 +1,5 @@
 import { Annotation, END } from "@langchain/langgraph";
-import { GraphAnnotation as MainGraphAnnotation } from "../ingest-data/ingest-data-state.js";
+import { IngestDataAnnotation } from "../ingest-data/ingest-data-state.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 
@@ -14,7 +14,7 @@ export type YouTubeVideoSummary = {
   summary: string;
 };
 
-export const GraphAnnotation = Annotation.Root({
+export const GeneratePostAnnotation = Annotation.Root({
   /**
    * The links to use to generate a post.
    */
@@ -23,7 +23,7 @@ export const GraphAnnotation = Annotation.Root({
    * The report generated on the content of the message. Used
    * as context for generating the post.
    */
-  report: MainGraphAnnotation.spec.report,
+  report: IngestDataAnnotation.spec.report,
   /**
    * Page content used in the verification nodes. Will be used in the report
    * generation node.
@@ -63,14 +63,14 @@ export const GraphAnnotation = Annotation.Root({
   next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
 });
 
-export const ConfigurableAnnotation = Annotation.Root({
+export const GeneratePostConfigurableAnnotation = Annotation.Root({
   /**
    * The user ID or email of the user to use for fetching & posting Tweets.
    */
-  twitterUserId: Annotation<string>,
+  twitterUserId: Annotation<string | undefined>,
   /**
    * The user ID or email of the user to use for fetching
    * content & posting on LinkedIn.
    */
-  linkedInUserId: Annotation<string>,
+  linkedInUserId: Annotation<string | undefined>,
 });

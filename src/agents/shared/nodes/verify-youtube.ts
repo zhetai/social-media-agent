@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../../generate-post/generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
@@ -9,8 +9,8 @@ import { VerifyContentAnnotation } from "../shared-state.js";
 import { getYouTubeVideoDuration } from "./youtube.utils.js";
 
 type VerifyYouTubeContentReturn = {
-  relevantLinks: (typeof GraphAnnotation.State)["relevantLinks"];
-  pageContents: (typeof GraphAnnotation.State)["pageContents"];
+  relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
+  pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
 };
 
 const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee at a large software company.

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
-import { GraphAnnotation } from "../verify-tweet-state.js";
+import { VerifyTweetAnnotation } from "../verify-tweet-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
 const RELEVANCY_SCHEMA = z
@@ -80,8 +80,8 @@ ${pageContents.map((content, index) => `<webpage-content key="${index}">\n${cont
  * Verifies the Tweet & webpage contents provided is relevant to LangChain products.
  */
 export async function validateTweetContent(
-  state: typeof GraphAnnotation.State,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+  state: typeof VerifyTweetAnnotation.State,
+): Promise<Partial<typeof VerifyTweetAnnotation.State>> {
   const context = constructContext({
     tweetContent: state.tweetContent,
     pageContents: state.pageContents,

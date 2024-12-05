@@ -1,5 +1,5 @@
 import { ChatAnthropic } from "@langchain/anthropic";
-import { GraphAnnotation } from "../generate-post-state.js";
+import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { STRUCTURE_INSTRUCTIONS, RULES } from "./geterate-post/prompts.js";
 import { parseGeneration } from "./geterate-post/utils.js";
 
@@ -50,8 +50,8 @@ Follow all rules and instructions outlined above. The user message below will pr
  * @returns A partial state of the graph
  */
 export async function condensePost(
-  state: typeof GraphAnnotation.State,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+  state: typeof GeneratePostAnnotation.State,
+): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.post) {
     throw new Error("No post found");
   }

@@ -1,4 +1,4 @@
-import { GraphAnnotation } from "../ingest-data-state.js";
+import { IngestDataAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { SlackMessageFetcher } from "../../../clients/slack.js";
 import { extractUrlsFromSlackText } from "../../utils.js";
@@ -16,9 +16,9 @@ const getChannelIdFromConfig = async (
 };
 
 export async function ingestSlackData(
-  state: typeof GraphAnnotation.State,
+  state: typeof IngestDataAnnotation.State,
   config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+): Promise<Partial<typeof IngestDataAnnotation.State>> {
   if (config.configurable?.skipIngest) {
     if (state.links.length === 0) {
       throw new Error("Can not skip ingest with no links");

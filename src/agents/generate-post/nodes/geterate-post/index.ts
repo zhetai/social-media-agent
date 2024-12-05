@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../../generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { GENERATE_POST_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
@@ -7,9 +7,9 @@ import { ALLOWED_TIMES } from "../../constants.js";
 import { getNextSaturdayDate } from "../../../utils.js";
 
 export async function generatePost(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
   _config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.report) {
     throw new Error("No report found");
   }

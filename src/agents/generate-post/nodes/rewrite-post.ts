@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../generate-post-state.js";
+import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
 const REWRITE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
@@ -13,9 +13,9 @@ The original post you wrote is as follows:
 Listen to your boss closely, and make the necessary changes to the post. You should respond ONLY with the updated post, with no additional information, or text before or after the post.`;
 
 export async function rewritePost(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
   _config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.post) {
     throw new Error("No post found");
   }

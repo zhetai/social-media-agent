@@ -1,7 +1,7 @@
 import { END, START, StateGraph } from "@langchain/langgraph";
 import {
-  GraphAnnotation,
-  ConfigurableAnnotation,
+  GeneratePostAnnotation,
+  GeneratePostConfigurableAnnotation,
 } from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
 import { generatePost } from "./nodes/geterate-post/index.js";
@@ -11,10 +11,9 @@ import { schedulePost } from "./nodes/schedule-post.js";
 import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
-import { VerifyLinksGraphSharedAnnotation } from "../verify-links/verify-links-state.js";
 
 function routeAfterGeneratingReport(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
 ): "generatePost" | typeof END {
   if (state.report) {
     return "generatePost";
@@ -23,7 +22,7 @@ function routeAfterGeneratingReport(
 }
 
 function rewriteOrEndConditionalEdge(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
 ): "rewritePost" | "schedulePost" | typeof END {
   if (state.next) {
     return state.next;
@@ -32,7 +31,7 @@ function rewriteOrEndConditionalEdge(
 }
 
 function condenseOrHumanConditionalEdge(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
 ): "condensePost" | "humanNode" {
   const cleanedPost = removeUrls(state.post || "");
   if (cleanedPost.length > 300) {
@@ -43,12 +42,10 @@ function condenseOrHumanConditionalEdge(
 
 // Finally, create the graph itself.
 const generatePostBuilder = new StateGraph(
-  GraphAnnotation,
-  ConfigurableAnnotation,
+  GeneratePostAnnotation,
+  GeneratePostConfigurableAnnotation,
 )
-  .addNode("verifyLinksSubGraph", verifyLinksGraph, {
-    input: VerifyLinksGraphSharedAnnotation,
-  })
+  .addNode("verifyLinksSubGraph", verifyLinksGraph)
 
   // Generates a Tweet/LinkedIn post based on the report content.
   .addNode("generatePost", generatePost)

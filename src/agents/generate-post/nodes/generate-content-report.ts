@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GraphAnnotation } from "../generate-post-state.js";
+import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
@@ -84,9 +84,9 @@ ${pageContents.map((content, index) => `<Content index={${index + 1}}>\n${conten
 };
 
 export async function generateContentReport(
-  state: typeof GraphAnnotation.State,
+  state: typeof GeneratePostAnnotation.State,
   _config: LangGraphRunnableConfig,
-): Promise<Partial<typeof GraphAnnotation.State>> {
+): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   const reportModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
     temperature: 0,
