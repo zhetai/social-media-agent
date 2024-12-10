@@ -11,9 +11,10 @@ import { getPageText } from "../agents/utils.js";
 import { generatePostGraph } from "../agents/generate-post/generate-post-graph.js";
 import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
 import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
+import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
 
-describe.skip("GeneratePostGraph", () => {
-  it.skip("Should be able to generate posts from a GitHub URL slack message", async () => {
+describe("GeneratePostGraph", () => {
+  it("Should be able to generate posts from a GitHub URL slack message", async () => {
     console.log("Starting graph test");
     const result = await generatePostGraph.stream(
       { links: GITHUB_URL_STATE.slackMessage.links },
@@ -43,7 +44,7 @@ describe.skip("GeneratePostGraph", () => {
   }, 60000);
 
   // Skip by default to prevent using up API quota
-  it.skip("Can read tweets via Twitter API", async () => {
+  it("Can read tweets via Twitter API", async () => {
     if (!process.env.TWITTER_BEARER_TOKEN) {
       throw new Error("TWITTER_BEARER_TOKEN is not set");
     }
@@ -144,7 +145,7 @@ test("Can get page text", async () => {
   expect(text?.length).toBeGreaterThan(100);
 });
 
-test.only("can generate post", async () => {
+test("can generate post", async () => {
   const result = await generatePostGraph.invoke(
     {
       links: ["https://x.com/eitanblumin/status/1861001933294653890"],
@@ -157,4 +158,15 @@ test.only("can generate post", async () => {
     },
   );
   console.log(result);
+});
+
+test.skip("can generate summaries of youtube videos", async () => {
+  const result = await verifyYouTubeContent(
+    {
+      link: "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
+    },
+    {},
+  );
+  expect(result.pageContents).toBeDefined();
+  expect(result.pageContents[0].length).toBeGreaterThan(50); // Check character count
 });

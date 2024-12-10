@@ -36,7 +36,9 @@ export async function getTwitterAuthOrInterrupt(
   const authUrlPost = authResponsePost.authorization_url;
 
   if (authUrlLookup || authUrlPost) {
-    const description = `Please visit the following URL(s) to authorize reading & posting Tweets.
+    const description = `# Authorization Required
+  
+Please visit the following URL(s) to authorize reading & posting Tweets.
 
 Read: ${authUrlLookup}
 
@@ -49,7 +51,10 @@ If you have already authorized reading/posting on Twitter, please accept this in
     const authInterrupt: HumanInterrupt = {
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: Twitter",
-        args: {},
+        args: {
+          ...(authUrlPost && { authorizePostingURL: authUrlPost }),
+          ...(authUrlLookup && { authorizeReadingURL: authUrlLookup }),
+        },
       },
       config: {
         allow_ignore: true,

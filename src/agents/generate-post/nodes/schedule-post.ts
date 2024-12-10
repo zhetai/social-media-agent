@@ -20,26 +20,29 @@ export async function schedulePost(
   });
   await getTwitterAuthOrInterrupt(twitterUserId, arcade);
 
-  const runAtDate = state.scheduleDate.toISOString();
-  const scheduleResponse = await fetch(`${arcade.baseURL}/v1/tools/execute`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${arcade.apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user_id: twitterUserId,
-      tool_name: "X.PostTweet",
-      inputs: {
-        tweet_text: state.post,
+  if (config.configurable?.shouldPostNow) {
+    const runAtDate = state.scheduleDate.toISOString();
+    const scheduleResponse = await fetch(`${arcade.baseURL}/v1/tools/execute`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${arcade.apiKey}`,
+        "Content-Type": "application/json",
       },
-      run_at: runAtDate,
-    }),
-  });
+      body: JSON.stringify({
+        user_id: twitterUserId,
+        tool_name: "X.PostTweet",
+        inputs: {
+          tweet_text: state.post,
+        },
+        run_at: runAtDate,
+      }),
+    });
 
-  const result = await scheduleResponse.json();
-  console.log("Schedule result: ", result);
+    const result = await scheduleResponse.json();
+    console.log("Schedule result: ", result);
+  } else {
+    console.log("Skipping post scheduling.");
+  }
 
-  // TODO: implement scheduling the post
   return {};
 }

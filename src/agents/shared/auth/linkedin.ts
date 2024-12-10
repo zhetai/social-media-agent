@@ -31,7 +31,9 @@ export async function getLinkedInAuthOrInterrupt(
   const authUrlPost = authResponsePost.authorization_url;
 
   if (authUrlPost) {
-    const description = `Please visit the following URL(s) to authorize posting on LinkedIn.
+    const description = `# Authorization Required
+    
+Please visit the following URL(s) to authorize posting on LinkedIn.
 
 Post: ${authUrlPost}
 
@@ -42,7 +44,9 @@ If you have already authorized posting on LinkedIn, please accept this interrupt
     const authInterrupt: HumanInterrupt = {
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: LinkedIn",
-        args: {},
+        args: {
+          authorizePostingURL: authUrlPost,
+        },
       },
       config: {
         allow_ignore: true,

@@ -60,7 +60,12 @@ export async function generateVideoSummary(url: string): Promise<string> {
   const mediaMessage = new HumanMessage({
     content: [
       {
+        type: "text",
+        text: "Here is the YouTube video",
+      },
+      {
         type: "media",
+        mimeType: "video/mp4",
         fileUri: url,
       },
     ],
