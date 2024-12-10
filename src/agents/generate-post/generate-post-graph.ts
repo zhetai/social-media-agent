@@ -11,6 +11,8 @@ import { schedulePost } from "./nodes/schedule-post.js";
 import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
+import { authLinkedInPassthrough } from "./nodes/auth-linkedin.js";
+import { authTwitterPassthrough } from "./nodes/auth-twitter.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -44,6 +46,9 @@ const generatePostBuilder = new StateGraph(
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
 )
+  .addNode("authLinkedInPassthrough", authLinkedInPassthrough)
+  .addNode("authTwitterPassthrough", authTwitterPassthrough)
+
   .addNode("verifyLinksSubGraph", verifyLinksGraph)
 
   // Generates a Tweet/LinkedIn post based on the report content.
@@ -60,7 +65,9 @@ const generatePostBuilder = new StateGraph(
   .addNode("generateContentReport", generateContentReport)
 
   // Start node
-  .addEdge(START, "verifyLinksSubGraph")
+  .addEdge(START, "authLinkedInPassthrough")
+  .addEdge("authLinkedInPassthrough", "authTwitterPassthrough")
+  .addEdge("authTwitterPassthrough", "verifyLinksSubGraph")
 
   // After verifying the different content types, we should generate a report on them.
   .addEdge("verifyLinksSubGraph", "generateContentReport")

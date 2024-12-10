@@ -1,4 +1,5 @@
 import { nextSaturday, setHours, setMinutes, parse, isValid } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import * as cheerio from "cheerio";
 
 /**
@@ -55,28 +56,71 @@ export function removeUrls(text: string): string {
 }
 
 /**
- * Get a date for the next Saturday at the specified hour
- * @param {number} hour - The hour to set for the next Saturday (default: 12)
- * @param {number} minute - The minute to set for the next Saturday (default: 0)
- * @returns {Date} The date for the next Saturday at the specified hour
+ * Get a date for the next Saturday at the specified hour in Pacific Time (PST/PDT)
+ * @param {number} hour - The hour to set for the next Saturday in PST/PDT (default: 12)
+ * @param {number} minute - The minute to set for the next Saturday in PST/PDT (default: 0)
+ * @returns {Date} The date for the next Saturday at the specified hour in PST/PDT
  */
 export function getNextSaturdayDate(hour = 12, minute = 0): Date {
   const saturday = nextSaturday(new Date());
-  return setMinutes(setHours(saturday, hour), minute);
+  const saturdayWithTime = setMinutes(setHours(saturday, hour), minute);
+  return toZonedTime(saturdayWithTime, "America/Los_Angeles");
 }
 
 /**
- * Validates a date string in the format 'MM/dd/yyyy hh:mm a'
+ * Validates a date string in the format 'MM/dd/yyyy hh:mm a z'
  * @param dateString - The date string to validate
  * @returns {boolean} - Whether the date string is valid
  */
 export function isValidDateString(dateString: string): boolean {
   try {
-    const parsedDate = parse(dateString, "MM/dd/yyyy hh:mm a", new Date());
+    // Remove timezone abbreviation if present
+    const dateWithoutTz = dateString.replace(/ [A-Z]{3}$/, "");
+
+    // Parse the date without timezone
+    const parsedDate = parse(dateWithoutTz, "MM/dd/yyyy hh:mm a", new Date());
     return isValid(parsedDate);
   } catch (e) {
     console.error("Failed to parse date string:", e);
     return false;
+  }
+}
+
+/**
+ * Parses a date string with timezone (e.g. "12/25/2023 10:30 AM EST") and converts it to a Date object.
+ * The date string must be in the format "MM/dd/yyyy hh:mm a ZZZ" where ZZZ is a 3-letter timezone code.
+ *
+ * @param dateString - The date string to parse (e.g. "12/25/2023 10:30 AM EST")
+ * @returns A Date object representing the parsed date and time, or undefined if parsing fails
+ */
+export function getDateFromTimezoneDateString(
+  dateString: string,
+): Date | undefined {
+  try {
+    // extract the timezone from the date string
+    const timezone = dateString.match(/ [A-Z]{3}$/)?.[0]?.trim();
+    if (!timezone) {
+      throw new Error("No timezone found in date string");
+    }
+
+    // Parse the date without timezone first
+    const withoutTz = dateString.replace(/ [A-Z]{3}$/, "");
+    const parsedDate = parse(withoutTz, "MM/dd/yyyy hh:mm a", new Date());
+
+    if (!isValid(parsedDate)) {
+      console.error("Invalid date parsed:", parsedDate);
+      return undefined;
+    }
+
+    // Convert to the specified timezone
+    const zonedDate = toZonedTime(
+      parsedDate,
+      `America/${timezone === "PST" ? "Los_Angeles" : timezone}`,
+    );
+    return zonedDate;
+  } catch (e) {
+    console.error("Failed to parse date string:", e);
+    return undefined;
   }
 }
 

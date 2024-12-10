@@ -7,6 +7,16 @@ import { GoogleAuth } from "google-auth-library";
  * @returns The videoId of the YouTube video.
  */
 function getVideoID(url: string): string | undefined {
+  try {
+    const urlObj = new URL(url);
+    const videoId = urlObj.searchParams.get("v");
+    if (videoId) {
+      return videoId;
+    }
+  } catch (_) {
+    // no-op
+  }
+
   const match = url.match(
     /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/,
   );
@@ -42,7 +52,10 @@ export async function getYouTubeVideoDuration(
   videoUrl: string,
 ): Promise<number | undefined> {
   const videoId = getVideoID(videoUrl);
-  if (!videoId) return undefined;
+  if (!videoId) {
+    console.error(`Invalid YouTube URL: ${videoUrl}`);
+    return undefined;
+  }
   if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
     throw new Error("GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set");
   }

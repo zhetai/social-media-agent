@@ -1,8 +1,12 @@
 import { END, LangGraphRunnableConfig, interrupt } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
-import { parse, format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
-import { getNextSaturdayDate, isValidDateString } from "../../utils.js";
+import {
+  getDateFromTimezoneDateString,
+  getNextSaturdayDate,
+  isValidDateString,
+} from "../../utils.js";
 
 interface ConstructDescriptionArgs {
   report: string;
@@ -20,7 +24,7 @@ function constructDescription({
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
-  const additionalInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a'.`;
+  const additionalInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
   const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
 - **Edit**: ${editInstructions}
 - **Respond**: ${respondInstructions}
@@ -43,7 +47,11 @@ export async function humanNode(
   }
 
   const defaultDate = state.scheduleDate || getNextSaturdayDate();
-  const defaultDateString = format(defaultDate, "MM/dd/yyyy hh:mm a");
+  const defaultDateString = formatInTimeZone(
+    defaultDate,
+    "America/Los_Angeles",
+    "MM/dd/yyyy hh:mm a z",
+  );
 
   const interruptValue: HumanInterrupt = {
     action_request: {
@@ -67,14 +75,9 @@ export async function humanNode(
     }),
   };
 
-  // TODO: Verify `interrupt` can be executed N times with different arguments.
   const response = interrupt<HumanInterrupt[], HumanResponse[]>([
     interruptValue,
   ])[0];
-
-  console.log("response[START]:\n\n");
-  console.dir(response, { depth: null });
-  console.log("\n\n[END]response");
 
   if (!["edit", "ignore", "accept", "respond"].includes(response.type)) {
     throw new Error(
@@ -102,10 +105,6 @@ export async function humanNode(
     );
   }
 
-  // ---
-  // TODO: Verify `response`, `accept` and `edit` gives back the proper object.
-  // ---
-
   const castArgs = response.args.args as unknown as Record<string, string>;
 
   const responseOrPost = castArgs.post;
@@ -121,11 +120,11 @@ export async function humanNode(
     // TODO: Handle invalid dates better
     throw new Error("Invalid date provided.");
   }
-  const postDate: Date = parse(
-    postDateString,
-    "MM/dd/yyyy hh:mm a",
-    new Date(),
-  );
+  const postDate = getDateFromTimezoneDateString(postDateString);
+  if (!postDate) {
+    // TODO: Handle invalid dates better
+    throw new Error("Invalid date provided.");
+  }
 
   if (response.type === "response") {
     return {
