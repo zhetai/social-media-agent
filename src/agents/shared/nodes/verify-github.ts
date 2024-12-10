@@ -4,6 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
+import { RunnableConfig } from "@langchain/core/runnables";
 
 type VerifyGitHubContentReturn = {
   relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
@@ -129,7 +130,7 @@ export async function verifyGitHubContentIsRelevant(
           content: contents,
         },
       ],
-      config,
+      config as RunnableConfig,
     );
   return relevant;
 }

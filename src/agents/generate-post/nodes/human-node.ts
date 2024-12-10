@@ -7,13 +7,15 @@ import { getNextSaturdayDate, isValidDateString } from "../../utils.js";
 interface ConstructDescriptionArgs {
   report: string;
   relevantLinks: string[];
+  post: string;
 }
 
 function constructDescription({
   report,
   relevantLinks,
+  post,
 }: ConstructDescriptionArgs): string {
-  const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn.`;
+  const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn:\n\n\`\`\`\n${post}\n\`\`\``;
   const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
@@ -61,6 +63,7 @@ export async function humanNode(
     description: constructDescription({
       report: state.report,
       relevantLinks: state.relevantLinks,
+      post: state.post,
     }),
   };
 
@@ -68,6 +71,10 @@ export async function humanNode(
   const response = interrupt<HumanInterrupt[], HumanResponse[]>([
     interruptValue,
   ])[0];
+
+  console.log("response[START]:\n\n");
+  console.dir(response, { depth: null });
+  console.log("\n\n[END]response");
 
   if (!["edit", "ignore", "accept", "respond"].includes(response.type)) {
     throw new Error(
@@ -89,12 +96,17 @@ export async function humanNode(
       `Unexpected response args type: ${typeof response.args}. Must be an object.`,
     );
   }
+  if (!("args" in response.args)) {
+    throw new Error(
+      `Unexpected response args value: ${response.args}. Must be defined.`,
+    );
+  }
 
   // ---
   // TODO: Verify `response`, `accept` and `edit` gives back the proper object.
   // ---
 
-  const castArgs = response.args as unknown as Record<string, string>;
+  const castArgs = response.args.args as unknown as Record<string, string>;
 
   const responseOrPost = castArgs.post;
   if (!responseOrPost) {

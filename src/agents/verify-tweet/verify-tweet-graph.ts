@@ -36,7 +36,6 @@ function routeTweetUrls(state: typeof VerifyTweetAnnotation.State) {
   });
 }
 
-// Finally, create the graph itself.
 const verifyTweetBuilder = new StateGraph(
   VerifyTweetAnnotation,
   VerifyTweetConfigurableAnnotation,

@@ -40,7 +40,6 @@ function condenseOrHumanConditionalEdge(
   return "humanNode";
 }
 
-// Finally, create the graph itself.
 const generatePostBuilder = new StateGraph(
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,

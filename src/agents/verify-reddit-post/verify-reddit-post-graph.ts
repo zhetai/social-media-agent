@@ -39,7 +39,6 @@ function routePostUrls(state: typeof VerifyRedditPostAnnotation.State) {
   });
 }
 
-// Finally, create the graph itself.
 const verifyRedditPostBuilder = new StateGraph(VerifyRedditPostAnnotation)
   .addNode("getRedditPostContent", getRedditPostContent)
 
