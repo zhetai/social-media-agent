@@ -26,7 +26,7 @@ type VerifyRedditContentReturn = {
  */
 export function getPostAndReplies(
   content: Record<string, any>[],
-  maxReplies: number = 10,
+  maxReplies = 10,
 ) {
   const postTitle = content[0].data.children[0].data.title;
   const post = content[0].data.children[0].data.selftext;

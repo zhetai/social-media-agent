@@ -15,18 +15,19 @@ type VerifyRedditContentReturn = {
   pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
 };
 
-function getImagesFromPost(post: Record<string, any>) {
-  const images = post.data.children[0].data.media_metadata;
-  const imageUrls: string[] = Object.values(images).flatMap(
-    (item: Record<string, any>) => {
-      const imageUrl = Object.values(item).find(
-        (i) => typeof i === "object" && !Array.isArray(i),
-      )?.u;
-      return imageUrl ? [imageUrl] : [];
-    },
-  );
-  return imageUrls;
-}
+// TODO: Uncomment when ready to implement
+// function getImagesFromPost(post: Record<string, any>) {
+//   const images = post.data.children[0].data.media_metadata;
+//   const imageUrls: string[] = Object.values(images).flatMap(
+//     (item: Record<string, any>) => {
+//       const imageUrl = Object.values(item).find(
+//         (i) => typeof i === "object" && !Array.isArray(i),
+//       )?.u;
+//       return imageUrl ? [imageUrl] : [];
+//     },
+//   );
+//   return imageUrls;
+// }
 
 /**
  * Iterates over all the data returned and returns the main post and the top 10 replies
@@ -38,7 +39,7 @@ function getImagesFromPost(post: Record<string, any>) {
  */
 export function getPostAndReplies(
   content: Record<string, any>[],
-  maxReplies: number = 10,
+  maxReplies = 10,
 ) {
   const postTitle = content[0].data.children[0].data.title;
   const post = content[0].data.children[0].data.selftext;
