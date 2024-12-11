@@ -1,23 +1,28 @@
 import { describe, it } from "@jest/globals";
-import { generatePostGraph } from "../agent/subgraphs/generate-post/graph.js";
 import {
   GITHUB_MESSAGE,
   GITHUB_URL_STATE,
   TWITTER_NESTED_GITHUB_MESSAGE,
 } from "./states.js";
 import { TwitterApi } from "twitter-api-v2";
-import { resolveTwitterUrl } from "../agent/subgraphs/verify-tweet/utils.js";
-import { getGitHubContentsAndTypeFromUrl } from "../agent/subgraphs/shared/nodes/verify-github.js";
+import { resolveTwitterUrl } from "../agents/verify-tweet/utils.js";
 import { EXPECTED_README } from "./expected.js";
-import { getYouTubeVideoDuration } from "../agent/subgraphs/shared/nodes/youtube.utils.js";
-import { getPageText } from "../agent/utils.js";
+import { getPageText } from "../agents/utils.js";
+import { generatePostGraph } from "../agents/generate-post/generate-post-graph.js";
+import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
+import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
+import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
+import { Command, MemorySaver } from "@langchain/langgraph";
 
-describe.skip("GeneratePostGraph", () => {
-  it.skip("Should be able to generate posts from a GitHub URL slack message", async () => {
+describe("GeneratePostGraph", () => {
+  it("Should be able to generate posts from a GitHub URL slack message", async () => {
     console.log("Starting graph test");
-    const result = await generatePostGraph.stream(GITHUB_URL_STATE, {
-      streamMode: "values",
-    });
+    const result = await generatePostGraph.stream(
+      { links: GITHUB_URL_STATE.slackMessage.links },
+      {
+        streamMode: "values",
+      },
+    );
 
     let post = "";
     for await (const value of result) {
@@ -40,7 +45,7 @@ describe.skip("GeneratePostGraph", () => {
   }, 60000);
 
   // Skip by default to prevent using up API quota
-  it.skip("Can read tweets via Twitter API", async () => {
+  it("Can read tweets via Twitter API", async () => {
     if (!process.env.TWITTER_BEARER_TOKEN) {
       throw new Error("TWITTER_BEARER_TOKEN is not set");
     }
@@ -70,7 +75,7 @@ describe("generate via twitter posts", () => {
   it("Can generate a post from a tweet with a github link", async () => {
     console.log("Starting graph test");
     const result = await generatePostGraph.stream(
-      TWITTER_NESTED_GITHUB_MESSAGE,
+      { links: TWITTER_NESTED_GITHUB_MESSAGE.slackMessage.links },
       {
         streamMode: "values",
       },
@@ -100,9 +105,12 @@ describe("generate via twitter posts", () => {
 describe("generate via github repos", () => {
   it("Can generate a post from a github repo", async () => {
     console.log("Starting graph test");
-    const result = await generatePostGraph.stream(GITHUB_MESSAGE, {
-      streamMode: "values",
-    });
+    const result = await generatePostGraph.stream(
+      { links: GITHUB_MESSAGE.slackMessage.links },
+      {
+        streamMode: "values",
+      },
+    );
 
     let post = "";
     for await (const value of result) {
@@ -136,4 +144,60 @@ test("Can get page text", async () => {
   const text = await getPageText("https://buff.ly/4g0ZRXI");
   expect(text).toBeDefined();
   expect(text?.length).toBeGreaterThan(100);
+});
+
+test("can generate post", async () => {
+  const result = await generatePostGraph.invoke(
+    {
+      links: ["https://x.com/eitanblumin/status/1861001933294653890"],
+    },
+    {
+      configurable: {
+        twitterUserId: "braceasproul@gmail.com",
+        linkedInUserId: "",
+      },
+    },
+  );
+  console.log(result);
+});
+
+test("can generate summaries of youtube videos", async () => {
+  const result = await verifyYouTubeContent(
+    {
+      link: "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
+    },
+    {},
+  );
+  expect(result.pageContents).toBeDefined();
+  expect(result.pageContents[0].length).toBeGreaterThan(50); // Check character count
+});
+
+test.only("can interrupt and resume", async () => {
+  generatePostGraph.checkpointer = new MemorySaver();
+  const config = {
+    configurable: {
+      thread_id: "123",
+      twitterUserId: "braceasproul@gmail.com",
+      linkedInUserId: undefined,
+    },
+  };
+  await generatePostGraph.invoke(
+    {
+      links: ["https://github.com/langchain-ai/open-canvas"],
+    },
+    config,
+  );
+  console.log("interrupted first time");
+
+  await generatePostGraph.invoke(
+    new Command({
+      resume: [
+        {
+          type: "response",
+          args: "Add more emojis please",
+        },
+      ],
+    }),
+    config,
+  );
 });

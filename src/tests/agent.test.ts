@@ -3,7 +3,9 @@ import {
   extractTweetId,
   extractUrls,
   extractUrlsFromSlackText,
-} from "../agent/utils.js";
+  getDateFromTimezoneDateString,
+  isValidDateString,
+} from "../agents/utils.js";
 
 describe("extractUrlsFromSlackText", () => {
   it("Can extract URL from Slack-style message text", () => {
@@ -79,5 +81,16 @@ https://example.com`;
     expect(urls).toHaveLength(2);
     expect(urls[0]).toBe("https://t.co/s5ChhuMOtK");
     expect(urls[1]).toBe("https://t.co/5H2VRjd9hN");
+  });
+});
+
+describe("validate date strings", () => {
+  it("can validate a date string with timezone", () => {
+    const dateString = "12/9/2024 06:15 PM PST";
+    const isValid = isValidDateString(dateString);
+    expect(isValid).toBe(true);
+
+    const dateStringAsDate = getDateFromTimezoneDateString(dateString);
+    expect(dateStringAsDate).toBeDefined();
   });
 });
