@@ -12,6 +12,7 @@ import { generatePostGraph } from "../agents/generate-post/generate-post-graph.j
 import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
 import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
 import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
+import { Command, MemorySaver } from "@langchain/langgraph";
 
 describe("GeneratePostGraph", () => {
   it("Should be able to generate posts from a GitHub URL slack message", async () => {
@@ -160,7 +161,7 @@ test("can generate post", async () => {
   console.log(result);
 });
 
-test.skip("can generate summaries of youtube videos", async () => {
+test("can generate summaries of youtube videos", async () => {
   const result = await verifyYouTubeContent(
     {
       link: "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
@@ -169,4 +170,34 @@ test.skip("can generate summaries of youtube videos", async () => {
   );
   expect(result.pageContents).toBeDefined();
   expect(result.pageContents[0].length).toBeGreaterThan(50); // Check character count
+});
+
+test.only("can interrupt and resume", async () => {
+  generatePostGraph.checkpointer = new MemorySaver();
+  const config = {
+    configurable: {
+      thread_id: "123",
+      twitterUserId: "braceasproul@gmail.com",
+      linkedInUserId: undefined,
+    },
+  };
+  await generatePostGraph.invoke(
+    {
+      links: ["https://github.com/langchain-ai/open-canvas"],
+    },
+    config,
+  );
+  console.log("interrupted first time");
+
+  await generatePostGraph.invoke(
+    new Command({
+      resume: [
+        {
+          type: "response",
+          args: "Add more emojis please",
+        },
+      ],
+    }),
+    config,
+  );
 });

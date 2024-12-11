@@ -20,7 +20,7 @@ test("Slack client can fetch messages from channel name", async () => {
     channelId: TEST_CHANNEL_ID,
   });
 
-  const messages = await client.fetchLast24HoursMessages(5);
+  const messages = await client.fetchLast24HoursMessages({ maxMessages: 5 });
   console.log(messages);
   expect(messages).toBeDefined();
   expect(messages.length).toBeGreaterThan(0);

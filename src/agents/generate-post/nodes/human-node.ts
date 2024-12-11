@@ -27,7 +27,7 @@ function constructDescription({
   const additionalInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
   const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
 - **Edit**: ${editInstructions}
-- **Respond**: ${respondInstructions}
+- **Response**: ${respondInstructions}
 - **Accept**: ${acceptInstructions}
 - **Ignore**: ${ignoreInstructions}
 
@@ -62,7 +62,6 @@ export async function humanNode(
       },
     },
     config: {
-      // Can not accept because the user needs to select one of the posts.
       allow_accept: true,
       allow_edit: true,
       allow_ignore: true,
@@ -79,9 +78,9 @@ export async function humanNode(
     interruptValue,
   ])[0];
 
-  if (!["edit", "ignore", "accept", "respond"].includes(response.type)) {
+  if (!["edit", "ignore", "accept", "response"].includes(response.type)) {
     throw new Error(
-      `Unexpected response type: ${response.type}. Must be "edit", "ignore", "accept", or "respond".`,
+      `Unexpected response type: ${response.type}. Must be "edit", "ignore", "accept", or "response".`,
     );
   }
   if (response.type === "ignore") {
@@ -94,6 +93,18 @@ export async function humanNode(
       `Unexpected response args: ${response.args}. Must be defined.`,
     );
   }
+
+  if (response.type === "response") {
+    if (typeof response.args !== "string") {
+      throw new Error("Response args must be a string.");
+    }
+
+    return {
+      userResponse: response.args,
+      next: "rewritePost",
+    };
+  }
+
   if (typeof response.args !== "object") {
     throw new Error(
       `Unexpected response args type: ${typeof response.args}. Must be an object.`,
@@ -124,14 +135,6 @@ export async function humanNode(
   if (!postDate) {
     // TODO: Handle invalid dates better
     throw new Error("Invalid date provided.");
-  }
-
-  if (response.type === "response") {
-    return {
-      userResponse: responseOrPost,
-      next: "rewritePost",
-      scheduleDate: postDate,
-    };
   }
 
   // TODO: Implement scheduling tweets and LinkedIn posts once Arcade supports scheduling.

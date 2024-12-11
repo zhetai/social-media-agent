@@ -31,6 +31,11 @@ export const IngestDataConfigurableAnnotation = Annotation.Root({
     reducer: (_state, update) => update,
     default: () => 100,
   }),
+  /**
+   * The maximum number of days to go back when ingesting
+   * messages from Slack.
+   */
+  maxDaysHistory: Annotation<number>,
   slackChannelName: Annotation<string | undefined>,
   slackChannelId: Annotation<string | undefined>,
   /**

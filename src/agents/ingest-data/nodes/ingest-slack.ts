@@ -34,12 +34,11 @@ export async function ingestSlackData(
   const client = new SlackMessageFetcher({
     channelId: channelId,
   });
-  const recentMessages = await client.fetchLast24HoursMessages(
-    config.configurable?.maxMessages,
-  );
-  if (recentMessages.length > 1) {
-    throw new Error("More than one message found");
-  }
+  const recentMessages = await client.fetchLast24HoursMessages({
+    maxMessages: config.configurable?.maxMessages,
+    maxDaysHistory: config.configurable?.maxDaysHistory,
+  });
+
   const links = recentMessages.flatMap((msg) => {
     const links = extractUrlsFromSlackText(msg.text);
     if (!links.length) {

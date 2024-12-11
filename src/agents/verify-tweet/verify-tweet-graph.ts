@@ -80,11 +80,4 @@ const verifyTweetBuilder = new StateGraph(
 
 export const verifyTweetGraph = verifyTweetBuilder.compile();
 
-console.log(
-  "verifyTweetGraph",
-  verifyTweetGraph.outputChannels,
-  verifyTweetGraph.streamChannels,
-  verifyTweetGraph.inputChannels,
-);
-
 verifyTweetGraph.name = "Verify Tweet Subgraph";

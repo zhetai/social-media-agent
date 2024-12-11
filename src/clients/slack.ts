@@ -93,15 +93,20 @@ export class SlackMessageFetcher {
     })) as SimpleSlackMessage[];
   }
 
-  async fetchLast24HoursMessages(
-    maxMessages?: number,
-  ): Promise<SimpleSlackMessage[]> {
+  async fetchLast24HoursMessages({
+    maxMessages,
+    maxDaysHistory,
+  }: {
+    maxMessages?: number;
+    maxDaysHistory?: number;
+  }): Promise<SimpleSlackMessage[]> {
     if (!this.channelId) {
       this.channelId = await this.getChannelId(this.channelName);
     }
 
     try {
-      const oldest = moment().subtract(24, "hours").unix().toString();
+      const getHours = maxDaysHistory !== undefined ? maxDaysHistory * 24 : 24;
+      const oldest = moment().subtract(getHours, "hours").unix().toString();
       const messages: SlackMessage[] = [];
       let cursor: string | undefined;
 
