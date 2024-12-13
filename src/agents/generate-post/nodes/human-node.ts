@@ -71,7 +71,7 @@ export async function humanNode(
       args: {
         post: state.post,
         date: defaultDateString,
-        image: state.image ? "Image attached" : "",
+        image: state.image?.base64 ? "Image attached" : "",
       },
     },
     config: {
@@ -150,14 +150,21 @@ export async function humanNode(
     throw new Error("Invalid date provided.");
   }
 
-  let imageState: string | undefined = state.image;
+  let imageState: { base64: string; mimeType: string } | undefined =
+    state.image;
   if (castArgs.image.toLowerCase() === "remove" || !castArgs.image) {
     imageState = undefined;
   } else if (isValidUrl(castArgs.image)) {
-    imageState = await imageUrlToBase64(castArgs.image);
+    imageState = {
+      base64: await imageUrlToBase64(castArgs.image),
+      mimeType: castArgs.mimeType || state.image?.mimeType || "image/jpeg",
+    };
   } else if (castArgs.image) {
     // Image is provided as base64
-    imageState = castArgs.image;
+    imageState = {
+      base64: castArgs.image,
+      mimeType: castArgs.mimeType || state.image?.mimeType || "image/jpeg",
+    };
   }
 
   console.log(
