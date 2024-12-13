@@ -197,3 +197,33 @@ export async function getPageText(url: string): Promise<string | undefined> {
     return undefined;
   }
 }
+
+/**
+ * Checks if a given string is a valid URL
+ *
+ * @param {string} str - The string to check
+ * @returns {boolean} True if the string is a valid URL, false otherwise
+ *
+ * @example
+ * ```typescript
+ * isValidUrl('https://example.com'); // returns true
+ * isValidUrl('not-a-url'); // returns false
+ * isValidUrl('http://localhost:3000'); // returns true
+ * ```
+ */
+export function isValidUrl(str: string): boolean {
+  if (!str || typeof str !== "string") {
+    return false;
+  }
+
+  try {
+    new URL(str);
+    return true;
+  } catch (error) {
+    if (error instanceof TypeError) {
+      return false;
+    }
+    // Re-throw unexpected errors
+    throw error;
+  }
+}

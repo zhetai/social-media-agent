@@ -6,6 +6,7 @@ import {
   getDateFromTimezoneDateString,
   getNextSaturdayDate,
   isValidDateString,
+  isValidUrl,
 } from "../../utils.js";
 
 interface ConstructDescriptionArgs {
@@ -24,14 +25,24 @@ function constructDescription({
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
-  const additionalInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
+  const scheduleDateInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
+  const imageInstructions = `If you wish to attach an image to the post, please add either the base64 encoded image, or a public image URL.
+
+If the 'image' field contains 'Image attached', an image has already been attached to the post.
+You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field, or replace the image by adding a base64 encoded image or a public image URL to the field.`;
   const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
 - **Edit**: ${editInstructions}
 - **Response**: ${respondInstructions}
 - **Accept**: ${acceptInstructions}
 - **Ignore**: ${ignoreInstructions}
 
-${additionalInstructions}`;
+## Additional Instructions
+
+### Schedule Date
+${scheduleDateInstructions}
+
+### Image
+${imageInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
   const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
 
@@ -59,6 +70,7 @@ export async function humanNode(
       args: {
         post: state.post,
         date: defaultDateString,
+        image: state.image ? "Image attached" : "",
       },
     },
     config: {
@@ -135,6 +147,16 @@ export async function humanNode(
   if (!postDate) {
     // TODO: Handle invalid dates better
     throw new Error("Invalid date provided.");
+  }
+
+  let imageState: string | undefined = state.image;
+  if (castArgs.image.toLowerCase() === "remove" || !castArgs.image) {
+    imageState = undefined;
+  } else if (isValidUrl(castArgs.image)) {
+    // TODO: Convert public image URL to base64
+  } else if (castArgs.image) {
+    // Image is provided as base64
+    imageState = castArgs.image;
   }
 
   // TODO: Implement scheduling tweets and LinkedIn posts once Arcade supports scheduling.
