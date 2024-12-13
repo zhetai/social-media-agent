@@ -139,7 +139,7 @@ export class TwitterClient {
       throw new Error(
         "Missing twitter credentials.\n" +
           `TWITTER_API_KEY_SECRET: ${!!process.env.TWITTER_API_KEY_SECRET}\n` +
-          `TWITTER_API_KEY: ${!!process.env.TWITTER_API_KEY}\n`
+          `TWITTER_API_KEY: ${!!process.env.TWITTER_API_KEY}\n`,
       );
     }
     try {
@@ -149,13 +149,13 @@ export class TwitterClient {
         accessToken: token,
         accessSecret: tokenSecret,
       });
-  
+
       // Try to get the authenticated user's information
       const me = await userClient.v2.me();
-      console.log('Authentication successful:', me);
+      console.log("Authentication successful:", me);
       return true;
     } catch (error) {
-      console.error('Authentication error:', error);
+      console.error("Authentication error:", error);
       return false;
     }
   }
