@@ -5,6 +5,7 @@ import { HumanInterrupt, HumanResponse } from "../../types.js";
 import {
   getDateFromTimezoneDateString,
   getNextSaturdayDate,
+  imageUrlToBase64,
   isValidDateString,
   isValidUrl,
 } from "../../utils.js";
@@ -153,13 +154,12 @@ export async function humanNode(
   if (castArgs.image.toLowerCase() === "remove" || !castArgs.image) {
     imageState = undefined;
   } else if (isValidUrl(castArgs.image)) {
-    // TODO: Convert public image URL to base64
+    imageState = await imageUrlToBase64(castArgs.image);
   } else if (castArgs.image) {
     // Image is provided as base64
     imageState = castArgs.image;
   }
 
-  // TODO: Implement scheduling tweets and LinkedIn posts once Arcade supports scheduling.
   console.log(
     "\n\nScheduling post:\n---\n",
     responseOrPost,
@@ -170,5 +170,6 @@ export async function humanNode(
   return {
     next: "schedulePost",
     scheduleDate: postDate,
+    image: imageState,
   };
 }

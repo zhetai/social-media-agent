@@ -227,3 +227,35 @@ export function isValidUrl(str: string): boolean {
     throw error;
   }
 }
+
+/**
+ * Fetches an image from a URL and converts it to a base64 string
+ * 
+ * @param {string} imageUrl - The URL of the image to fetch
+ * @returns {Promise<string>} A Promise that resolves to the base64 string of the image
+ * @throws {Error} When the URL is invalid or the fetch request fails
+ * 
+ * @example
+ * ```typescript
+ * const base64String = await imageUrlToBase64('https://example.com/image.jpg');
+ * console.log(base64String); // data:image/jpeg;base64,/9j/4AAQSkZJRg...
+ * ```
+ */
+export async function imageUrlToBase64(imageUrl: string): Promise<string> {
+  if (!isValidUrl(imageUrl)) {
+    throw new Error('Invalid image URL provided');
+  }
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.statusText}`);
+  }
+
+  const blob = await response.blob();
+  const arrayBuffer = await blob.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const base64String = buffer.toString('base64');
+  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  
+  return `data:${contentType};base64,${base64String}`;
+}
