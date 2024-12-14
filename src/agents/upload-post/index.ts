@@ -55,15 +55,20 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
-  const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
-  const linkedInUserId = config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+  const twitterUserId =
+    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+  const linkedInUserId =
+    config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
 
   if (!twitterUserId && !linkedInUserId) {
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
-  const twitterToken = config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN;
-  const twitterTokenSecret = config.configurable?.twitterTokenSecret || process.env.TWITTER_USER_TOKEN_SECRET;
+  const twitterToken =
+    config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN;
+  const twitterTokenSecret =
+    config.configurable?.twitterTokenSecret ||
+    process.env.TWITTER_USER_TOKEN_SECRET;
 
   if (twitterUserId) {
     if (!twitterToken || !twitterTokenSecret) {

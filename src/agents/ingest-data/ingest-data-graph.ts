@@ -26,10 +26,15 @@ async function generatePostFromMessages(
       },
       config: {
         configurable: {
-          twitterUserId: config.configurable?.twitterUserId || process.env.TWITTER_USER_ID,
-          linkedInUserId: config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID,
-          twitterToken: config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
-          twitterTokenSecret: config.configurable?.twitterTokenSecret || process.env.TWITTER_USER_TOKEN_SECRET,
+          twitterUserId:
+            config.configurable?.twitterUserId || process.env.TWITTER_USER_ID,
+          linkedInUserId:
+            config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID,
+          twitterToken:
+            config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
+          twitterTokenSecret:
+            config.configurable?.twitterTokenSecret ||
+            process.env.TWITTER_USER_TOKEN_SECRET,
         },
       },
     });

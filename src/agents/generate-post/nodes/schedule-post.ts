@@ -9,8 +9,10 @@ export async function schedulePost(
   if (!state.post || !state.scheduleDate) {
     throw new Error("No post or schedule date found");
   }
-  const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
-  const linkedInUserId = config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+  const twitterUserId =
+    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+  const linkedInUserId =
+    config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
 
   if (!twitterUserId && !linkedInUserId) {
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
@@ -42,8 +44,11 @@ export async function schedulePost(
       configurable: {
         twitterUserId,
         linkedInUserId,
-        twitterToken: config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
-        twitterTokenSecret: config.configurable?.twitterTokenSecret || process.env.TWITTER_USER_TOKEN_SECRET,
+        twitterToken:
+          config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
+        twitterTokenSecret:
+          config.configurable?.twitterTokenSecret ||
+          process.env.TWITTER_USER_TOKEN_SECRET,
       },
     },
     afterSeconds,

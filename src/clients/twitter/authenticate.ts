@@ -35,8 +35,12 @@ export class TwitterAuthServer {
     this.app.use(
       session({
         secret: process.env.SESSION_SECRET || "your-session-secret",
-        resave: false,
-        saveUninitialized: false,
+        resave: true,
+        saveUninitialized: true,
+        cookie: {
+          secure: false,
+          maxAge: 60000,
+        },
       }),
     );
     this.app.use(passport.initialize());
@@ -59,7 +63,7 @@ export class TwitterAuthServer {
           token: string,
           tokenSecret: string,
           profile: TwitterUser,
-          done: any,
+          done: (error: any, user?: any) => void,
         ) => {
           // Store the tokens with the user profile
           const user = {
@@ -90,15 +94,17 @@ export class TwitterAuthServer {
 
     this.app.get("/auth/twitter", passport.authenticate("twitter"));
 
-    this.app.get(
-      "/callback",
+    this.app.get("/callback", (req: Request, res: Response) => {
       passport.authenticate("twitter", {
         failureRedirect: "/login",
-      }),
-      (_req: Request, res: Response) => {
+      })(req, res, (err: any) => {
+        if (err) {
+          console.error("Authentication error:", err);
+          return res.redirect("/");
+        }
         res.redirect("/");
-      },
-    );
+      });
+    });
 
     this.app.get(
       "/profile",
