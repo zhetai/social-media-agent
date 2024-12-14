@@ -32,7 +32,7 @@ export async function ingestTweets(
     }
     return {};
   }
-  const twitterUserId = config.configurable?.twitterUserId;
+  const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
   if (!twitterUserId) {
     throw new Error("Twitter user ID not found in configurable fields.");
   }

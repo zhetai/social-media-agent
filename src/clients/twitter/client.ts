@@ -15,8 +15,14 @@ type MediaIdStringArray =
 export class TwitterClient {
   private twitterClient: TwitterApi;
 
+  private twitterToken: string;
+
+  private twitterTokenSecret: string;
+
   constructor(args: TwitterClientArgs) {
     this.twitterClient = args.twitterClient;
+    this.twitterToken = args.twitterToken;
+    this.twitterTokenSecret = args.twitterTokenSecret;
   }
 
   static async authorizeUser(
@@ -58,7 +64,13 @@ export class TwitterClient {
    * @throws {Error} If the user is not authorized. This will either contain the authorization URL, or an error message.
    * @returns A TwitterClient instance.
    */
-  static async fromUserId(twitterUserId: string): Promise<TwitterClient> {
+  static async fromUserId(
+    twitterUserId: string,
+    tokens: {
+      twitterToken: string;
+      twitterTokenSecret: string;
+    },
+  ): Promise<TwitterClient> {
     const arcadeClient = new Arcade({ apiKey: process.env.ARCADE_API_KEY });
     const authResponse = await TwitterClient.authorizeUser(
       twitterUserId,
@@ -76,6 +88,7 @@ export class TwitterClient {
     const twitterClient = new TwitterApi(tokenContext);
     return new TwitterClient({
       twitterClient,
+      ...tokens,
     });
   }
 
@@ -107,12 +120,7 @@ export class TwitterClient {
   }
 
   async testAuthentication(token: string, tokenSecret: string) {
-    if (
-      !process.env.TWITTER_API_KEY_SECRET ||
-      !process.env.TWITTER_API_KEY ||
-      !process.env.TWITTER_ACCESS_TOKEN ||
-      !process.env.TWITTER_ACCESS_TOKEN_SECRET
-    ) {
+    if (!process.env.TWITTER_API_KEY_SECRET || !process.env.TWITTER_API_KEY) {
       throw new Error(
         "Missing twitter credentials.\n" +
           `TWITTER_API_KEY_SECRET: ${!!process.env.TWITTER_API_KEY_SECRET}\n` +
@@ -137,18 +145,11 @@ export class TwitterClient {
   }
 
   async uploadMedia(media: Buffer, mimeType: string): Promise<string> {
-    if (
-      !process.env.TWITTER_API_KEY_SECRET ||
-      !process.env.TWITTER_API_KEY ||
-      !process.env.BRACE_TWITTER_TOKEN ||
-      !process.env.BRACE_TWITTER_TOKEN_SECRET
-    ) {
+    if (!process.env.TWITTER_API_KEY_SECRET || !process.env.TWITTER_API_KEY) {
       throw new Error(
         "Missing twitter credentials.\n" +
           `TWITTER_API_KEY_SECRET: ${!!process.env.TWITTER_API_KEY_SECRET}\n` +
-          `TWITTER_API_KEY: ${!!process.env.TWITTER_API_KEY}\n` +
-          `BRACE_TWITTER_TOKEN: ${!!process.env.BRACE_TWITTER_TOKEN}\n` +
-          `BRACE_TWITTER_TOKEN_SECRET: ${!!process.env.BRACE_TWITTER_TOKEN_SECRET}`,
+          `TWITTER_API_KEY: ${!!process.env.TWITTER_API_KEY}\n`,
       );
     }
 
@@ -156,8 +157,8 @@ export class TwitterClient {
       const client = new TwitterApi({
         appKey: process.env.TWITTER_API_KEY,
         appSecret: process.env.TWITTER_API_KEY_SECRET,
-        accessToken: process.env.BRACE_TWITTER_TOKEN,
-        accessSecret: process.env.BRACE_TWITTER_TOKEN_SECRET,
+        accessToken: this.twitterToken,
+        accessSecret: this.twitterTokenSecret,
       }).readWrite;
 
       // Ensure media is a Buffer

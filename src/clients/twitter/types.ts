@@ -66,4 +66,6 @@ export type AuthorizeUserResponse =
 
 export interface TwitterClientArgs {
   twitterClient: TwitterApi;
+  twitterToken: string;
+  twitterTokenSecret: string;
 }

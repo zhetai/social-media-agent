@@ -44,6 +44,8 @@ const UploadPostAnnotation = Annotation.Root({
 const UploadPostGraphConfiguration = Annotation.Root({
   twitterUserId: Annotation<string | undefined>,
   linkedInUserId: Annotation<string | undefined>,
+  twitterToken: Annotation<string | undefined>,
+  twitterTokenSecret: Annotation<string | undefined>,
 });
 
 export async function uploadPost(
@@ -53,15 +55,27 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
-  const twitterUserId = config.configurable?.twitterUserId;
-  const linkedInUserId = config.configurable?.linkedInUserId;
+  const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+  const linkedInUserId = config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
 
   if (!twitterUserId && !linkedInUserId) {
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
+  const twitterToken = config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN;
+  const twitterTokenSecret = config.configurable?.twitterTokenSecret || process.env.TWITTER_USER_TOKEN_SECRET;
+
   if (twitterUserId) {
-    const client = await TwitterClient.fromUserId(twitterUserId);
+    if (!twitterToken || !twitterTokenSecret) {
+      throw new Error(
+        "Twitter token or token secret not found in configurable fields.",
+      );
+    }
+
+    const client = await TwitterClient.fromUserId(twitterUserId, {
+      twitterToken,
+      twitterTokenSecret,
+    });
     const mediaBuffer = await getMediaFromImage(state.image);
 
     await client.uploadTweet({

@@ -7,7 +7,7 @@ export async function authTwitterPassthrough(
   _state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const twitterUserId = config.configurable?.twitterUserId;
+  const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
 
   if (twitterUserId) {
     const arcade = new Arcade({

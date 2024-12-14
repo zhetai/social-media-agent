@@ -42,8 +42,13 @@ describe.skip("Can use Arcade to call the Twitter API", () => {
 });
 
 describe("TwitterClient wrapper", () => {
+  const twitterTokens = {
+    twitterToken: process.env.TWITTER_USER_TOKEN || "",
+    twitterTokenSecret: process.env.TWITTER_USER_TOKEN_SECRET || "",
+  };
+
   it("Can upload a tweet", async () => {
-    const client = await TwitterClient.fromUserId(userId);
+    const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const tweetText = "test 123 hello world!";
     const result = await client.uploadTweet({
       text: tweetText,
@@ -56,7 +61,7 @@ describe("TwitterClient wrapper", () => {
   });
 
   it("Can upload media", async () => {
-    const client = await TwitterClient.fromUserId(userId);
+    const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const imageBuffer = await fs.readFile("src/tests/data/langchain_logo.png");
 
     const result = await client.uploadMedia(imageBuffer, "image/png");
@@ -65,7 +70,7 @@ describe("TwitterClient wrapper", () => {
   });
 
   it("Can upload a tweet with media", async () => {
-    const client = await TwitterClient.fromUserId(userId);
+    const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const imageBuffer = await fs.readFile("src/tests/data/langchain_logo.png");
     const tweetText = "test 123 hello world! (with image)";
 
@@ -81,7 +86,7 @@ describe("TwitterClient wrapper", () => {
   });
 
   it("Can upload this image", async () => {
-    const client = await TwitterClient.fromUserId(userId);
+    const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const imageBuffer = await fs.readFile(
       "src/tests/data/langchain_logo_2.png",
     );
@@ -96,7 +101,7 @@ describe("TwitterClient wrapper", () => {
   });
 
   it.only("Can upload image from URL", async () => {
-    const client = await TwitterClient.fromUserId(userId);
+    const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const imageUrl =
       "https://miro.medium.com/v2/resize:fit:1200/1*-PlFCd_VBcALKReO3ZaOEg.png";
 
