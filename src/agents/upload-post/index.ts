@@ -6,12 +6,35 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { TwitterClient } from "../../clients/twitter/client.js";
+import { imageUrlToBuffer } from "../utils.js";
+import { CreateMediaRequest } from "../../clients/twitter/types.js";
+
+async function getMediaFromImage(image?: {
+  buffer?: Buffer;
+  imageUrl?: string;
+  mimeType: string;
+}): Promise<CreateMediaRequest | undefined> {
+  if (image?.buffer) {
+    return {
+      media: image.buffer,
+      mimeType: image.mimeType,
+    };
+  } else if (image?.imageUrl) {
+    const { buffer, contentType } = await imageUrlToBuffer(image.imageUrl);
+    return {
+      media: buffer,
+      mimeType: contentType,
+    };
+  }
+  return undefined;
+}
 
 const UploadPostAnnotation = Annotation.Root({
   post: Annotation<string>,
   image: Annotation<
     | {
-        base64: string;
+        buffer?: Buffer;
+        imageUrl?: string;
         mimeType: string;
       }
     | undefined
@@ -39,15 +62,11 @@ export async function uploadPost(
 
   if (twitterUserId) {
     const client = await TwitterClient.fromUserId(twitterUserId);
+    const mediaBuffer = await getMediaFromImage(state.image);
 
     await client.uploadTweet({
       text: state.post,
-      media: state.image
-        ? {
-            media: Buffer.from(state.image.base64, "base64"),
-            mimeType: state.image.mimeType,
-          }
-        : undefined,
+      ...(mediaBuffer && { media: mediaBuffer }),
     });
   }
 

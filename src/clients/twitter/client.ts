@@ -1,7 +1,6 @@
 import Arcade from "@arcadeai/arcadejs";
 import {
   AuthorizeUserResponse,
-  CreateMediaRequest,
   CreateTweetRequest,
   TwitterClientArgs,
 } from "./types.js";
@@ -107,28 +106,6 @@ export class TwitterClient {
     return response;
   }
 
-  /**
-   * Upload media to the Twitter API.
-   *
-   * @param media The media to upload. Should be a base64 encoded string.
-   * @param mimeType The MIME type of the media.
-   * @param additionalOwners Additional owners of the media.
-   * @returns The media ID. This is used to attach the media to a Tweet.
-   */
-  async createMedia({
-    media,
-    mimeType,
-    additionalOwners,
-  }: CreateMediaRequest): Promise<string> {
-    const response = await this.twitterClient.v1.uploadMedia(media, {
-      mimeType,
-      target: "tweet",
-      additionalOwners,
-    });
-    console.log("Media upload response", response);
-    return response;
-  }
-
   async testAuthentication(token: string, tokenSecret: string) {
     if (
       !process.env.TWITTER_API_KEY_SECRET ||
@@ -152,8 +129,7 @@ export class TwitterClient {
 
       // Try to get the authenticated user's information
       const me = await userClient.v2.me();
-      console.log("Authentication successful:", me);
-      return true;
+      return !!me;
     } catch (error) {
       console.error("Authentication error:", error);
       return false;
@@ -184,7 +160,16 @@ export class TwitterClient {
         accessSecret: process.env.BRACE_TWITTER_TOKEN_SECRET,
       }).readWrite;
 
-      const mediaResponse = await client.v1.uploadMedia(media, { mimeType });
+      // Ensure media is a Buffer
+      if (!Buffer.isBuffer(media)) {
+        throw new Error("Media must be a Buffer");
+      }
+
+      // Upload the media directly using the buffer
+      const mediaResponse = await client.v1.uploadMedia(media, {
+        mimeType,
+      });
+
       return mediaResponse;
     } catch (error: any) {
       throw new Error(`Failed to upload media: ${error.message}`);

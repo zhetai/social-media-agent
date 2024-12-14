@@ -62,11 +62,12 @@ export const GeneratePostAnnotation = Annotation.Root({
    */
   next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
   /**
-   * The base64 encoded image to attach to the post, and the MIME type.
+   * The image to attach to the post, and the MIME type.
    */
   image: Annotation<
     | {
-        base64: string;
+        buffer?: Buffer;
+        imageUrl?: string;
         mimeType: string;
       }
     | undefined

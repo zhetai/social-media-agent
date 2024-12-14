@@ -1,11 +1,12 @@
-import { describe, it, expect } from "@jest/globals";
+import * as fs from "fs/promises";
+import { describe, it, expect, jest } from "@jest/globals";
 import {
+  extractMimeTypeFromBase64,
   extractTweetId,
   extractUrls,
   extractUrlsFromSlackText,
-  getDateFromTimezoneDateString,
-  isValidDateString,
 } from "../agents/utils.js";
+import { timezoneToUtc } from "../utils/dateUtils.js";
 
 describe("extractUrlsFromSlackText", () => {
   it("Can extract URL from Slack-style message text", () => {
@@ -84,13 +85,57 @@ https://example.com`;
   });
 });
 
-describe("validate date strings", () => {
-  it("can validate a date string with timezone", () => {
-    const dateString = "12/9/2024 06:15 PM PST";
-    const isValid = isValidDateString(dateString);
-    expect(isValid).toBe(true);
+describe("timezoneToUtc", () => {
+  // Mock the current time to ensure consistent test results
+  const MOCK_NOW = new Date("2024-12-13T16:26:57-08:00");
 
-    const dateStringAsDate = getDateFromTimezoneDateString(dateString);
-    expect(dateStringAsDate).toBeDefined();
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(MOCK_NOW);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("should correctly parse PST time", () => {
+    const result = timezoneToUtc("12/13/2024 02:30 PM PST");
+    expect(result?.toISOString()).toBe("2024-12-13T22:30:00.000Z");
+  });
+
+  it("should correctly parse EST time", () => {
+    const result = timezoneToUtc("12/13/2024 02:30 PM EST");
+    expect(result?.toISOString()).toBe("2024-12-13T19:30:00.000Z");
+  });
+
+  it("should handle invalid date strings", () => {
+    const result = timezoneToUtc("invalid date PST");
+    expect(result).toBeUndefined();
+  });
+
+  it("should handle missing timezone", () => {
+    const result = timezoneToUtc("12/13/2024 02:30 PM");
+    expect(result).toBeUndefined();
+  });
+
+  it("should handle different times of day correctly", () => {
+    // Test midnight PST (8am UTC)
+    const midnightResult = timezoneToUtc("12/13/2024 12:00 AM PST");
+    expect(midnightResult?.toISOString()).toBe("2024-12-13T08:00:00.000Z");
+
+    // Test noon PST (8pm UTC)
+    const noonResult = timezoneToUtc("12/13/2024 12:00 PM PST");
+    expect(noonResult?.toISOString()).toBe("2024-12-13T20:00:00.000Z");
+  });
+});
+
+describe("extract mime types", () => {
+  it("Can extract mime types from base64 images", async () => {
+    const base64Image = await fs.readFile(
+      "src/tests/data/langchain_logo.png",
+      "base64",
+    );
+    const mimeType = extractMimeTypeFromBase64(base64Image);
+    expect(mimeType).toBe("image/png");
   });
 });

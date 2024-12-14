@@ -20,9 +20,17 @@ export async function schedulePost(
     apiUrl: `http://localhost:${process.env.PORT}`,
   });
 
+  const currentDate = new Date();
   const afterSeconds = Math.floor(
-    (state.scheduleDate.getTime() - new Date().getTime()) / 1000,
+    (state.scheduleDate.getTime() - currentDate.getTime()) / 1000,
   );
+
+  // if after seconds is negative, throw an error
+  if (afterSeconds < 0) {
+    throw new Error(
+      `Schedule date must be in the future. Instead, received: ${afterSeconds} seconds.`,
+    );
+  }
 
   const thread = await client.threads.create();
   await client.runs.create(thread.thread_id, "upload_post", {
@@ -38,12 +46,6 @@ export async function schedulePost(
     },
     afterSeconds,
   });
-  console.log(
-    "Successfully scheduled post for",
-    state.scheduleDate,
-    "with id",
-    thread.thread_id,
-  );
 
   return {};
 }

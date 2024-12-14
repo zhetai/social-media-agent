@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import { describe, it, expect } from "@jest/globals";
 import Arcade from "@arcadeai/arcadejs";
 import { TwitterClient } from "../clients/twitter/client.js";
+import { extractMimeTypeFromBase64 } from "../agents/utils.js";
 
 const tweetId = "1864386797788385455";
 const userId = "braceasproul@gmail.com";
@@ -77,5 +78,37 @@ describe("TwitterClient wrapper", () => {
     });
 
     expect(result).toBeDefined();
+  });
+
+  it("Can upload this image", async () => {
+    const client = await TwitterClient.fromUserId(userId);
+    const imageBuffer = await fs.readFile(
+      "src/tests/data/langchain_logo_2.png",
+    );
+    const imageBase64 = imageBuffer.toString("base64");
+
+    const imageMimeType = extractMimeTypeFromBase64(imageBase64);
+    if (!imageMimeType) {
+      throw new Error("Could not determine image mime type");
+    }
+    const result = await client.uploadMedia(imageBuffer, imageMimeType);
+    console.log("result", result);
+  });
+
+  it.only("Can upload image from URL", async () => {
+    const client = await TwitterClient.fromUserId(userId);
+    const imageUrl =
+      "https://miro.medium.com/v2/resize:fit:1200/1*-PlFCd_VBcALKReO3ZaOEg.png";
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    console.log("contentType", contentType);
+    const result = await client.uploadMedia(imageBuffer, contentType);
+    console.log("result", result);
   });
 });

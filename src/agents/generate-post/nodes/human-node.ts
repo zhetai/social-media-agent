@@ -3,12 +3,11 @@ import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { formatInTimeZone } from "date-fns-tz";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
 import {
-  getDateFromTimezoneDateString,
   getNextSaturdayDate,
-  imageUrlToBase64,
   isValidDateString,
-  isValidUrl,
+  processImageInput,
 } from "../../utils.js";
+import { timezoneToUtc } from "../../../utils/dateUtils.js";
 
 interface ConstructDescriptionArgs {
   report: string;
@@ -30,7 +29,10 @@ function constructDescription({
   const imageInstructions = `If you wish to attach an image to the post, please add either the base64 encoded image, or a public image URL.
 
 If the 'image' field contains 'Image attached', an image has already been attached to the post.
-You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field, or replace the image by adding a base64 encoded image or a public image URL to the field.`;
+You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field, or replace the image by adding a base64 encoded image or a public image URL to the field.
+
+MIME types will be automatically extracted from the image.
+Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\``;
   const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
 - **Edit**: ${editInstructions}
 - **Response**: ${respondInstructions}
@@ -64,14 +66,15 @@ export async function humanNode(
     "America/Los_Angeles",
     "MM/dd/yyyy hh:mm a z",
   );
-
+  const imageAttached =
+    state.image?.buffer || state.image?.imageUrl ? "Image attached" : "";
   const interruptValue: HumanInterrupt = {
     action_request: {
       action: "Schedule Twitter/LinkedIn posts",
       args: {
         post: state.post,
         date: defaultDateString,
-        image: state.image?.base64 ? "Image attached" : "",
+        image: imageAttached,
       },
     },
     config: {
@@ -144,36 +147,17 @@ export async function humanNode(
     // TODO: Handle invalid dates better
     throw new Error("Invalid date provided.");
   }
-  const postDate = getDateFromTimezoneDateString(postDateString);
+  const postDate = timezoneToUtc(postDateString);
   if (!postDate) {
     // TODO: Handle invalid dates better
     throw new Error("Invalid date provided.");
   }
 
-  let imageState: { base64: string; mimeType: string } | undefined =
-    state.image;
-  if (castArgs.image.toLowerCase() === "remove" || !castArgs.image) {
-    imageState = undefined;
-  } else if (isValidUrl(castArgs.image)) {
-    imageState = {
-      base64: await imageUrlToBase64(castArgs.image),
-      mimeType: castArgs.mimeType || state.image?.mimeType || "image/jpeg",
-    };
-  } else if (castArgs.image) {
-    // Image is provided as base64
-    imageState = {
-      base64: castArgs.image,
-      mimeType: castArgs.mimeType || state.image?.mimeType || "image/jpeg",
-    };
-  }
+  const imageState:
+    | { buffer?: Buffer; imageUrl?: string; mimeType: string }
+    | undefined =
+    (await processImageInput(castArgs.image, state.image)) || state.image;
 
-  console.log(
-    "\n\nScheduling post:\n---\n",
-    responseOrPost,
-    "\nFor date:",
-    postDateString,
-    "\n---\n\n",
-  );
   return {
     next: "schedulePost",
     scheduleDate: postDate,
