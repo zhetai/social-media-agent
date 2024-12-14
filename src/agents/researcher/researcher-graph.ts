@@ -2,7 +2,7 @@ import { END, Send, START, StateGraph } from "@langchain/langgraph";
 import { ResearcherGraphAnnotation } from "./researcher-state.js";
 
 /**
- * Given either a topic, or array of links, preform research and generate a report.
+ * Given either a topic, or array of links, perform research and generate a report.
  *
  * Inputs:
  * - Research report request
