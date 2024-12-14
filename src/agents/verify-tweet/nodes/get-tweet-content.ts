@@ -10,7 +10,8 @@ export async function getTweetContent(
   state: typeof VerifyTweetAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const twitterUserId = config.configurable?.twitterUserId;
+  const twitterUserId =
+    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
   if (!twitterUserId) {
     throw new Error("Twitter user ID not found in configurable fields.");
   }

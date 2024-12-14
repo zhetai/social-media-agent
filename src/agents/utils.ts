@@ -87,44 +87,6 @@ export function isValidDateString(dateString: string): boolean {
 }
 
 /**
- * Parses a date string with timezone (e.g. "12/25/2023 10:30 AM EST") and converts it to a Date object.
- * The date string must be in the format "MM/dd/yyyy hh:mm a ZZZ" where ZZZ is a 3-letter timezone code.
- *
- * @param dateString - The date string to parse (e.g. "12/25/2023 10:30 AM EST")
- * @returns A Date object representing the parsed date and time, or undefined if parsing fails
- */
-export function getDateFromTimezoneDateString(
-  dateString: string,
-): Date | undefined {
-  try {
-    // extract the timezone from the date string
-    const timezone = dateString.match(/ [A-Z]{3}$/)?.[0]?.trim();
-    if (!timezone) {
-      throw new Error("No timezone found in date string");
-    }
-
-    // Parse the date without timezone first
-    const withoutTz = dateString.replace(/ [A-Z]{3}$/, "");
-    const parsedDate = parse(withoutTz, "MM/dd/yyyy hh:mm a", new Date());
-
-    if (!isValid(parsedDate)) {
-      console.error("Invalid date parsed:", parsedDate);
-      return undefined;
-    }
-
-    // Convert to the specified timezone
-    const zonedDate = toZonedTime(
-      parsedDate,
-      `America/${timezone === "PST" ? "Los_Angeles" : timezone}`,
-    );
-    return zonedDate;
-  } catch (e) {
-    console.error("Failed to parse date string:", e);
-    return undefined;
-  }
-}
-
-/**
  * Fetches and extracts the main text content from a webpage by removing common non-content elements.
  *
  * @param {string} url - The URL of the webpage to fetch and extract text from.
@@ -196,4 +158,179 @@ export async function getPageText(url: string): Promise<string | undefined> {
     console.error("Unknown error:", error);
     return undefined;
   }
+}
+
+/**
+ * Checks if a given string is a valid URL
+ *
+ * @param {string} str - The string to check
+ * @returns {boolean} True if the string is a valid URL, false otherwise
+ *
+ * @example
+ * ```typescript
+ * isValidUrl('https://example.com'); // returns true
+ * isValidUrl('not-a-url'); // returns false
+ * isValidUrl('http://localhost:3000'); // returns true
+ * ```
+ */
+export function isValidUrl(str: string): boolean {
+  if (!str || typeof str !== "string") {
+    return false;
+  }
+
+  try {
+    new URL(str);
+    return true;
+  } catch (error) {
+    if (error instanceof TypeError) {
+      return false;
+    }
+    // Re-throw unexpected errors
+    throw error;
+  }
+}
+
+/**
+ * Fetches an image from a URL and converts it to a base64 string
+ *
+ * @param {string} imageUrl - The URL of the image to fetch
+ * @returns {Promise<string>} A Promise that resolves to the base64 string of the image
+ * @throws {Error} When the URL is invalid or the fetch request fails
+ *
+ * @example
+ * ```typescript
+ * const base64String = await imageUrlToBase64('https://example.com/image.jpg');
+ * console.log(base64String); // data:image/jpeg;base64,/9j/4AAQSkZJRg...
+ * ```
+ */
+export async function imageUrlToBuffer(imageUrl: string): Promise<{
+  buffer: Buffer;
+  contentType: string;
+}> {
+  if (!isValidUrl(imageUrl)) {
+    throw new Error("Invalid image URL provided");
+  }
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.statusText}`);
+  }
+
+  const imageBuffer = Buffer.from(await response.arrayBuffer());
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+
+  return {
+    buffer: imageBuffer,
+    contentType,
+  };
+}
+
+/**
+ * Extracts the MIME type from a base64 string.
+ *
+ * @param {string} base64String - The base64 string to extract MIME type from
+ * @returns {string | null} The MIME type if found, null otherwise
+ *
+ * @throws {Error} When the input string is not a valid base64 string
+ *
+ * @example
+ * ```typescript
+ * const mimeType = extractMimeTypeFromBase64('data:image/jpeg;base64,/9j/4AAQSkZJRg...');
+ * console.log(mimeType); // 'image/jpeg'
+ * ```
+ */
+export function extractMimeTypeFromBase64(base64String: string): string | null {
+  try {
+    // Check if the string is empty or not a string
+    if (!base64String || typeof base64String !== "string") {
+      throw new Error("Invalid input: base64String must be a non-empty string");
+    }
+
+    // Check if it's a data URL
+    if (base64String.startsWith("data:")) {
+      const matches = base64String.match(
+        /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/,
+      );
+      if (matches && matches.length > 1) {
+        return matches[1];
+      }
+    }
+
+    // If it's just a base64 string without data URL prefix, try to detect common file signatures
+    const decodedString = Buffer.from(base64String, "base64")
+      .toString("hex")
+      .toLowerCase();
+
+    // Common file signatures (magic numbers)
+    const signatures: { [key: string]: string } = {
+      ffd8ff: "image/jpeg",
+      "89504e47": "image/png",
+      "47494638": "image/gif",
+      "25504446": "application/pdf",
+      "504b0304": "application/zip",
+    };
+
+    for (const [signature, mimeType] of Object.entries(signatures)) {
+      if (decodedString.startsWith(signature)) {
+        return mimeType;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to extract MIME type: ${error.message}`);
+    }
+    throw new Error("Failed to extract MIME type: Unknown error");
+  }
+}
+
+/**
+ * Processes an image input which can be a URL, base64 string, or "remove" command
+ * @param imageInput The image input string (URL, base64, or "remove")
+ * @param currentState Optional current image state for preserving MIME type
+ * @returns Object containing buffer and MIME type, or undefined if image should be removed
+ */
+export async function processImageInput(
+  imageInput: string,
+  currentState?: { buffer?: Buffer; imageUrl?: string; mimeType: string },
+): Promise<
+  { buffer?: Buffer; imageUrl?: string; mimeType: string } | undefined
+> {
+  if (imageInput.toLowerCase() === "remove" || !imageInput) {
+    return undefined;
+  }
+
+  if (isValidUrl(imageInput)) {
+    const { contentType } = await imageUrlToBuffer(imageInput);
+    return {
+      imageUrl: imageInput,
+      mimeType: contentType,
+    };
+  }
+
+  if (Buffer.isBuffer(imageInput)) {
+    return {
+      buffer: imageInput,
+      mimeType:
+        extractMimeTypeFromBase64(imageInput.toString("base64")) ||
+        currentState?.mimeType ||
+        "image/png",
+    };
+  }
+
+  // Image is provided as base64
+  const mimeType =
+    extractMimeTypeFromBase64(imageInput) ||
+    currentState?.mimeType ||
+    "image/png";
+  if (!mimeType) {
+    throw new Error(`Failed to extract MIME type from image`);
+  }
+
+  const buffer = Buffer.from(imageInput, "base64");
+  return {
+    buffer,
+    mimeType,
+  };
 }

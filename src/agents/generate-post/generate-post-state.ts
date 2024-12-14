@@ -61,6 +61,17 @@ export const GeneratePostAnnotation = Annotation.Root({
    * The node to execute next.
    */
   next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
+  /**
+   * The image to attach to the post, and the MIME type.
+   */
+  image: Annotation<
+    | {
+        buffer?: Buffer;
+        imageUrl?: string;
+        mimeType: string;
+      }
+    | undefined
+  >,
 });
 
 export const GeneratePostConfigurableAnnotation = Annotation.Root({

@@ -58,4 +58,12 @@ export const IngestDataConfigurableAnnotation = Annotation.Root({
    * A Twitter username to use to ingest recent tweets.
    */
   ingestTwitterUsername: Annotation<string | undefined>,
+  /**
+   * Twitter authentication token used for posting Tweets.
+   */
+  twitterToken: Annotation<string | undefined>,
+  /**
+   * Twitter secret authentication token used for posting Tweets.
+   */
+  twitterTokenSecret: Annotation<string | undefined>,
 });

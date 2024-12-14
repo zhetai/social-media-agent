@@ -7,7 +7,8 @@ export async function authLinkedInPassthrough(
   _state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const linkedInUserId = config.configurable?.linkedInUserId;
+  const linkedInUserId =
+    config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
     const arcade = new Arcade({
       apiKey: process.env.ARCADE_API_KEY,

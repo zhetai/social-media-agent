@@ -3,10 +3,7 @@
   "graphs": {
     "ingest_data": "./src/agents/ingest-data/ingest-data-graph.ts:graph",
     "generate_post": "./src/agents/generate-post/generate-post-graph.ts:generatePostGraph",
-    "verify_tweet": "./src/agents/verify-tweet/verify-tweet-graph.ts:verifyTweetGraph",
-    "verify_links": "./src/agents/verify-links/verify-links-graph.ts:verifyLinksGraph",
-    "verify_reddit_post": "./src/agents/verify-reddit-post/verify-reddit-post-graph.ts:verifyRedditPostGraph",
-    "researcher": "./src/agents/researcher/researcher-graph.ts:researcherGraph"
+    "upload_post": "./src/agents/upload-post/index.ts:uploadPostGraph"
   },
   "env": ".env",
   "dependencies": ["."]
