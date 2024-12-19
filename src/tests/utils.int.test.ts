@@ -50,8 +50,7 @@ describe.only("Screenshot utils", () => {
 
   const generalUrl =
     "https://cckeh.hashnode.dev/building-chatbots-with-memory-capabilities-a-comprehensive-tutorial-with-langchain-langgraph-gemini-ai-and-mongodb";
-  const repoUrl =
-    "https://github.com/langchain-ai/open-canvas/blob/main/README.md";
+  const repoUrl = "https://github.com/langchain-ai/open-canvas";
 
   it("Can take a screenshot of a GitHub repo", async () => {
     const screenshotBuffer = await takeScreenshot(repoUrl);
