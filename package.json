@@ -51,7 +51,7 @@
     "moment": "^2.30.1",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
-    "puppeteer": "^23.11.1",
+    "playwright": "^1.49.1",
     "twitter-api-v2": "^1.18.2",
     "zod": "^3.23.8"
   },
