@@ -17,3 +17,5 @@ dist
 .env
 .ipynb_checkpoints
 
+# Screenshots taken during tests
+src/tests/data/screenshots/

@@ -26,10 +26,10 @@ function constructDescription({
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
   const scheduleDateInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
-  const imageInstructions = `If you wish to attach an image to the post, please add either the base64 encoded image, or a public image URL.
+  const imageInstructions = `If you wish to attach an image to the post, please add a public image URL.
 
-If the 'image' field contains 'Image attached', an image has already been attached to the post.
-You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field, or replace the image by adding a base64 encoded image or a public image URL to the field.
+You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field
+To replace the image, simply add a new public image URL to the field.
 
 MIME types will be automatically extracted from the image.
 Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\``;
@@ -66,15 +66,14 @@ export async function humanNode(
     "America/Los_Angeles",
     "MM/dd/yyyy hh:mm a z",
   );
-  const imageAttached =
-    state.image?.buffer || state.image?.imageUrl ? "Image attached" : "";
+  const imageURL = state.image?.imageUrl ?? "";
   const interruptValue: HumanInterrupt = {
     action_request: {
       action: "Schedule Twitter/LinkedIn posts",
       args: {
         post: state.post,
         date: defaultDateString,
-        image: imageAttached,
+        imageURL,
       },
     },
     config: {
@@ -153,10 +152,16 @@ export async function humanNode(
     throw new Error("Invalid date provided.");
   }
 
-  const imageState:
-    | { buffer?: Buffer; imageUrl?: string; mimeType: string }
-    | undefined =
-    (await processImageInput(castArgs.image, state.image)) || state.image;
+  const processedImage = await processImageInput(castArgs.image);
+  let imageState: { imageUrl: string; mimeType: string } | undefined =
+    undefined;
+  if (processedImage && processedImage !== "remove") {
+    imageState = processedImage;
+  } else if (processedImage === "remove") {
+    imageState = undefined;
+  } else {
+    imageState = state.image;
+  }
 
   return {
     next: "schedulePost",

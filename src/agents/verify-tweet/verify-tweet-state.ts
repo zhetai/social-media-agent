@@ -45,6 +45,13 @@ export const VerifyTweetAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+  /**
+   * Image options to provide to the user.
+   */
+  imageOptions: Annotation<string[]>({
+    reducer: (_state, update) => update,
+    default: () => [],
+  }),
 });
 
 export const VerifyTweetConfigurableAnnotation = Annotation.Root({
@@ -56,5 +63,5 @@ export const VerifyTweetConfigurableAnnotation = Annotation.Root({
    * The user ID or email of the user to use for fetching
    * content & posting on LinkedIn.
    */
-  linkedInUserId: Annotation<string>,
+  linkedInUserId: Annotation<string | undefined>,
 });

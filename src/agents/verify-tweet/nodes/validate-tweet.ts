@@ -93,6 +93,7 @@ export async function validateTweetContent(
     return {
       relevantLinks: [],
       pageContents: [],
+      imageOptions: [],
     };
   }
 

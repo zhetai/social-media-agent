@@ -1,4 +1,4 @@
-import { END, START, StateGraph } from "@langchain/langgraph";
+import { END, Send, START, StateGraph } from "@langchain/langgraph";
 import {
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
@@ -13,6 +13,7 @@ import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authLinkedInPassthrough } from "./nodes/auth-linkedin.js";
 import { authTwitterPassthrough } from "./nodes/auth-twitter.js";
+import { findImages } from "./nodes/findImages/index.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -42,6 +43,22 @@ function condenseOrHumanConditionalEdge(
   return "humanNode";
 }
 
+function generateReportOrEndConditionalEdge(
+  state: typeof GeneratePostAnnotation.State,
+): Send[] | typeof END {
+  if (state.pageContents.length) {
+    return [
+      new Send("generateContentReport", {
+        ...state,
+      }),
+      new Send("findImages", {
+        ...state,
+      }),
+    ];
+  }
+  return END;
+}
+
 const generatePostBuilder = new StateGraph(
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
@@ -63,6 +80,8 @@ const generatePostBuilder = new StateGraph(
   .addNode("rewritePost", rewritePost)
   // Generates a report on the content.
   .addNode("generateContentReport", generateContentReport)
+  // Finds images in the content.
+  .addNode("findImages", findImages)
 
   // Start node
   .addEdge(START, "authLinkedInPassthrough")
@@ -70,9 +89,17 @@ const generatePostBuilder = new StateGraph(
   .addEdge("authTwitterPassthrough", "verifyLinksSubGraph")
 
   // After verifying the different content types, we should generate a report on them.
-  .addEdge("verifyLinksSubGraph", "generateContentReport")
+  .addConditionalEdges(
+    "verifyLinksSubGraph",
+    generateReportOrEndConditionalEdge,
+    ["generateContentReport", "findImages", END],
+  )
 
-  // Once generating a report, we should confirm the report exists (meaning the content is relevant).
+  // Once generating a report & finding images, we should confirm the report exists (meaning the content is relevant).
+  .addConditionalEdges("findImages", routeAfterGeneratingReport, [
+    "generatePost",
+    END,
+  ])
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [
     "generatePost",
     END,

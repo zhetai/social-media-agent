@@ -66,12 +66,18 @@ export const GeneratePostAnnotation = Annotation.Root({
    */
   image: Annotation<
     | {
-        buffer?: Buffer;
-        imageUrl?: string;
+        imageUrl: string;
         mimeType: string;
       }
     | undefined
   >,
+  /**
+   * Image options to provide to the user.
+   */
+  imageOptions: Annotation<string[]>({
+    reducer: (_state, update) => update,
+    default: () => [],
+  }),
 });
 
 export const GeneratePostConfigurableAnnotation = Annotation.Root({
