@@ -3,14 +3,14 @@
 
 // async function main() {
 //   const client = new Client({
-//     apiUrl: "ADD_URL_HERE",
+//     apiUrl: process.env.LANGGRAPH_API_URL,
 //   });
 
 //   const res = await client.crons.create("ingest_data", {
 //     schedule: "0 0 * * *",
 //     config: {
 //       configurable: {
-//         slackChannelId: "",
+//         slackChannelId: "C06BU7XF5S7",
 //         maxDaysHistory: 1,
 //       }
 //     },
@@ -28,7 +28,7 @@
 
 // async function backfill() {
 // const client = new Client({
-//   apiUrl: "ADD_URL_HERE",
+//   apiUrl: process.env.LANGGRAPH_API_URL,
 // });
 
 //   const thread = await client.threads.create();
@@ -47,11 +47,23 @@
 
 // backfill().catch(console.error);
 
+// async function listCrons() {
+//   const client = new Client({
+//     apiUrl: process.env.LANGGRAPH_API_URL,
+//   });
+
+//   const crons = await client.crons.search();
+//   console.log("Crons");
+//   console.log(crons)
+// }
+
+// listCrons().catch(console.error);
+
 // async function deleteCron() {
-//   const cronId = ""
+//   const cronId = "1efb9c04-6dec-6ab7-842e-a4cdf7eddf44"
 
 //   const client = new Client({
-//     apiUrl: "ADD_URL_HERE",
+//     apiUrl: process.env.LANGGRAPH_API_URL,
 //   });
 
 //   await client.crons.delete(cronId);
