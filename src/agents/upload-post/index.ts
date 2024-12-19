@@ -8,6 +8,7 @@ import {
 import { TwitterClient } from "../../clients/twitter/client.js";
 import { imageUrlToBuffer } from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
+import { LinkedInClient } from "../../clients/linkedin.js";
 
 async function getMediaFromImage(image?: {
   imageUrl: string;
@@ -68,20 +69,29 @@ export async function uploadPost(
       );
     }
 
-    const client = await TwitterClient.fromUserId(twitterUserId, {
+    const twitterClient = await TwitterClient.fromUserId(twitterUserId, {
       twitterToken,
       twitterTokenSecret,
     });
     const mediaBuffer = await getMediaFromImage(state.image);
 
-    await client.uploadTweet({
+    await twitterClient.uploadTweet({
       text: state.post,
       ...(mediaBuffer && { media: mediaBuffer }),
     });
   }
 
   if (linkedInUserId) {
-    console.log("TODO: Implement linkedin upload");
+    const linkedInClient = await LinkedInClient.fromUserId(linkedInUserId);
+
+    if (state.image) {
+      await linkedInClient.createImagePost({
+        text: state.post,
+        imageUrl: state.image.imageUrl,
+      });
+    } else {
+      await linkedInClient.createTextPost(state.post);
+    }
   }
 
   return {};
