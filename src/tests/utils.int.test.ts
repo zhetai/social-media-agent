@@ -35,7 +35,7 @@ describe("GitHub utils", () => {
   });
 });
 
-describe.only("Screenshot utils", () => {
+describe("Screenshot utils", () => {
   const writeScreenshotToFile = async (
     screenshotBuffer: Buffer,
     screenshotFileName: string,
@@ -76,7 +76,7 @@ describe.only("Screenshot utils", () => {
     expect(parsedUrl).toBeDefined();
   });
 
-  it.only("Can take a screenshot of a general URL and upload it to Supabase", async () => {
+  it("Can take a screenshot of a general URL and upload it to Supabase", async () => {
     const screenshotUrl = await takeScreenshotAndUpload(generalUrl);
     console.log("screenshotUrl", screenshotUrl);
     expect(screenshotUrl).toBeDefined();

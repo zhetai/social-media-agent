@@ -13,14 +13,19 @@ interface ConstructDescriptionArgs {
   report: string;
   relevantLinks: string[];
   post: string;
+  imageOptions?: string[];
 }
 
 function constructDescription({
   report,
   relevantLinks,
   post,
+  imageOptions,
 }: ConstructDescriptionArgs): string {
   const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn:\n\n\`\`\`\n${post}\n\`\`\``;
+  const imageOptionsText = imageOptions?.length
+    ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
+    : "";
   const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
@@ -49,7 +54,7 @@ ${imageInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
   const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
 
-  return `${header}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
+  return `${header}\n\n${imageOptionsText}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
 }
 
 export async function humanNode(
@@ -73,7 +78,7 @@ export async function humanNode(
       args: {
         post: state.post,
         date: defaultDateString,
-        imageURL,
+        image: imageURL,
       },
     },
     config: {
@@ -86,6 +91,7 @@ export async function humanNode(
       report: state.report,
       relevantLinks: state.relevantLinks,
       post: state.post,
+      imageOptions: state.imageOptions,
     }),
   };
 
