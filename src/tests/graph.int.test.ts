@@ -13,6 +13,7 @@ import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js
 import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
 import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
 import { Command, MemorySaver } from "@langchain/langgraph";
+import { verifyTweetGraph } from "../agents/verify-tweet/verify-tweet-graph.js";
 
 describe("GeneratePostGraph", () => {
   it("Should be able to generate posts from a GitHub URL slack message", async () => {
@@ -172,7 +173,7 @@ test("can generate summaries of youtube videos", async () => {
   expect(result.pageContents[0].length).toBeGreaterThan(50); // Check character count
 });
 
-test.only("can interrupt and resume", async () => {
+test("can interrupt and resume", async () => {
   generatePostGraph.checkpointer = new MemorySaver();
   const config = {
     configurable: {
@@ -200,4 +201,21 @@ test.only("can interrupt and resume", async () => {
     }),
     config,
   );
+});
+
+test("Verify tweets returns valid media URLs when tweet has media", async () => {
+  const result = await verifyTweetGraph.invoke(
+    {
+      link: "https://x.com/LangChainAI/status/1869125903139402215",
+    },
+    {
+      configurable: {
+        twitterUserId: "braceasproul@gmail.com",
+        linkedInUserId: undefined,
+      },
+    },
+  );
+
+  console.log("result");
+  console.dir(result, { depth: null });
 });

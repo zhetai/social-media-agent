@@ -6,7 +6,10 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
 import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
-import { getYouTubeVideoDuration } from "./youtube.utils.js";
+import {
+  getVideoThumbnailUrl,
+  getYouTubeVideoDuration,
+} from "./youtube.utils.js";
 
 type VerifyYouTubeContentReturn = {
   relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
@@ -119,8 +122,10 @@ export async function verifyYouTubeContent(
   state: typeof VerifyContentAnnotation.State,
   _config: LangGraphRunnableConfig,
 ): Promise<VerifyYouTubeContentReturn> {
-  const videoDurationS = await getYouTubeVideoDuration(state.link);
-
+  const [videoDurationS, videoThumbnail] = await Promise.all([
+    getYouTubeVideoDuration(state.link),
+    getVideoThumbnailUrl(state.link),
+  ]);
   if (videoDurationS === undefined) {
     // TODO: Handle this better
     throw new Error("Failed to get video duration");
@@ -141,6 +146,7 @@ export async function verifyYouTubeContent(
     return {
       relevantLinks: [state.link],
       pageContents: [videoSummary as string],
+      ...(videoThumbnail ? { imageUrls: [videoThumbnail] } : {}),
     };
   }
 

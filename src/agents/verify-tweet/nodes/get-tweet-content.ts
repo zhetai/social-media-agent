@@ -35,13 +35,17 @@ export async function getTweetContent(
   });
 
   const tweetContent = result.output?.value as TweetV2SingleResult;
-
+  const mediaUrls = tweetContent.data.attachments?.media_keys?.map(
+    (k) => `https://pbs.twimg.com/media/${k}?format=jpg&name=medium`,
+  );
+  console.dir(result, { depth: null });
   // Extract any links from inside the tweet content.
   // Then, fetch the content of those links to include in the main content.
   const urlsInTweet = extractUrls(tweetContent.data.text);
   if (!urlsInTweet.length) {
     return {
       tweetContent: tweetContent.data.text,
+      imageOptions: mediaUrls,
     };
   }
 
@@ -73,5 +77,6 @@ export async function getTweetContent(
   return {
     tweetContent: tweetContent.data.text,
     tweetContentUrls: cleanedUrls,
+    imageOptions: mediaUrls,
   };
 }

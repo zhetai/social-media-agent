@@ -6,5 +6,6 @@
     "upload_post": "./src/agents/upload-post/index.ts:uploadPostGraph"
   },
   "env": ".env",
-  "dependencies": ["."]
+  "dependencies": ["."],
+  "dockerfile_lines": ["RUN npx -y playwright@1.49.1 install --with-deps"]
 }

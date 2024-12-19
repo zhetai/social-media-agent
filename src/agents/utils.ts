@@ -288,17 +288,13 @@ export function extractMimeTypeFromBase64(base64String: string): string | null {
 /**
  * Processes an image input which can be a URL, base64 string, or "remove" command
  * @param imageInput The image input string (URL, base64, or "remove")
- * @param currentState Optional current image state for preserving MIME type
- * @returns Object containing buffer and MIME type, or undefined if image should be removed
+ * @returns Object containing the public image URL and MIME type, or undefined if image should be removed
  */
 export async function processImageInput(
   imageInput: string,
-  currentState?: { buffer?: Buffer; imageUrl?: string; mimeType: string },
-): Promise<
-  { buffer?: Buffer; imageUrl?: string; mimeType: string } | undefined
-> {
+): Promise<{ imageUrl: string; mimeType: string } | "remove" | undefined> {
   if (imageInput.toLowerCase() === "remove" || !imageInput) {
-    return undefined;
+    return "remove";
   }
 
   if (isValidUrl(imageInput)) {
@@ -309,28 +305,83 @@ export async function processImageInput(
     };
   }
 
-  if (Buffer.isBuffer(imageInput)) {
-    return {
-      buffer: imageInput,
-      mimeType:
-        extractMimeTypeFromBase64(imageInput.toString("base64")) ||
-        currentState?.mimeType ||
-        "image/png",
-    };
+  return undefined;
+}
+
+// Regex to match markdown image syntax: ![alt text](url)
+const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
+
+/**
+ * Extracts a single image URL from a markdown string
+ * @param text The markdown text to search
+ * @returns The first matched image URL or null if no match found
+ */
+export function extractFirstImageUrlFromMarkdown(text: string): string | null {
+  const match = MARKDOWN_IMAGE_REGEX.exec(text);
+  return match ? match[2] : null;
+}
+
+/**
+ * Extracts all image URLs from a markdown string
+ * @param text The markdown text to search
+ * @returns Array of all matched image URLs
+ */
+export function extractAllImageUrlsFromMarkdown(text: string): string[] {
+  const urls: string[] = [];
+  let match;
+
+  // Reset regex state
+  MARKDOWN_IMAGE_REGEX.lastIndex = 0;
+
+  while ((match = MARKDOWN_IMAGE_REGEX.exec(text)) !== null) {
+    urls.push(match[2]);
   }
 
-  // Image is provided as base64
-  const mimeType =
-    extractMimeTypeFromBase64(imageInput) ||
-    currentState?.mimeType ||
-    "image/png";
-  if (!mimeType) {
-    throw new Error(`Failed to extract MIME type from image`);
+  return urls;
+}
+
+/**
+ * The type of a URL. One of "github", "youtube", "general"
+ * `undefined` if the URL type could not be determined
+ */
+export type UrlType =
+  | "github"
+  | "youtube"
+  | "general"
+  | "twitter"
+  | "reddit"
+  | undefined;
+
+export function getUrlType(url: string): UrlType {
+  let parsedUrl: URL | undefined = undefined;
+  try {
+    parsedUrl = new URL(url);
+  } catch (e) {
+    console.error("Failed to parse URL:", e);
+    return undefined;
   }
 
-  const buffer = Buffer.from(imageInput, "base64");
-  return {
-    buffer,
-    mimeType,
-  };
+  if (parsedUrl.hostname.includes("github")) {
+    return "github";
+  }
+
+  if (
+    parsedUrl.hostname.includes("youtube") ||
+    parsedUrl.hostname.includes("youtu.be")
+  ) {
+    return "youtube";
+  }
+
+  if (
+    parsedUrl.hostname.includes("twitter") ||
+    parsedUrl.hostname.includes("x.com")
+  ) {
+    return "twitter";
+  }
+
+  if (parsedUrl.hostname.includes("reddit")) {
+    return "reddit";
+  }
+
+  return "general";
 }

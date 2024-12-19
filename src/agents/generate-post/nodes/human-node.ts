@@ -13,23 +13,28 @@ interface ConstructDescriptionArgs {
   report: string;
   relevantLinks: string[];
   post: string;
+  imageOptions?: string[];
 }
 
 function constructDescription({
   report,
   relevantLinks,
   post,
+  imageOptions,
 }: ConstructDescriptionArgs): string {
   const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn:\n\n\`\`\`\n${post}\n\`\`\``;
+  const imageOptionsText = imageOptions?.length
+    ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
+    : "";
   const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
   const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
   const scheduleDateInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
-  const imageInstructions = `If you wish to attach an image to the post, please add either the base64 encoded image, or a public image URL.
+  const imageInstructions = `If you wish to attach an image to the post, please add a public image URL.
 
-If the 'image' field contains 'Image attached', an image has already been attached to the post.
-You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field, or replace the image by adding a base64 encoded image or a public image URL to the field.
+You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field
+To replace the image, simply add a new public image URL to the field.
 
 MIME types will be automatically extracted from the image.
 Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\``;
@@ -49,7 +54,7 @@ ${imageInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
   const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
 
-  return `${header}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
+  return `${header}\n\n${imageOptionsText}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
 }
 
 export async function humanNode(
@@ -66,15 +71,14 @@ export async function humanNode(
     "America/Los_Angeles",
     "MM/dd/yyyy hh:mm a z",
   );
-  const imageAttached =
-    state.image?.buffer || state.image?.imageUrl ? "Image attached" : "";
+  const imageURL = state.image?.imageUrl ?? "";
   const interruptValue: HumanInterrupt = {
     action_request: {
       action: "Schedule Twitter/LinkedIn posts",
       args: {
         post: state.post,
         date: defaultDateString,
-        image: imageAttached,
+        image: imageURL,
       },
     },
     config: {
@@ -87,6 +91,7 @@ export async function humanNode(
       report: state.report,
       relevantLinks: state.relevantLinks,
       post: state.post,
+      imageOptions: state.imageOptions,
     }),
   };
 
@@ -153,10 +158,16 @@ export async function humanNode(
     throw new Error("Invalid date provided.");
   }
 
-  const imageState:
-    | { buffer?: Buffer; imageUrl?: string; mimeType: string }
-    | undefined =
-    (await processImageInput(castArgs.image, state.image)) || state.image;
+  const processedImage = await processImageInput(castArgs.image);
+  let imageState: { imageUrl: string; mimeType: string } | undefined =
+    undefined;
+  if (processedImage && processedImage !== "remove") {
+    imageState = processedImage;
+  } else if (processedImage === "remove") {
+    imageState = undefined;
+  } else {
+    imageState = state.image;
+  }
 
   return {
     next: "schedulePost",
