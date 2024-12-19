@@ -10,31 +10,22 @@ import { imageUrlToBuffer } from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
 
 async function getMediaFromImage(image?: {
-  buffer?: Buffer;
-  imageUrl?: string;
+  imageUrl: string;
   mimeType: string;
 }): Promise<CreateMediaRequest | undefined> {
-  if (image?.buffer) {
-    return {
-      media: image.buffer,
-      mimeType: image.mimeType,
-    };
-  } else if (image?.imageUrl) {
-    const { buffer, contentType } = await imageUrlToBuffer(image.imageUrl);
-    return {
-      media: buffer,
-      mimeType: contentType,
-    };
-  }
-  return undefined;
+  if (!image) return undefined;
+  const { buffer, contentType } = await imageUrlToBuffer(image.imageUrl);
+  return {
+    media: buffer,
+    mimeType: contentType,
+  };
 }
 
 const UploadPostAnnotation = Annotation.Root({
   post: Annotation<string>,
   image: Annotation<
     | {
-        buffer?: Buffer;
-        imageUrl?: string;
+        imageUrl: string;
         mimeType: string;
       }
     | undefined
