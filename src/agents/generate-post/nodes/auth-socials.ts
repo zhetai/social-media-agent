@@ -17,14 +17,22 @@ export async function authSocialsPassthrough(
   const linkedInUserId =
     config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
-    linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt(linkedInUserId, arcade, { returnInterrupt: true });
+    linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt(
+      linkedInUserId,
+      arcade,
+      { returnInterrupt: true },
+    );
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId =
     config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
   if (twitterUserId) {
-    twitterHumanInterrupt = await getTwitterAuthOrInterrupt(twitterUserId, arcade, { returnInterrupt: true });
+    twitterHumanInterrupt = await getTwitterAuthOrInterrupt(
+      twitterUserId,
+      arcade,
+      { returnInterrupt: true },
+    );
   }
 
   if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {

@@ -24,7 +24,7 @@ export async function getTwitterAuthOrInterrupt(
   arcade: Arcade,
   options?: {
     returnInterrupt?: boolean;
-  }
+  },
 ) {
   const authResponseLookup = await arcade.tools.authorize({
     tool_name: "X.LookupTweetById",

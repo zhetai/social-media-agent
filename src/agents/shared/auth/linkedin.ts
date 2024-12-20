@@ -24,7 +24,7 @@ export async function getLinkedInAuthOrInterrupt(
   arcade: Arcade,
   options?: {
     returnInterrupt?: boolean;
-  }
+  },
 ) {
   const authResponsePost = await arcade.tools.authorize({
     tool_name: "LinkedIn.CreateTextPost",
