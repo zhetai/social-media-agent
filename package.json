@@ -24,7 +24,13 @@
     "run:eval:github": "yarn tsx src/evals/github/index.ts",
     "run:eval:twitter": "yarn tsx src/evals/twitter/index.ts",
     "run:eval:youtube": "yarn tsx src/evals/youtube/index.ts",
-    "start:auth": "yarn tsx src/clients/twitter/authenticate.ts"
+    "start:auth": "yarn tsx src/clients/twitter/auth-server.ts",
+    "generate_post": "yarn tsx scripts/generate-demo-post.ts",
+    "cron:create": "yarn tsx scripts/crons/create-cron.ts",
+    "cron:delete": "yarn tsx scripts/crons/delete-cron.ts",
+    "cron:list": "yarn tsx scripts/crons/list-crons.ts",
+    "cron:backfill": "yarn tsx scripts/crons/backfill.ts",
+    "langgraph:up": "langgraph up --watch --port 54367"
   },
   "dependencies": {
     "@arcadeai/arcadejs": "^0.1.2",
