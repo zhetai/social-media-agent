@@ -12,7 +12,7 @@ import Arcade from "@arcadeai/arcadejs";
  * @param twitterUserId - The user ID for Twitter authorization
  * @param arcade - The Arcade instance used for tool authorization
  * @throws {NodeInterrupt} When authorization is needed, throws an interrupt to request user action
- * @returns {Promise<void>} Resolves when authorization is complete or if no authorization is needed
+ * @returns {Promise<HumanInterrupt | undefined>} A promise that resolves to the interrupt if `options.returnInterrupt` is true, or undefined if `options.returnInterrupt` is false
  *
  * @example
  * ```typescript
@@ -22,6 +22,9 @@ import Arcade from "@arcadeai/arcadejs";
 export async function getTwitterAuthOrInterrupt(
   twitterUserId: string,
   arcade: Arcade,
+  options?: {
+    returnInterrupt?: boolean;
+  }
 ) {
   const authResponseLookup = await arcade.tools.authorize({
     tool_name: "X.LookupTweetById",
@@ -52,8 +55,8 @@ If you have already authorized reading/posting on Twitter, please accept this in
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: Twitter",
         args: {
-          ...(authUrlPost && { authorizePostingURL: authUrlPost }),
-          ...(authUrlLookup && { authorizeReadingURL: authUrlLookup }),
+          ...(authUrlPost && { authorizeTwitterPostingURL: authUrlPost }),
+          ...(authUrlLookup && { authorizeTwitterReadingURL: authUrlLookup }),
         },
       },
       config: {
@@ -64,6 +67,10 @@ If you have already authorized reading/posting on Twitter, please accept this in
       },
       description,
     };
+
+    if (options?.returnInterrupt) {
+      return authInterrupt;
+    }
 
     const res = interrupt<HumanInterrupt[], HumanResponse[]>([
       authInterrupt,
@@ -79,4 +86,6 @@ If you have already authorized reading/posting on Twitter, please accept this in
       throw new Error("Authorization denied by user.");
     }
   }
+
+  return undefined;
 }
