@@ -14,6 +14,7 @@ To use this project, you'll need to have the following accounts/API keys:
 - [LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/)
 - [Anthropic API](https://console.anthropic.com/)
 - [Google Vertex AI](https://cloud.google.com/vertex-ai) TODO: Can we use GenAI instead??
+- [FireCrawl API](https://www.firecrawl.dev/)
 - [Arcade](https://www.arcade-ai.com/)
 - [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard)
 - [LinkedIn Developer Account](https://developer.linkedin.com/)
@@ -96,10 +97,18 @@ The LangGraph CLI is required for running the LangGraph server locally (optional
 Once the CLI is installed, you can run the following command to start the local LangGraph server:
 
 ```bash
+yarn langgraph:up
+```
+
+This executes the following command:
+
+```bash
 langgraph up --watch --port 54367
 ```
 
-(note: you must either have your `LANGSMITH_API_KEY` set as an environment variable (e.g., via `export LANGSMITH_API_KEY="..."` in your shell config like `.zshrc` or `.bashrc`), or include it inline when running the command)
+:::note
+You must either have your `LANGSMITH_API_KEY` set as an environment variable (e.g., via `export LANGSMITH_API_KEY="..."` in your shell config like `.zshrc` or `.bashrc`), or include it inline when running the command
+:::
 
 ## Basic Usage
 
