@@ -11,8 +11,7 @@ import { schedulePost } from "./nodes/schedule-post.js";
 import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
-import { authLinkedInPassthrough } from "./nodes/auth-linkedin.js";
-import { authTwitterPassthrough } from "./nodes/auth-twitter.js";
+import { authSocialsPassthrough } from "./nodes/auth-socials.js";
 import { findImages } from "./nodes/findImages/index.js";
 
 function routeAfterGeneratingReport(
@@ -63,8 +62,7 @@ const generatePostBuilder = new StateGraph(
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
 )
-  .addNode("authLinkedInPassthrough", authLinkedInPassthrough)
-  .addNode("authTwitterPassthrough", authTwitterPassthrough)
+  .addNode("authSocialsPassthrough", authSocialsPassthrough)
 
   .addNode("verifyLinksSubGraph", verifyLinksGraph)
 
@@ -84,9 +82,8 @@ const generatePostBuilder = new StateGraph(
   .addNode("findImages", findImages)
 
   // Start node
-  .addEdge(START, "authLinkedInPassthrough")
-  .addEdge("authLinkedInPassthrough", "authTwitterPassthrough")
-  .addEdge("authTwitterPassthrough", "verifyLinksSubGraph")
+  .addEdge(START, "authSocialsPassthrough")
+  .addEdge("authSocialsPassthrough", "verifyLinksSubGraph")
 
   // After verifying the different content types, we should generate a report on them.
   .addConditionalEdges(

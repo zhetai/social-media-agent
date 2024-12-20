@@ -12,7 +12,7 @@ import { HumanInterrupt, HumanResponse } from "../../types.js";
  * @param linkedInUserId - The user ID for LinkedIn authorization
  * @param arcade - The Arcade instance used for tool authorization
  * @throws {NodeInterrupt} When authorization is needed, throws an interrupt to request user action
- * @returns {Promise<void>} Resolves when authorization is complete or if no authorization is needed
+ * @returns {Promise<HumanInterrupt | undefined>} A promise that resolves to the interrupt if `options.returnInterrupt` is true, or undefined if `options.returnInterrupt` is false
  *
  * @example
  * ```typescript
@@ -22,6 +22,9 @@ import { HumanInterrupt, HumanResponse } from "../../types.js";
 export async function getLinkedInAuthOrInterrupt(
   linkedInUserId: string,
   arcade: Arcade,
+  options?: {
+    returnInterrupt?: boolean;
+  },
 ) {
   const authResponsePost = await arcade.tools.authorize({
     tool_name: "LinkedIn.CreateTextPost",
@@ -45,7 +48,7 @@ If you have already authorized posting on LinkedIn, please accept this interrupt
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: LinkedIn",
         args: {
-          authorizePostingURL: authUrlPost,
+          authorizeLinkedInPostingURL: authUrlPost,
         },
       },
       config: {
@@ -56,6 +59,10 @@ If you have already authorized posting on LinkedIn, please accept this interrupt
       },
       description,
     };
+
+    if (options?.returnInterrupt) {
+      return authInterrupt;
+    }
 
     const res = interrupt<HumanInterrupt[], HumanResponse[]>([
       authInterrupt,
@@ -71,4 +78,6 @@ If you have already authorized posting on LinkedIn, please accept this interrupt
       throw new Error("Authorization denied by user.");
     }
   }
+
+  return undefined;
 }
