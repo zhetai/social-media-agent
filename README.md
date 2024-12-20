@@ -106,9 +106,8 @@ This executes the following command:
 langgraph up --watch --port 54367
 ```
 
-:::note
-You must either have your `LANGSMITH_API_KEY` set as an environment variable (e.g., via `export LANGSMITH_API_KEY="..."` in your shell config like `.zshrc` or `.bashrc`), or include it inline when running the command
-:::
+> [!NOTE]
+> You must either have your `LANGSMITH_API_KEY` set as an environment variable (e.g., via `export LANGSMITH_API_KEY="..."` in your shell config like `.zshrc` or `.bashrc`), or include it inline when running the command
 
 ## Basic Usage
 
