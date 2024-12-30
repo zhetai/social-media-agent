@@ -7,7 +7,10 @@ import { getUrlType } from "../../../utils.js";
 import { createSupabaseClient } from "../../../../utils/supabase.js";
 import { fileTypeFromBuffer } from "file-type";
 import { BrowserContextOptions, PageScreenshotOptions } from "playwright";
-import { GITHUB_BROWSER_CONTEXT_OPTIONS, GITHUB_SCREENSHOT_OPTIONS } from "../../constants.js";
+import {
+  GITHUB_BROWSER_CONTEXT_OPTIONS,
+  GITHUB_SCREENSHOT_OPTIONS,
+} from "../../constants.js";
 
 /**
  * Take a screenshot of a URL and upload it to Supabase.

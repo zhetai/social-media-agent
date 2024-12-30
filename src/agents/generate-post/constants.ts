@@ -75,10 +75,10 @@ export const GITHUB_SCREENSHOT_OPTIONS: PageScreenshotOptions = {
     x: 325,
     y: 350,
   },
-}
+};
 export const GITHUB_BROWSER_CONTEXT_OPTIONS: BrowserContextOptions = {
   viewport: {
     width: 1920,
     height: 1500,
   },
-}
+};
