@@ -218,7 +218,10 @@ export class LinkedInClient {
       auth_requirement: {
         provider_id: "linkedin",
         oauth2: {
-          scopes: ["w_member_social"],
+          // w_organization_social is required for posting on behalf of a company.
+          // User must have one of the following roles:
+          // "ADMINISTRATOR", "DIRECT_SPONSORED_CONTENT_POSTER", "RECRUITING_POSTER"
+          scopes: ["w_member_social", "w_organization_social"],
         },
       },
     });
