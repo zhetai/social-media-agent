@@ -1,4 +1,4 @@
-import { BrowserContextOptions, PageScreenshotOptions } from "playwright";
+import type { BrowserContextOptions, PageScreenshotOptions } from "playwright";
 
 export const ALLOWED_DAYS = [
   "Monday",

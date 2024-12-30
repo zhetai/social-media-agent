@@ -22,8 +22,8 @@ function constructDescription({
   post,
   imageOptions,
 }: ConstructDescriptionArgs): string {
-  const linksText = `- ${relevantLinks.join("\n- ")}`;
-  const header = `# Schedule post\n\nUsing these URL(s), a post was generated for Twitter/LinkedIn:\n${linksText}\nThe following post was generated \n\n\`\`\`\n${post}\n\`\`\``;
+  const linksText = `### Relevant URLs:\n- ${relevantLinks.join("\n- ")}`;
+  const header = `# Schedule post\n\nUsing these URL(s), a post was generated for Twitter/LinkedIn:\n${linksText}\n### Post:\n\n\`\`\`\n${post}\n\`\`\``;
   const imageOptionsText = imageOptions?.length
     ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
     : "";

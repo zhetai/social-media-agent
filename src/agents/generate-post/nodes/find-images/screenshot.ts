@@ -6,7 +6,7 @@ import { takeScreenshot } from "../../../../utils/screenshot.js";
 import { getUrlType } from "../../../utils.js";
 import { createSupabaseClient } from "../../../../utils/supabase.js";
 import { fileTypeFromBuffer } from "file-type";
-import { BrowserContextOptions, PageScreenshotOptions } from "playwright";
+import type { BrowserContextOptions, PageScreenshotOptions } from "playwright";
 import {
   GITHUB_BROWSER_CONTEXT_OPTIONS,
   GITHUB_SCREENSHOT_OPTIONS,
