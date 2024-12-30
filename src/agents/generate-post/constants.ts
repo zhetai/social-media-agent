@@ -1,3 +1,5 @@
+import { BrowserContextOptions, PageScreenshotOptions } from "playwright";
+
 export const ALLOWED_DAYS = [
   "Monday",
   "Tuesday",
@@ -65,3 +67,18 @@ export const ALLOWED_TIMES = [
   "4:50 PM",
   "5:00 PM",
 ];
+
+export const GITHUB_SCREENSHOT_OPTIONS: PageScreenshotOptions = {
+  clip: {
+    width: 1920,
+    height: 1500,
+    x: 325,
+    y: 350,
+  },
+}
+export const GITHUB_BROWSER_CONTEXT_OPTIONS: BrowserContextOptions = {
+  viewport: {
+    width: 1920,
+    height: 1500,
+  },
+}

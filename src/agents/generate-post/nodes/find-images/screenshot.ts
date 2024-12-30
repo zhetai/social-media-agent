@@ -7,6 +7,7 @@ import { getUrlType } from "../../../utils.js";
 import { createSupabaseClient } from "../../../../utils/supabase.js";
 import { fileTypeFromBuffer } from "file-type";
 import { BrowserContextOptions, PageScreenshotOptions } from "playwright";
+import { GITHUB_BROWSER_CONTEXT_OPTIONS, GITHUB_SCREENSHOT_OPTIONS } from "../../constants.js";
 
 /**
  * Take a screenshot of a URL and upload it to Supabase.
@@ -29,16 +30,8 @@ export async function takeScreenshotAndUpload(
   let browserContextOptions: BrowserContextOptions = {};
   if (urlType === "github") {
     // We want to clip GitHub screenshots to only include the README contents.
-    screenshotOptions.clip = {
-      width: 1920,
-      height: 1500,
-      x: 325,
-      y: 350,
-    };
-    browserContextOptions.viewport = {
-      width: 1920,
-      height: 1500,
-    };
+    screenshotOptions = GITHUB_SCREENSHOT_OPTIONS;
+    browserContextOptions = GITHUB_BROWSER_CONTEXT_OPTIONS;
   }
 
   try {
