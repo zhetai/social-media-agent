@@ -77,9 +77,10 @@ Arcade does not yet support Twitter (X) API v1, which is required for uploading 
 To authorize posting on a company's LinkedIn page, you'll need to:
 
 1. Ensure your user has one of the following roles with the company page:
-  - `ADMINISTRATOR`
-  - `DIRECT_SPONSORED_CONTENT_POSTER`
-  - `RECRUITING_POSTER`
+
+- `ADMINISTRATOR`
+- `DIRECT_SPONSORED_CONTENT_POSTER`
+- `RECRUITING_POSTER`
 
 2. The company needs to verify your LinkedIn API app. To request verification, visit the `Settings` tab of your app, then click the `Verify` button on the company page card.
 
