@@ -60,8 +60,8 @@ Once done, ensure you've added the following environment variables to your `.env
 - `ARCADE_API_KEY`
 - `TWITTER_API_KEY`
 - `TWITTER_API_KEY_SECRET`
-- `LINKEDIN_CLIENT_ID`
-- `LINKEDIN_CLIENT_SECRET`
+- `LINKEDIN_CLIENT_ID` - TODO: not necessary unless we switch to self hosted Arcade.
+- `LINKEDIN_CLIENT_SECRET` - TODO: not necessary unless we switch to self hosted Arcade.
 
 Arcade does not yet support Twitter (X) API v1, which is required for uploading media to Twitter. To configure the Twitter API v1, you'll need to follow a few extra steps:
 
@@ -72,7 +72,7 @@ Arcade does not yet support Twitter (X) API v1, which is required for uploading 
 5. Run the `yarn start:auth` command to run the Twitter OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with Twitter`.
 6. After logging in, copy the user token, and user token secret that was logged to the terminal. Set these values as `TWITTER_USER_TOKEN` and `TWITTER_USER_TOKEN_SECRET` in your `.env` file.
 
-##### Posting on LinkedIn Company Page
+##### Posting on LinkedIn Company Page - TODO: not necessary unless we switch to self hosted Arcade.
 
 To authorize posting on a company's LinkedIn page, you'll need to:
 
