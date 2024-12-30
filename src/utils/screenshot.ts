@@ -1,9 +1,16 @@
-import { BrowserContextOptions, chromium, PageScreenshotOptions } from "playwright";
+import {
+  BrowserContextOptions,
+  chromium,
+  PageScreenshotOptions,
+} from "playwright";
 
-export async function takeScreenshot(url: string, options?: {
-  browserContextOptions?: BrowserContextOptions;
-  screenshotOptions?: PageScreenshotOptions;
-}): Promise<Buffer> {
+export async function takeScreenshot(
+  url: string,
+  options?: {
+    browserContextOptions?: BrowserContextOptions;
+    screenshotOptions?: PageScreenshotOptions;
+  },
+): Promise<Buffer> {
   const browser = await chromium.launch({
     headless: true,
   });

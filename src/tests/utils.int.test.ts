@@ -100,11 +100,11 @@ describe("Screenshot utils", () => {
         viewport: {
           width: 1920,
           height: 1500,
-        }
-      }
+        },
+      },
     });
 
     expect(screenshot).toBeDefined();
     await writeScreenshotToFile(screenshot, "github-readme-screenshot.jpeg");
-  })
+  });
 });
