@@ -6,7 +6,7 @@ import {
   getRepoContents,
 } from "../utils/github-repo-contents.js";
 import { takeScreenshot } from "../utils/screenshot.js";
-import { takeScreenshotAndUpload } from "../agents/generate-post/nodes/findImages/screenshot.js";
+import { takeScreenshotAndUpload } from "../agents/generate-post/nodes/find-images/screenshot.js";
 
 describe("GitHub utils", () => {
   it("Can fetch the files and folders of a public GitHub repo", async () => {
@@ -85,4 +85,26 @@ describe("Screenshot utils", () => {
     const parsedUrl = new URL(screenshotUrl);
     expect(parsedUrl).toBeDefined();
   });
+
+  it("Can take a screenshot of a GitHub readme and clip only the file contents", async () => {
+    const screenshot = await takeScreenshot(`${repoUrl}/blob/main/README.md`, {
+      screenshotOptions: {
+        clip: {
+          width: 1920,
+          height: 1500,
+          x: 325,
+          y: 350,
+        },
+      },
+      browserContextOptions: {
+        viewport: {
+          width: 1920,
+          height: 1500,
+        }
+      }
+    });
+
+    expect(screenshot).toBeDefined();
+    await writeScreenshotToFile(screenshot, "github-readme-screenshot.jpeg");
+  })
 });
