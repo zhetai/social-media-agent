@@ -104,7 +104,7 @@ To configure the Slack integration, you'll need to create a new Slack app and in
 
 #### Setup GitHub
 
-The GitHub API token is required to fetch details about GitHub repository URLs submitted to the agent. To get a GitHub API token, simply create a new fine grained token with the `Public Repositories (read-only)` scope at a minium. If you intend on using this agent for private GitHub repositories, you'll need to give the token access to those repositories as well.
+The GitHub API token is required to fetch details about GitHub repository URLs submitted to the agent. To get a GitHub API token, simply create a new fine grained token with the `Public Repositories (read-only)` scope at a minimum. If you intend on using this agent for private GitHub repositories, you'll need to give the token access to those repositories as well.
 
 #### Setup LangGraph CLI
 
