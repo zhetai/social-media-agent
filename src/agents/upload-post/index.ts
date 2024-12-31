@@ -93,6 +93,9 @@ export async function uploadPost(
       text: state.post,
       ...(mediaBuffer && { media: mediaBuffer }),
     });
+    console.log("✅ Successfully uploaded Tweet ✅");
+  } else {
+    console.log("❌ Not uploading Tweet ❌");
   }
 
   if (linkedInUserId) {
@@ -119,6 +122,10 @@ export async function uploadPost(
           config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
       });
     }
+
+    console.log("✅ Successfully uploaded post to LinkedIn ✅");
+  } else {
+    console.log("❌ Not uploading post to LinkedIn ❌");
   }
 
   return {};
