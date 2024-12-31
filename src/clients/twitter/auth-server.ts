@@ -1,7 +1,3 @@
-/**
- * Twitter authentication server implementation using Passport.js
- * Provides endpoints for Twitter OAuth authentication and user session management
- */
 import express, { Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { Strategy as TwitterStrategy } from "passport-twitter";
@@ -10,7 +6,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-/** Twitter user profile with authentication details */
+// Extend Express Session type
+declare module "express-session" {
+  interface SessionData {
+    linkedinToken?: string;
+    linkedinUserInfo?: any;
+  }
+}
+
 interface TwitterUser {
   id: string;
   username: string;
@@ -24,17 +27,10 @@ interface TwitterUser {
   };
 }
 
-/**
- * Handles Twitter OAuth authentication flow and session management
- */
-export class TwitterAuthServer {
+export class SocialAuthServer {
   private app: express.Application;
   private port: number;
 
-  /**
-   * Initializes the Twitter authentication server with a specified port
-   * @param port The port number to run the server on (default: 3000)
-   */
   constructor(port = 3000) {
     this.app = express();
     this.port = port;
@@ -43,9 +39,6 @@ export class TwitterAuthServer {
     this.setupRoutes();
   }
 
-  /**
-   * Configures Express middleware for session handling and Passport initialization
-   */
   private configureMiddleware(): void {
     this.app.use(
       session({
@@ -62,25 +55,19 @@ export class TwitterAuthServer {
     this.app.use(passport.session());
   }
 
-  /**
-   * Sets up Passport.js serialization and strategy configuration
-   */
   private configurePassport(): void {
     this.configureTwitterStrategy();
+    this.configureLinkedInStrategy();
 
     passport.serializeUser((user, done) => {
       done(null, user);
     });
 
-    passport.deserializeUser<TwitterUser>((user, done) => {
+    passport.deserializeUser<any>((user, done) => {
       done(null, user);
     });
   }
 
-  /**
-   * Configures Twitter OAuth strategy with API credentials
-   * @throws {Error} If Twitter API credentials are not found in environment variables
-   */
   private configureTwitterStrategy(): void {
     if (!process.env.TWITTER_API_KEY || !process.env.TWITTER_API_KEY_SECRET) {
       throw new Error("Twitter API credentials are not configured");
@@ -112,12 +99,24 @@ export class TwitterAuthServer {
     );
   }
 
-  /**
-   * Sets up authentication and callback routes for Twitter OAuth flow
-   */
+  private configureLinkedInStrategy(): void {
+    if (
+      !process.env.LINKEDIN_CLIENT_ID ||
+      !process.env.LINKEDIN_CLIENT_SECRET
+    ) {
+      throw new Error("LinkedIn API credentials are not configured");
+    }
+
+    // We'll handle LinkedIn authentication directly through routes
+    // instead of using passport strategy since we're implementing
+    // the OAuth flow manually
+  }
+
   private setupRoutes(): void {
     this.app.get("/", (_req: Request, res: Response) => {
-      res.send('<a href="/auth/twitter">Login with Twitter</a>');
+      res.send(
+        '<a href="/auth/twitter">Login with Twitter</a><br><a href="/auth/linkedin">Login with LinkedIn</a>',
+      );
     });
 
     // Twitter routes
@@ -134,6 +133,99 @@ export class TwitterAuthServer {
       });
     });
 
+    // LinkedIn routes
+    this.app.get("/auth/linkedin", (_req: Request, res: Response) => {
+      const authUrl = new URL(
+        "https://www.linkedin.com/oauth/v2/authorization",
+      );
+      authUrl.searchParams.append("response_type", "code");
+      authUrl.searchParams.append("client_id", process.env.LINKEDIN_CLIENT_ID!);
+      authUrl.searchParams.append(
+        "redirect_uri",
+        "http://localhost:3000/auth/linkedin/callback",
+      );
+      authUrl.searchParams.append("state", process.env.SESSION_SECRET!);
+      authUrl.searchParams.append(
+        "scope",
+        "openid profile email w_member_social w_organization_social",
+      );
+
+      res.redirect(authUrl.toString());
+    });
+
+    this.app.get("/auth/linkedin/callback", (req: Request, res: Response) => {
+      const { code, state } = req.query;
+
+      if (state !== process.env.SESSION_SECRET) {
+        return res
+          .status(401)
+          .send("State mismatch. Possible CSRF attack.") as any;
+      }
+
+      if (!code) {
+        return res.redirect("/");
+      }
+
+      // Handle the LinkedIn OAuth token exchange
+      (async () => {
+        try {
+          const tokenResponse = await fetch(
+            "https://www.linkedin.com/oauth/v2/accessToken",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                grant_type: "authorization_code",
+                code: code as string,
+                client_id: process.env.LINKEDIN_CLIENT_ID!,
+                client_secret: process.env.LINKEDIN_CLIENT_SECRET!,
+                redirect_uri: "http://localhost:3000/auth/linkedin/callback",
+              }),
+            },
+          );
+
+          if (!tokenResponse.ok) {
+            throw new Error("Failed to get access token");
+          }
+
+          const data = await tokenResponse.json();
+          console.log("\n✅ LINKEDIN USER AUTHENTICATED ✅\n");
+          console.dir(data, { depth: null });
+
+          // Fetch user info using OpenID Connect
+          const userInfoResponse = await fetch(
+            "https://api.linkedin.com/v2/userinfo",
+            {
+              headers: {
+                Authorization: `Bearer ${data.access_token}`,
+              },
+            },
+          );
+
+          if (!userInfoResponse.ok) {
+            throw new Error("Failed to get user info");
+          }
+
+          const userInfo = await userInfoResponse.json();
+          console.log("\n✅ LINKEDIN USER INFO ✅\n");
+          console.dir(userInfo, { depth: null });
+
+          // Store both the token and user info in session
+          if (req.session) {
+            req.session.linkedinToken = data.access_token;
+            req.session.linkedinUserInfo = userInfo;
+          }
+
+          res.redirect("/");
+        } catch (error) {
+          console.error("LinkedIn authentication error:", error);
+          res.redirect("/");
+        }
+      })().catch(console.error);
+    });
+
     this.app.get(
       "/profile",
       this.ensureAuthenticated,
@@ -143,10 +235,6 @@ export class TwitterAuthServer {
     );
   }
 
-  /**
-   * Middleware to check if user is authenticated
-   * Redirects to home page if not authenticated
-   */
   private ensureAuthenticated(
     req: Request,
     res: Response,
@@ -158,9 +246,6 @@ export class TwitterAuthServer {
     res.redirect("/");
   }
 
-  /**
-   * Starts the authentication server on the configured port
-   */
   public start(): void {
     this.app.listen(this.port, () => {
       console.log(
@@ -170,13 +255,13 @@ export class TwitterAuthServer {
   }
 }
 
-// Entry point when running the server directly
 async function main() {
-  const server = new TwitterAuthServer();
+  const server = new SocialAuthServer();
   server.start();
 }
 
-// Only run the server if this file is being executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
+
+export default SocialAuthServer;

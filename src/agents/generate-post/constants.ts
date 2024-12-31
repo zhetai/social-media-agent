@@ -82,3 +82,9 @@ export const GITHUB_BROWSER_CONTEXT_OPTIONS: BrowserContextOptions = {
     height: 1500,
   },
 };
+
+// Configurable keys
+export const LINKEDIN_PERSON_URN = "linkedInPersonUrn";
+export const LINKEDIN_ORGANIZATION_ID = "linkedInOrganizationId";
+export const LINKEDIN_ACCESS_TOKEN = "linkedInAccessToken";
+export const POST_TO_LINKEDIN_ORGANIZATION = "postToLinkedInOrganization";

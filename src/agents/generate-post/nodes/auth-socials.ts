@@ -19,7 +19,7 @@ export async function authSocialsPassthrough(
   if (linkedInUserId) {
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt(
       linkedInUserId,
-      arcade,
+      config,
       { returnInterrupt: true },
     );
   }

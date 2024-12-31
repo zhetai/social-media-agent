@@ -9,6 +9,12 @@ import { TwitterClient } from "../../clients/twitter/client.js";
 import { imageUrlToBuffer } from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
 import { LinkedInClient } from "../../clients/linkedin.js";
+import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
+  POST_TO_LINKEDIN_ORGANIZATION,
+} from "../generate-post/constants.js";
 
 async function getMediaFromImage(image?: {
   imageUrl: string;
@@ -82,15 +88,28 @@ export async function uploadPost(
   }
 
   if (linkedInUserId) {
-    const linkedInClient = await LinkedInClient.fromUserId(linkedInUserId);
+    const linkedInClient = new LinkedInClient({
+      accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+      personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
+      organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+    });
 
     if (state.image) {
-      await linkedInClient.createImagePost({
-        text: state.post,
-        imageUrl: state.image.imageUrl,
-      });
+      await linkedInClient.createImagePost(
+        {
+          text: state.post,
+          imageUrl: state.image.imageUrl,
+        },
+        {
+          postToOrganization:
+            config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+        },
+      );
     } else {
-      await linkedInClient.createTextPost(state.post);
+      await linkedInClient.createTextPost(state.post, {
+        postToOrganization:
+          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+      });
     }
   }
 

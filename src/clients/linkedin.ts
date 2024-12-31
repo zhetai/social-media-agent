@@ -1,5 +1,3 @@
-import Arcade from "@arcadeai/arcadejs";
-
 interface LinkedInPost {
   author: string;
   lifecycleState: string;
@@ -15,18 +13,6 @@ interface LinkedInPost {
     "com.linkedin.ugc.MemberNetworkVisibility": string;
   };
 }
-
-type LinkedInAuthorizationResult =
-  | {
-      token: string;
-      sub: string;
-      authorizationUrl?: undefined;
-    }
-  | {
-      authorizationUrl: string;
-      token?: undefined;
-      sub?: undefined;
-    };
 
 interface CreateLinkedInImagePostRequest {
   text: string;
@@ -62,11 +48,58 @@ interface RegisterUploadRequest {
 export class LinkedInClient {
   private baseURL = "https://api.linkedin.com/v2";
   private accessToken: string;
-  private personUrn: string;
+  private personUrn: string | undefined;
+  private organizationId: string | undefined;
 
-  constructor(accessToken: string, personUrn: string) {
+  constructor(input?: {
+    accessToken: string | undefined;
+    personUrn: string | undefined;
+    organizationId: string | undefined;
+  }) {
+    const { accessToken, personUrn, organizationId } = {
+      accessToken: process.env.LINKEDIN_ACCESS_TOKEN || input?.accessToken,
+      organizationId:
+        process.env.LINKEDIN_ORGANIZATION_ID || input?.organizationId,
+      personUrn: process.env.LINKEDIN_PERSON_URN || input?.personUrn,
+    };
+    if (!accessToken) {
+      throw new Error(
+        "Missing LinkedIn access token. Please pass it via the constructor, or set the LINKEDIN_ACCESS_TOKEN environment variable.",
+      );
+    }
+    if (!personUrn && !organizationId) {
+      throw new Error(
+        "Must provide at least one of personUrn or organizationId.",
+      );
+    }
+
     this.accessToken = accessToken;
     this.personUrn = personUrn;
+    this.organizationId = organizationId;
+  }
+
+  /**
+   * Returns the author string for making a post with the LinkedIn API.
+   * @param options
+   * @throws {Error} If neither personUrn nor organizationId is provided
+   */
+  private getAuthorString(options?: { postToOrganization?: boolean }): string {
+    // First, attempt to use the organization ID if either the postToOrganization option is set, or the personUrn is not set
+    if (options?.postToOrganization || !this.personUrn) {
+      if (!this.organizationId) {
+        throw new Error(
+          "Missing organization ID. Please pass it via the constructor, or set the LINKEDIN_ORGANIZATION_ID environment variable.",
+        );
+      }
+      return `urn:li:organization:${this.organizationId}`;
+    }
+
+    if (!this.personUrn) {
+      throw new Error(
+        "Missing person URN. Please pass it via the constructor, or set the LINKEDIN_PERSON_URN environment variable.",
+      );
+    }
+    return `urn:li:person:${this.personUrn}`;
   }
 
   private async makeRequest<T>(url: string, options: RequestInit): Promise<T> {
@@ -88,11 +121,17 @@ export class LinkedInClient {
   }
 
   // Create a text-only post
-  async createTextPost(text: string): Promise<Response> {
+  async createTextPost(
+    text: string,
+    options?: {
+      postToOrganization?: boolean;
+    },
+  ): Promise<Response> {
     const endpoint = `${this.baseURL}/ugcPosts`;
+    const author = this.getAuthorString(options);
 
     const postData: LinkedInPost = {
-      author: `urn:li:person:${this.personUrn}`,
+      author,
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
@@ -113,13 +152,19 @@ export class LinkedInClient {
     });
   }
 
-  private async registerAndUploadMedia(imageUrl: string): Promise<string> {
+  private async registerAndUploadMedia(
+    imageUrl: string,
+    options: {
+      author: string;
+    },
+  ): Promise<string> {
     // Step 1: Register the upload
     const registerEndpoint = `${this.baseURL}/assets?action=registerUpload`;
+
     const registerData: RegisterUploadRequest = {
       registerUploadRequest: {
         recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
-        owner: `urn:li:person:${this.personUrn}`,
+        owner: options.author,
         serviceRelationships: [
           {
             relationshipType: "OWNER",
@@ -160,23 +205,31 @@ export class LinkedInClient {
       throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
     }
 
+    console.time("Image uploaded to LinkedIn");
+
     return registerResponse.value.asset;
   }
 
   // Create a post with an image
-  async createImagePost({
-    text,
-    imageUrl,
-    imageDescription,
-    imageTitle,
-  }: CreateLinkedInImagePostRequest): Promise<Response> {
+  async createImagePost(
+    {
+      text,
+      imageUrl,
+      imageDescription,
+      imageTitle,
+    }: CreateLinkedInImagePostRequest,
+    options?: {
+      postToOrganization?: boolean;
+    },
+  ): Promise<Response> {
     // First register and upload the media
-    const mediaAsset = await this.registerAndUploadMedia(imageUrl);
+    const author = this.getAuthorString(options);
+    const mediaAsset = await this.registerAndUploadMedia(imageUrl, { author });
 
     const endpoint = `${this.baseURL}/ugcPosts`;
 
     const postData = {
-      author: `urn:li:person:${this.personUrn}`,
+      author,
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
@@ -207,67 +260,5 @@ export class LinkedInClient {
       method: "POST",
       body: JSON.stringify(postData),
     });
-  }
-
-  static async authorizeUser(
-    id: string,
-    client: Arcade,
-  ): Promise<LinkedInAuthorizationResult> {
-    const authRes = await client.auth.authorize({
-      user_id: id,
-      auth_requirement: {
-        provider_id: "linkedin",
-        oauth2: {
-          // w_organization_social is required for posting on behalf of a company.
-          // User must have one of the following roles:
-          // "ADMINISTRATOR", "DIRECT_SPONSORED_CONTENT_POSTER", "RECRUITING_POSTER"
-          scopes: ["w_member_social", "w_organization_social"],
-        },
-      },
-    });
-
-    console.log("authRes");
-    console.dir(authRes, { depth: null });
-
-    if (authRes.status === "completed") {
-      if (!authRes.context?.token) {
-        throw new Error(
-          "Authorization status is completed, but token not found",
-        );
-      }
-      if (!authRes.context.user_info?.sub) {
-        throw new Error("Authorization status is completed, but sub not found");
-      }
-
-      return {
-        token: authRes.context.token,
-        sub: authRes.context.user_info.sub as string,
-      };
-    }
-
-    if (authRes.authorization_url) {
-      return { authorizationUrl: authRes.authorization_url };
-    }
-
-    throw new Error(
-      `Authorization failed for user ID: ${id}\nStatus: '${authRes.status}'`,
-    );
-  }
-
-  static async fromUserId(linkedInUserId: string): Promise<LinkedInClient> {
-    const arcadeClient = new Arcade({ apiKey: process.env.ARCADE_API_KEY });
-    const authResponse = await LinkedInClient.authorizeUser(
-      linkedInUserId,
-      arcadeClient,
-    );
-    if (authResponse.authorizationUrl) {
-      throw new Error(
-        `User not authorized. Please visit ${authResponse.authorizationUrl} to authorize the user.`,
-      );
-    }
-    if (!authResponse.token) {
-      throw new Error("Authorization token not found");
-    }
-    return new LinkedInClient(authResponse.token, authResponse.sub);
   }
 }
