@@ -100,7 +100,7 @@ describe("TwitterClient wrapper", () => {
     console.log("result", result);
   });
 
-  it.only("Can upload image from URL", async () => {
+  it("Can upload image from URL", async () => {
     const client = await TwitterClient.fromUserId(userId, twitterTokens);
     const imageUrl =
       "https://miro.medium.com/v2/resize:fit:1200/1*-PlFCd_VBcALKReO3ZaOEg.png";
