@@ -22,7 +22,8 @@ function constructDescription({
   post,
   imageOptions,
 }: ConstructDescriptionArgs): string {
-  const header = `# Schedule post\n\nThe following post was generated for Twitter/LinkedIn:\n\n\`\`\`\n${post}\n\`\`\``;
+  const linksText = `### Relevant URLs:\n- ${relevantLinks.join("\n- ")}`;
+  const header = `# Schedule post\n\nUsing these URL(s), a post was generated for Twitter/LinkedIn:\n${linksText}\n### Post:\n\n\`\`\`\n${post}\n\`\`\``;
   const imageOptionsText = imageOptions?.length
     ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
     : "";
@@ -52,9 +53,8 @@ ${scheduleDateInstructions}
 ### Image
 ${imageInstructions}`;
   const reportText = `Here is the report that was generated for the posts:\n${report}`;
-  const linksText = `Here are the relevant links used for generating the report & posts:\n- ${relevantLinks.join("\n- ")}`;
 
-  return `${header}\n\n${imageOptionsText}\n\n${instructionsText}\n\n${reportText}\n\n${linksText}`;
+  return `${header}\n\n${imageOptionsText}\n\n${instructionsText}\n\n${reportText}`;
 }
 
 export async function humanNode(

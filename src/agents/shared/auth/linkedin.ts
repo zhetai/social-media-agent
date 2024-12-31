@@ -3,6 +3,7 @@
 import { interrupt, type NodeInterrupt } from "@langchain/langgraph";
 import Arcade from "@arcadeai/arcadejs";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
+import { LinkedInClient } from "../../../clients/linkedin.js";
 
 /**
  * Checks LinkedIn authorization status and triggers an interrupt if authorization is needed.
@@ -26,12 +27,11 @@ export async function getLinkedInAuthOrInterrupt(
     returnInterrupt?: boolean;
   },
 ) {
-  const authResponsePost = await arcade.tools.authorize({
-    tool_name: "LinkedIn.CreateTextPost",
-    user_id: linkedInUserId,
-  });
-
-  const authUrlPost = authResponsePost.authorization_url;
+  const authResponse = await LinkedInClient.authorizeUser(
+    linkedInUserId,
+    arcade,
+  );
+  const authUrlPost = authResponse.authorizationUrl;
 
   if (authUrlPost) {
     const description = `# Authorization Required

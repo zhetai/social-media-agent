@@ -226,6 +226,9 @@ export class LinkedInClient {
       },
     });
 
+    console.log("authRes");
+    console.dir(authRes, { depth: null });
+
     if (authRes.status === "completed") {
       if (!authRes.context?.token) {
         throw new Error(

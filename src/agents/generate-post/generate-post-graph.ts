@@ -12,7 +12,7 @@ import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
-import { findImages } from "./nodes/findImages/index.js";
+import { findImages } from "./nodes/find-images/index.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,

@@ -6,6 +6,11 @@ import { takeScreenshot } from "../../../../utils/screenshot.js";
 import { getUrlType } from "../../../utils.js";
 import { createSupabaseClient } from "../../../../utils/supabase.js";
 import { fileTypeFromBuffer } from "file-type";
+import type { BrowserContextOptions, PageScreenshotOptions } from "playwright";
+import {
+  GITHUB_BROWSER_CONTEXT_OPTIONS,
+  GITHUB_SCREENSHOT_OPTIONS,
+} from "../../constants.js";
 
 /**
  * Take a screenshot of a URL and upload it to Supabase.
@@ -16,6 +21,7 @@ export async function takeScreenshotAndUpload(
   url: string,
 ): Promise<string | undefined> {
   const screenshotUrl = await getUrlForScreenshot(url);
+  const urlType = getUrlType(url);
   if (!screenshotUrl) {
     console.warn("No screenshot URL found for", url);
     return undefined;
@@ -23,8 +29,19 @@ export async function takeScreenshotAndUpload(
 
   const supabase = createSupabaseClient();
 
+  let screenshotOptions: PageScreenshotOptions = {};
+  let browserContextOptions: BrowserContextOptions = {};
+  if (urlType === "github") {
+    // We want to clip GitHub screenshots to only include the README contents.
+    screenshotOptions = GITHUB_SCREENSHOT_OPTIONS;
+    browserContextOptions = GITHUB_BROWSER_CONTEXT_OPTIONS;
+  }
+
   try {
-    const screenshotBuffer = await takeScreenshot(screenshotUrl);
+    const screenshotBuffer = await takeScreenshot(screenshotUrl, {
+      screenshotOptions,
+      browserContextOptions,
+    });
     const urlHostName = new URL(screenshotUrl).hostname;
 
     // Detect the file type from the buffer
