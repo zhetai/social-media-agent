@@ -11,7 +11,13 @@ import {
 import { ingestSlackData } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
 import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
   LINKEDIN_USER_ID,
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TWITTER_TOKEN,
+  TWITTER_TOKEN_SECRET,
   TWITTER_USER_ID,
 } from "../generate-post/constants.js";
 
@@ -36,11 +42,24 @@ async function generatePostFromMessages(
           [LINKEDIN_USER_ID]:
             config.configurable?.[LINKEDIN_USER_ID] ||
             process.env.LINKEDIN_USER_ID,
-          twitterToken:
-            config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
-          twitterTokenSecret:
-            config.configurable?.twitterTokenSecret ||
+          [TWITTER_TOKEN]:
+            config.configurable?.[TWITTER_TOKEN] ||
+            process.env.TWITTER_USER_TOKEN,
+          [TWITTER_TOKEN_SECRET]:
+            config.configurable?.[TWITTER_TOKEN_SECRET] ||
             process.env.TWITTER_USER_TOKEN_SECRET,
+          [LINKEDIN_ACCESS_TOKEN]:
+            config.configurable?.[LINKEDIN_ACCESS_TOKEN] ||
+            process.env.LINKEDIN_ACCESS_TOKEN,
+          [LINKEDIN_PERSON_URN]:
+            config.configurable?.[LINKEDIN_PERSON_URN] ||
+            process.env.LINKEDIN_PERSON_URN,
+          [LINKEDIN_ORGANIZATION_ID]:
+            config.configurable?.[LINKEDIN_ORGANIZATION_ID] ||
+            process.env.LINKEDIN_ORGANIZATION_ID,
+          [POST_TO_LINKEDIN_ORGANIZATION]:
+            config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] ||
+            process.env.POST_TO_LINKEDIN_ORGANIZATION,
         },
       },
     });
