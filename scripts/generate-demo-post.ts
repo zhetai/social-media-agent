@@ -1,5 +1,9 @@
 import "dotenv/config";
 import { Client } from "@langchain/langgraph-sdk";
+import {
+  LINKEDIN_USER_ID,
+  TWITTER_USER_ID,
+} from "../src/agents/generate-post/constants.js";
 
 async function invokeGraph() {
   const link = "https://github.com/langchain-ai/open-canvas";
@@ -15,8 +19,8 @@ async function invokeGraph() {
     },
     config: {
       configurable: {
-        twitterUserId: process.env.TWITTER_USER_ID,
-        linkedInUserId: process.env.LINKEDIN_USER_ID,
+        [TWITTER_USER_ID]: process.env.TWITTER_USER_ID,
+        [LINKEDIN_USER_ID]: process.env.LINKEDIN_USER_ID,
       },
     },
   });

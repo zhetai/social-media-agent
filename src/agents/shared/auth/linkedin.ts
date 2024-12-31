@@ -1,8 +1,8 @@
-// @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {
   interrupt,
   LangGraphRunnableConfig,
+  // @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type NodeInterrupt,
 } from "@langchain/langgraph";
 import { HumanInterrupt, HumanResponse } from "../../types.js";

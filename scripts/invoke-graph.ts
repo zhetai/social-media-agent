@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { Client } from "@langchain/langgraph-sdk";
+import { TWITTER_USER_ID } from "../src/agents/generate-post/constants.js";
 
 async function invokeGraph() {
   const repoUrl = "";
@@ -15,7 +16,7 @@ async function invokeGraph() {
     },
     config: {
       configurable: {
-        twitterUserId: process.env.TWITTER_USER_ID,
+        [TWITTER_USER_ID]: process.env.TWITTER_USER_ID,
       },
     },
   });

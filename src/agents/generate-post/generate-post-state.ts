@@ -1,5 +1,15 @@
 import { Annotation, END } from "@langchain/langgraph";
 import { IngestDataAnnotation } from "../ingest-data/ingest-data-state.js";
+import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
+  LINKEDIN_USER_ID,
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TWITTER_TOKEN,
+  TWITTER_TOKEN_SECRET,
+  TWITTER_USER_ID,
+} from "./constants.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 
@@ -84,10 +94,37 @@ export const GeneratePostConfigurableAnnotation = Annotation.Root({
   /**
    * The user ID or email of the user to use for fetching & posting Tweets.
    */
-  twitterUserId: Annotation<string | undefined>,
+  [TWITTER_USER_ID]: Annotation<string | undefined>,
   /**
    * The user ID or email of the user to use for fetching
    * content & posting on LinkedIn.
    */
-  linkedInUserId: Annotation<string | undefined>,
+  [LINKEDIN_USER_ID]: Annotation<string | undefined>,
+  /**
+   * Twitter authentication token used for posting Tweets.
+   */
+  [TWITTER_TOKEN]: Annotation<string | undefined>,
+  /**
+   * Twitter authentication token secret used for posting Tweets.
+   */
+  [TWITTER_TOKEN_SECRET]: Annotation<string | undefined>,
+  /**
+   * LinkedIn authentication token used for posting on LinkedIn.
+   */
+  [LINKEDIN_ACCESS_TOKEN]: Annotation<string | undefined>,
+  /**
+   * The user ID or email of the user to use for posting on LinkedIn.
+   * Optional if [LINKEDIN_ORGANIZATION_ID] is provided.
+   */
+  [LINKEDIN_PERSON_URN]: Annotation<string | undefined>,
+  /**
+   * The ID of the LinkedIn organization to post to.
+   * Optional if [LINKEDIN_PERSON_URN] is provided.
+   */
+  [LINKEDIN_ORGANIZATION_ID]: Annotation<string | undefined>,
+  /**
+   * Whether to post to the LinkedIn organization or the user's profile.
+   * If true, [LINKEDIN_ORGANIZATION_ID] is required.
+   */
+  [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
 });
