@@ -5,13 +5,14 @@ import { resolveTwitterUrl } from "../utils.js";
 import Arcade from "@arcadeai/arcadejs";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
+import { TWITTER_USER_ID } from "../../generate-post/constants.js";
 
 export async function getTweetContent(
   state: typeof VerifyTweetAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
   const twitterUserId =
-    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+    config.configurable?.[TWITTER_USER_ID] || process.env.TWITTER_USER_ID;
   if (!twitterUserId) {
     throw new Error("Twitter user ID not found in configurable fields.");
   }

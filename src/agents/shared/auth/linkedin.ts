@@ -1,54 +1,76 @@
-// @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { interrupt, type NodeInterrupt } from "@langchain/langgraph";
-import Arcade from "@arcadeai/arcadejs";
+import {
+  interrupt,
+  LangGraphRunnableConfig,
+  // @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type NodeInterrupt,
+} from "@langchain/langgraph";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
-import { LinkedInClient } from "../../../clients/linkedin.js";
+import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
+} from "../../generate-post/constants.js";
+
+const LINKEDIN_AUTHORIZATION_DOCS_URL =
+  "https://github.com/langchain-ai/social-media-agent?tab=readme-ov-file#setup";
 
 /**
  * Checks LinkedIn authorization status and triggers an interrupt if authorization is needed.
- * This function attempts to authorize both tweet lookup and posting capabilities.
- * If either authorization is missing, it will interrupt the flow to request user authorization.
+ * This function verifies the presence of required LinkedIn credentials (access token and either person URN or organization ID).
+ * If credentials are missing, it will interrupt the flow to request user authorization.
  *
  * @param linkedInUserId - The user ID for LinkedIn authorization
- * @param arcade - The Arcade instance used for tool authorization
- * @throws {NodeInterrupt} When authorization is needed, throws an interrupt to request user action
- * @returns {Promise<HumanInterrupt | undefined>} A promise that resolves to the interrupt if `options.returnInterrupt` is true, or undefined if `options.returnInterrupt` is false
+ * @param config - Configuration object containing LinkedIn credentials and other settings
+ * @param options - Optional configuration for interrupt handling
+ * @param options.returnInterrupt - If true, returns the interrupt object instead of throwing it
+ * @returns A promise that resolves to a HumanInterrupt object if returnInterrupt is true and authorization is needed,
+ *          otherwise resolves to undefined
+ * @throws {NodeInterrupt} When authorization is needed and returnInterrupt is false
+ * @throws {Error} When user denies authorization by ignoring the interrupt
  *
  * @example
  * ```typescript
- * await getLinkedInAuthOrInterrupt("user123", arcadeInstance);
+ * await getLinkedInAuthOrInterrupt("user123", config);
  * ```
  */
 export async function getLinkedInAuthOrInterrupt(
   linkedInUserId: string,
-  arcade: Arcade,
+  config: LangGraphRunnableConfig,
   options?: {
     returnInterrupt?: boolean;
   },
 ) {
-  const authResponse = await LinkedInClient.authorizeUser(
-    linkedInUserId,
-    arcade,
-  );
-  const authUrlPost = authResponse.authorizationUrl;
+  const { accessToken, personUrn, organizationId } = {
+    accessToken:
+      process.env.LINKEDIN_ACCESS_TOKEN ||
+      config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+    organizationId:
+      process.env.LINKEDIN_ORGANIZATION_ID ||
+      config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+    personUrn:
+      process.env.LINKEDIN_PERSON_URN ||
+      config.configurable?.[LINKEDIN_PERSON_URN],
+  };
 
-  if (authUrlPost) {
+  if (!accessToken || (!personUrn && !organizationId)) {
     const description = `# Authorization Required
     
-Please visit the following URL(s) to authorize posting on LinkedIn.
+Missing LinkedIn authorization for user: ${linkedInUserId}.
 
-Post: ${authUrlPost}
+Please follow the authorization instructions [here](${LINKEDIN_AUTHORIZATION_DOCS_URL}).
+
+Once completed, please mark this interrupt as resolved to end this task, and restart with the proper configuration fields or environment variables set.
 
 ----
 
-If you have already authorized posting on LinkedIn, please accept this interrupt event.`;
+If you have already authorized and set the required configuration fields or environment variables for posting on LinkedIn, please accept this interrupt event to continue the task.`;
 
     const authInterrupt: HumanInterrupt = {
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: LinkedIn",
         args: {
-          authorizeLinkedInPostingURL: authUrlPost,
+          authorizationDocs: LINKEDIN_AUTHORIZATION_DOCS_URL,
         },
       },
       config: {
@@ -68,12 +90,11 @@ If you have already authorized posting on LinkedIn, please accept this interrupt
       authInterrupt,
     ])[0];
     if (res.type === "accept") {
-      // This means that the user has accepted, however the
-      // authorization is still needed. Throw an error.
-      throw new Error(
-        "User accepted authorization, but authorization is still needed.",
-      );
-    } else if (res.type === "ignore") {
+      // The user has accepted, indicating the required fields have been set.
+      // Trust this and continue with the task.
+      return undefined;
+    }
+    if (res.type === "ignore") {
       // Throw an error to end the graph.
       throw new Error("Authorization denied by user.");
     }

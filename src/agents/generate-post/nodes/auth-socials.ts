@@ -4,6 +4,7 @@ import Arcade from "@arcadeai/arcadejs";
 import { getLinkedInAuthOrInterrupt } from "../../shared/auth/linkedin.js";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
+import { LINKEDIN_USER_ID, TWITTER_USER_ID } from "../constants.js";
 
 export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
@@ -15,18 +16,18 @@ export async function authSocialsPassthrough(
 
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId =
-    config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+    config.configurable?.[LINKEDIN_USER_ID] || process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt(
       linkedInUserId,
-      arcade,
+      config,
       { returnInterrupt: true },
     );
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId =
-    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+    config.configurable?.[TWITTER_USER_ID] || process.env.TWITTER_USER_ID;
   if (twitterUserId) {
     twitterHumanInterrupt = await getTwitterAuthOrInterrupt(
       twitterUserId,

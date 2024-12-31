@@ -14,6 +14,27 @@ import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-g
 import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
 import { Command, MemorySaver } from "@langchain/langgraph";
 import { verifyTweetGraph } from "../agents/verify-tweet/verify-tweet-graph.js";
+import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
+  LINKEDIN_USER_ID,
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TWITTER_TOKEN,
+  TWITTER_TOKEN_SECRET,
+  TWITTER_USER_ID,
+} from "../agents/generate-post/constants.js";
+
+const BASE_CONFIG = {
+  [TWITTER_USER_ID]: undefined,
+  [LINKEDIN_USER_ID]: undefined,
+  [TWITTER_TOKEN]: undefined,
+  [TWITTER_TOKEN_SECRET]: undefined,
+  [LINKEDIN_ACCESS_TOKEN]: undefined,
+  [LINKEDIN_PERSON_URN]: undefined,
+  [LINKEDIN_ORGANIZATION_ID]: undefined,
+  [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
+};
 
 describe("GeneratePostGraph", () => {
   it("Should be able to generate posts from a GitHub URL slack message", async () => {
@@ -154,8 +175,8 @@ test("can generate post", async () => {
     },
     {
       configurable: {
-        twitterUserId: "braceasproul@gmail.com",
-        linkedInUserId: "",
+        ...BASE_CONFIG,
+        [TWITTER_USER_ID]: "braceasproul@gmail.com",
       },
     },
   );
@@ -177,9 +198,9 @@ test("can interrupt and resume", async () => {
   generatePostGraph.checkpointer = new MemorySaver();
   const config = {
     configurable: {
+      ...BASE_CONFIG,
       thread_id: "123",
-      twitterUserId: "braceasproul@gmail.com",
-      linkedInUserId: undefined,
+      [TWITTER_USER_ID]: "braceasproul@gmail.com",
     },
   };
   await generatePostGraph.invoke(
@@ -210,8 +231,8 @@ test("Verify tweets returns valid media URLs when tweet has media", async () => 
     },
     {
       configurable: {
-        twitterUserId: "braceasproul@gmail.com",
-        linkedInUserId: undefined,
+        [TWITTER_USER_ID]: "braceasproul@gmail.com",
+        [LINKEDIN_USER_ID]: undefined,
       },
     },
   );

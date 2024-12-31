@@ -9,6 +9,16 @@ import { TwitterClient } from "../../clients/twitter/client.js";
 import { imageUrlToBuffer } from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
 import { LinkedInClient } from "../../clients/linkedin.js";
+import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
+  LINKEDIN_USER_ID,
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TWITTER_TOKEN,
+  TWITTER_TOKEN_SECRET,
+  TWITTER_USER_ID,
+} from "../generate-post/constants.js";
 
 async function getMediaFromImage(image?: {
   imageUrl: string;
@@ -34,10 +44,14 @@ const UploadPostAnnotation = Annotation.Root({
 });
 
 const UploadPostGraphConfiguration = Annotation.Root({
-  twitterUserId: Annotation<string | undefined>,
-  linkedInUserId: Annotation<string | undefined>,
-  twitterToken: Annotation<string | undefined>,
-  twitterTokenSecret: Annotation<string | undefined>,
+  [TWITTER_USER_ID]: Annotation<string | undefined>,
+  [LINKEDIN_USER_ID]: Annotation<string | undefined>,
+  [TWITTER_TOKEN]: Annotation<string | undefined>,
+  [TWITTER_TOKEN_SECRET]: Annotation<string | undefined>,
+  [LINKEDIN_ACCESS_TOKEN]: Annotation<string | undefined>,
+  [LINKEDIN_PERSON_URN]: Annotation<string | undefined>,
+  [LINKEDIN_ORGANIZATION_ID]: Annotation<string | undefined>,
+  [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
 });
 
 export async function uploadPost(
@@ -48,18 +62,18 @@ export async function uploadPost(
     throw new Error("No post text found");
   }
   const twitterUserId =
-    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+    config.configurable?.[TWITTER_USER_ID] || process.env.TWITTER_USER_ID;
   const linkedInUserId =
-    config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+    config.configurable?.[LINKEDIN_USER_ID] || process.env.LINKEDIN_USER_ID;
 
   if (!twitterUserId && !linkedInUserId) {
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
   const twitterToken =
-    config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN;
+    config.configurable?.[TWITTER_TOKEN] || process.env.TWITTER_USER_TOKEN;
   const twitterTokenSecret =
-    config.configurable?.twitterTokenSecret ||
+    config.configurable?.[TWITTER_TOKEN_SECRET] ||
     process.env.TWITTER_USER_TOKEN_SECRET;
 
   if (twitterUserId) {
@@ -82,15 +96,28 @@ export async function uploadPost(
   }
 
   if (linkedInUserId) {
-    const linkedInClient = await LinkedInClient.fromUserId(linkedInUserId);
+    const linkedInClient = new LinkedInClient({
+      accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+      personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
+      organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+    });
 
     if (state.image) {
-      await linkedInClient.createImagePost({
-        text: state.post,
-        imageUrl: state.image.imageUrl,
-      });
+      await linkedInClient.createImagePost(
+        {
+          text: state.post,
+          imageUrl: state.image.imageUrl,
+        },
+        {
+          postToOrganization:
+            config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+        },
+      );
     } else {
-      await linkedInClient.createTextPost(state.post);
+      await linkedInClient.createTextPost(state.post, {
+        postToOrganization:
+          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+      });
     }
   }
 

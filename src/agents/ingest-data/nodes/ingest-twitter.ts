@@ -2,6 +2,10 @@ import { IngestDataAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import Arcade from "@arcadeai/arcadejs";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
+import {
+  INGEST_TWITTER_USERNAME,
+  TWITTER_USER_ID,
+} from "../../generate-post/constants.js";
 
 type TweetResult = {
   author_id: string;
@@ -33,12 +37,12 @@ export async function ingestTweets(
     return {};
   }
   const twitterUserId =
-    config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+    config.configurable?.[TWITTER_USER_ID] || process.env.TWITTER_USER_ID;
   if (!twitterUserId) {
     throw new Error("Twitter user ID not found in configurable fields.");
   }
 
-  const username = config.configurable?.ingestTwitterUsername as
+  const username = config.configurable?.[INGEST_TWITTER_USERNAME] as
     | string
     | undefined;
   if (!username) {

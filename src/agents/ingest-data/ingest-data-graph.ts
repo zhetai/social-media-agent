@@ -10,6 +10,10 @@ import {
 } from "./ingest-data-state.js";
 import { ingestSlackData } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
+import {
+  LINKEDIN_USER_ID,
+  TWITTER_USER_ID,
+} from "../generate-post/constants.js";
 
 async function generatePostFromMessages(
   state: typeof IngestDataAnnotation.State,
@@ -26,10 +30,12 @@ async function generatePostFromMessages(
       },
       config: {
         configurable: {
-          twitterUserId:
-            config.configurable?.twitterUserId || process.env.TWITTER_USER_ID,
-          linkedInUserId:
-            config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID,
+          [TWITTER_USER_ID]:
+            config.configurable?.[TWITTER_USER_ID] ||
+            process.env.TWITTER_USER_ID,
+          [LINKEDIN_USER_ID]:
+            config.configurable?.[LINKEDIN_USER_ID] ||
+            process.env.LINKEDIN_USER_ID,
           twitterToken:
             config.configurable?.twitterToken || process.env.TWITTER_USER_TOKEN,
           twitterTokenSecret:
