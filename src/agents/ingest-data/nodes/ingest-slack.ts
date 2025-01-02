@@ -32,7 +32,7 @@ export async function ingestSlackData(
   }
 
   const client = new SlackMessageFetcher({
-    channelId: channelId,
+    channelId,
   });
   const recentMessages = await client.fetchLast24HoursMessages({
     maxMessages: config.configurable?.maxMessages,
