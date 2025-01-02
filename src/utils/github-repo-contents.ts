@@ -212,14 +212,10 @@ export async function getFileContents(
       );
     }
 
-    if (!response.data.content) {
-      throw new Error(`No content available for file '${normalizedPath}'`);
-    }
-
     // GitHub returns file content as base64 encoded string
-    const content = Buffer.from(response.data.content, "base64").toString(
-      "utf-8",
-    );
+    const content = response.data.content
+      ? Buffer.from(response.data.content, "base64").toString("utf-8")
+      : "";
 
     return {
       content,
@@ -241,8 +237,3 @@ export async function getFileContents(
     throw error;
   }
 }
-
-// Example usage:
-// const rootContents = await getRepoContents('https://github.com/owner/repo');
-// const srcContents = await getDirectoryContents('https://github.com/owner/repo', 'src');
-// const fileContents = await getFileContents('https://github.com/owner/repo', 'src/index.ts');
