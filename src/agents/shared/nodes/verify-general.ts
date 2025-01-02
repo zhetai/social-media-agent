@@ -11,6 +11,7 @@ import { getPageText } from "../../utils.js";
 type VerifyGeneralContentReturn = {
   relevantLinks: (typeof GeneratePostAnnotation.State)["relevantLinks"];
   pageContents: (typeof GeneratePostAnnotation.State)["pageContents"];
+  imageOptions?: (typeof GeneratePostAnnotation.State)["imageOptions"];
 };
 
 const RELEVANCY_SCHEMA = z
@@ -39,20 +40,47 @@ ${LANGCHAIN_PRODUCTS_CONTEXT}
 Given this context, examine the webpage content closely, and determine if the content implements LangChain's products.
 You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
 
-export async function getUrlContents(url: string): Promise<string> {
+const getImagesFromFireCrawlMetadata = (
+  metadata: any,
+): string[] | undefined => {
+  const image = metadata.image || [];
+  const ogImage = metadata.ogImage ? [metadata.ogImage] : [];
+  if (image?.length || ogImage?.length) {
+    return [...ogImage, ...image];
+  }
+  return undefined;
+};
+
+type UrlContents = {
+  content: string;
+  imageUrls?: string[];
+};
+
+export async function getUrlContents(url: string): Promise<UrlContents> {
   const loader = new FireCrawlLoader({
     url,
     mode: "scrape",
+    params: {
+      formats: ["markdown", "screenshot"],
+    },
   });
   const docs = await loader.load();
+
   const docsText = docs.map((d) => d.pageContent).join("\n");
   if (docsText.length) {
-    return docsText;
+    return {
+      content: docsText,
+      imageUrls: docs.flatMap(
+        (d) => getImagesFromFireCrawlMetadata(d.metadata) || [],
+      ),
+    };
   }
 
   const text = await getPageText(url);
   if (text) {
-    return text;
+    return {
+      content: text,
+    };
   }
   throw new Error(`Failed to fetch content from ${url}.`);
 }
@@ -99,17 +127,20 @@ export async function verifyGeneralContent(
   state: typeof VerifyContentAnnotation.State,
   _config: LangGraphRunnableConfig,
 ): Promise<VerifyGeneralContentReturn> {
-  const pageContent = await new RunnableLambda<string, string>({
+  const urlContents = await new RunnableLambda<string, UrlContents>({
     func: getUrlContents,
   })
     .withConfig({ runName: "get-url-contents" })
     .invoke(state.link);
-  const relevant = await verifyGeneralContentIsRelevant(pageContent);
+  const relevant = await verifyGeneralContentIsRelevant(urlContents.content);
 
   if (relevant) {
     return {
       relevantLinks: [state.link],
-      pageContents: [pageContent],
+      pageContents: [urlContents.content],
+      ...(urlContents.imageUrls?.length
+        ? { imageOptions: urlContents.imageUrls }
+        : {}),
     };
   }
 

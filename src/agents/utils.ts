@@ -132,6 +132,15 @@ export async function getPageText(url: string): Promise<string | undefined> {
     $("footer").remove();
     $("header").remove();
 
+    // Extract image information
+    const images = $("img")
+      .map((_, img) => {
+        const alt = $(img).attr("alt") || "";
+        const src = $(img).attr("src") || "";
+        return `[Image: ${alt}](${src})`;
+      })
+      .get();
+
     // Get text content and clean it up
     const text = $("body")
       .text()
@@ -139,7 +148,8 @@ export async function getPageText(url: string): Promise<string | undefined> {
       .replace(/\n+/g, " ")
       .trim();
 
-    return text;
+    // Combine text and image information
+    return `${text}\n\n${images.join("\n")}`;
   } catch (error) {
     if (error instanceof Error) {
       // Handle specific error types

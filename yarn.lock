@@ -747,10 +747,10 @@
     zod "^3.22.4"
     zod-to-json-schema "^3.22.4"
 
-"@langchain/community@^0.3.15":
-  version "0.3.16"
-  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-0.3.16.tgz#8a5fb28916865d4366bf5c91ccf7a67645a640c8"
-  integrity sha512-oMYzL2O5Laxj6+onKf8HRewlxHoETXvz3n64Y5XqWKsjPtk6sg3g6NJJDNyp7D0M57oghHEhyWeQ0eVZas3Epw==
+"@langchain/community@^0.3.22":
+  version "0.3.22"
+  resolved "https://registry.yarnpkg.com/@langchain/community/-/community-0.3.22.tgz#8c222e779b2bf1541cd8c037ec80d4fd0338a571"
+  integrity sha512-RGfmG3sfJhVpdFHyPwdQhrzGXdGoCoBh6zWB79/4WaMVU0q0Uo1Y/NeeslSxp778sWEeJkRcXZC73dR8lwOFjw==
   dependencies:
     "@langchain/openai" ">=0.2.0 <0.4.0"
     binary-extensions "^2.2.0"
@@ -758,7 +758,7 @@
     flat "^5.0.2"
     js-yaml "^4.1.0"
     langchain ">=0.2.3 <0.3.0 || >=0.3.4 <0.4.0"
-    langsmith "^0.2.0"
+    langsmith "^0.2.8"
     uuid "^10.0.0"
     zod "^3.22.3"
     zod-to-json-schema "^3.22.5"
@@ -857,14 +857,14 @@
   dependencies:
     js-tiktoken "^1.0.12"
 
-"@mendable/firecrawl-js@0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@mendable/firecrawl-js/-/firecrawl-js-0.0.36.tgz#196a491b81f9630833a5be8c82ab79fcff93fab4"
-  integrity sha512-5zQMWUD49r6Q7cxj+QBthQ964Bm9fMooW4E8E4nIca3BMXCeEuQFVf5C3OEWwZf0SjJvR+5Yx2wUbXJWd1wCOA==
+"@mendable/firecrawl-js@^1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@mendable/firecrawl-js/-/firecrawl-js-1.10.1.tgz#920e261fbdc59f784a682139e92d8d44d8ef1dff"
+  integrity sha512-fpk09VD9dwMXeptyGjBU1Ntg432c+Njh3mWFbli/99FRic+PS5SQwHzWA/7xIQRa8mp1jwSJ7O0tYcDj9ECVEQ==
   dependencies:
     axios "^1.6.8"
-    dotenv "^16.4.5"
-    uuid "^9.0.1"
+    isows "^1.0.4"
+    typescript-event-target "^1.1.1"
     zod "^3.23.8"
     zod-to-json-schema "^3.23.0"
 
@@ -2179,11 +2179,6 @@ domutils@^3.0.1, domutils@^3.1.0:
     domelementtype "^2.3.0"
     domhandler "^5.0.3"
 
-dotenv@^16.4.5:
-  version "16.4.5"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.5.tgz#cdd3b3b604cb327e286b4762e13502f717cb099f"
-  integrity sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==
-
 dotenv@^16.4.7:
   version "16.4.7"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.7.tgz#0e20c5b82950140aa99be360a8a5f52335f53c26"
@@ -3455,6 +3450,11 @@ isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
+
+isows@^1.0.4:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.6.tgz#0da29d706fa51551c663c627ace42769850f86e7"
+  integrity sha512-lPHCayd40oW98/I0uvgaHKWCSvkzY27LjWLbtzOm64yQ+G3Q5npjjbdppU65iZXkK1Zt+kH9pfegli0AYfwYYw==
 
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.0:
   version "3.2.2"
@@ -5203,6 +5203,11 @@ typed-array-length@^1.0.6:
     is-typed-array "^1.1.13"
     possible-typed-array-names "^1.0.0"
     reflect.getprototypeof "^1.0.6"
+
+typescript-event-target@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/typescript-event-target/-/typescript-event-target-1.1.1.tgz#20a6d491b77d2e37dc432c5394ab74c0d7065539"
+  integrity sha512-dFSOFBKV6uwaloBCCUhxlD3Pr/P1a/tJdcmPrTXCHlEFD3faj0mztjcGn6VBAhQ0/Bdy8K3VWrrqwbt/ffsYsg==
 
 typescript@^5.3.3:
   version "5.7.2"
