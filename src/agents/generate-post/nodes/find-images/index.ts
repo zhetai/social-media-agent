@@ -22,7 +22,9 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
     imageOptions.forEach((urlOrPathname) => {
       imageUrls.add(urlOrPathname);
     });
-  } else if (pageContents && pageContents.length) {
+  }
+
+  if (pageContents && pageContents.length) {
     const allImageUrls = pageContents.flatMap(extractAllImageUrlsFromMarkdown);
 
     for await (const urlOrPathname of allImageUrls) {
