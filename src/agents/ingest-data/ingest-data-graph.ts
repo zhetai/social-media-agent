@@ -30,6 +30,10 @@ async function generatePostFromMessages(
   });
   for await (const link of state.links) {
     const thread = await client.threads.create();
+    const postToLinkedInOrg =
+      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
+        ? config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION]
+        : process.env.POST_TO_LINKEDIN_ORGANIZATION;
     await client.runs.create(thread.thread_id, "generate_post", {
       input: {
         links: [link],
@@ -57,9 +61,7 @@ async function generatePostFromMessages(
           [LINKEDIN_ORGANIZATION_ID]:
             config.configurable?.[LINKEDIN_ORGANIZATION_ID] ||
             process.env.LINKEDIN_ORGANIZATION_ID,
-          [POST_TO_LINKEDIN_ORGANIZATION]:
-            config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] ||
-            process.env.POST_TO_LINKEDIN_ORGANIZATION,
+          [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
         },
       },
     });

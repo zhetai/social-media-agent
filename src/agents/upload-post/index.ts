@@ -105,6 +105,11 @@ export async function uploadPost(
       organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
     });
 
+    const postToOrg =
+      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
+        ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
+        : false;
+
     if (state.image) {
       await linkedInClient.createImagePost(
         {
@@ -112,14 +117,12 @@ export async function uploadPost(
           imageUrl: state.image.imageUrl,
         },
         {
-          postToOrganization:
-            config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+          postToOrganization: postToOrg,
         },
       );
     } else {
       await linkedInClient.createTextPost(state.post, {
-        postToOrganization:
-          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION],
+        postToOrganization: postToOrg,
       });
     }
 
