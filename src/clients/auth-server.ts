@@ -147,7 +147,10 @@ export class SocialAuthServer {
       authUrl.searchParams.append("state", process.env.SESSION_SECRET!);
       authUrl.searchParams.append(
         "scope",
-        "openid profile email w_member_social w_organization_social",
+        "openid profile email w_member_social",
+        // Use these scopes if you plan on posting to a LinkedIn company page.
+        // Posting to company pages requires the "w_organization_social" scope.
+        // "openid profile email w_member_social w_organization_social",
       );
 
       res.redirect(authUrl.toString());

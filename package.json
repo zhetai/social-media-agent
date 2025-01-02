@@ -25,7 +25,7 @@
     "run:eval:github": "yarn tsx src/evals/github/index.ts",
     "run:eval:twitter": "yarn tsx src/evals/twitter/index.ts",
     "run:eval:youtube": "yarn tsx src/evals/youtube/index.ts",
-    "start:auth": "yarn tsx src/clients/twitter/auth-server.ts",
+    "start:auth": "yarn tsx src/clients/auth-server.ts",
     "generate_post": "yarn tsx scripts/generate-demo-post.ts",
     "cron:create": "yarn tsx scripts/crons/create-cron.ts",
     "cron:delete": "yarn tsx scripts/crons/delete-cron.ts",
