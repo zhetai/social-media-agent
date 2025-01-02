@@ -6,23 +6,23 @@ This repository contains an 'agent' which can take in a URL, and generate a Twit
 
 ## Setup
 
+> [!NOTE]
+> 🎥 For a visual guide, check out our [step-by-step video tutorial](ADD_URL_HERE) that walks you through the account setup process and project configuration.
+
 ### Prerequisites
 
 To use this project, you'll need to have the following accounts/API keys:
 
-- [Yarn](https://yarnpkg.com/)
-- [Node.js](https://nodejs.org/en)
-- [Docker](https://www.docker.com/)
-- [LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/)
-- [Anthropic API](https://console.anthropic.com/)
-- [Google Vertex AI](https://cloud.google.com/vertex-ai) TODO: Can we use GenAI instead??
-- [FireCrawl API](https://www.firecrawl.dev/)
-- [Arcade](https://www.arcade-ai.com/)
-- [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard)
-- [LinkedIn Developer Account](https://developer.linkedin.com/)
-- [GitHub API](https://github.com/settings/personal-access-tokens)
-- [Supabase](https://supabase.com/)
-- [Slack Developer Account](https://api.slack.com/apps) (optional)
+- [Anthropic API](https://console.anthropic.com/) - General LLM
+- [Google Vertex AI](https://cloud.google.com/vertex-ai) - For dealing with YouTube video content
+- [LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) - Running the LangGraph server locally
+- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping
+- [Arcade](https://www.arcade-ai.com/) - Social media authentication
+- [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard) - For uploading media to Twitter
+- [LinkedIn Developer Account](https://developer.linkedin.com/) - Posting to LinkedIn
+- [GitHub API](https://github.com/settings/personal-access-tokens) - Reading GitHub content
+- [Supabase](https://supabase.com/) - Storing images
+- [Slack Developer Account](https://api.slack.com/apps) (optional) - ingesting data from a Slack channel
 
 ### Setup Instructions
 
@@ -50,9 +50,8 @@ Copy the values of `.env.example` to `.env`, then update the values as needed.
 cp .env.example .env
 ```
 
-#### Setup Arcade authentication with LinkedIn and Twitter:
+#### Setup Arcade authentication for Twitter:
 
-- [LinkedIn Arcade auth docs](https://docs.arcade-ai.com/integrations/auth/linkedin)
 - [Twitter Arcade auth docs](https://docs.arcade-ai.com/integrations/auth/x)
 
 Once done, ensure you've added the following environment variables to your `.env` file:
@@ -60,33 +59,53 @@ Once done, ensure you've added the following environment variables to your `.env
 - `ARCADE_API_KEY`
 - `TWITTER_API_KEY`
 - `TWITTER_API_KEY_SECRET`
-- `LINKEDIN_CLIENT_ID` - TODO: not necessary unless we switch to self hosted Arcade.
-- `LINKEDIN_CLIENT_SECRET` - TODO: not necessary unless we switch to self hosted Arcade.
 
 Arcade does not yet support Twitter (X) API v1, which is required for uploading media to Twitter. To configure the Twitter API v1, you'll need to follow a few extra steps:
 
-1. Create an app in the Twitter Developer Portal, or use the default app.
+1. Create an app in the Twitter Developer Portal, or use the default app (you should already have one after setting up Arcade above).
 2. Enter app settings, and find the `User authentication settings` section. Start this setup.
 3. Set `App permissions` to `Read and write`. Set `Type of app` to `Web app`. Set the `Callback URI / Redirect URL` to `http://localhost:3000/callback`. Save.
-4. Navigate to the `Keys and tokens` tab in the app settings, and copy the `API key` and `API key secret`. Set these values as `TWITTER_API_KEY` and `TWITTER_API_KEY_SECRET` in your `.env` file.
+4. Navigate to the `Keys and tokens` tab in the app settings, and copy the `API key` and `API key secret`. Set these values as `TWITTER_API_KEY` and `TWITTER_API_KEY_SECRET` in your `.env` file (skip if already set when setting up Arcade above).
 5. Run the `yarn start:auth` command to run the Twitter OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with Twitter`.
 6. After logging in, copy the user token, and user token secret that was logged to the terminal. Set these values as `TWITTER_USER_TOKEN` and `TWITTER_USER_TOKEN_SECRET` in your `.env` file.
 
-##### Posting on LinkedIn Company Page - TODO: not necessary unless we switch to self hosted Arcade.
+#### Setup LinkedIn authentication:
 
-To authorize posting on a company's LinkedIn page, you'll need to:
+To authorize posting on LinkedIn, you'll need to:
 
-1. Ensure your user has one of the following roles with the company page:
+1. Create a new LinkedIn developer account, and app [here](https://developer.linkedin.com/)
+2. After creating your app, navigate to the `Auth` tab, and add a new authorized redirect URL for OAuth 2.0. Set it to `http://localhost:3000/auth/linkedin/callback`
+3. Go to the `Products` tab and enable the `Share on LinkedIn` and `Sign In with LinkedIn using OpenID Connect` products.
+
+If you plan on posting from company pages, you'll need to do the following:
+
+<details>
+<summary>Company Setup</summary>
+
+1. If you plan on posting from company pages, you'll also need to enable the `Advertising API` product. Furthermore, ensure your personal account has at least one one of the following roles with the company page:
 
 - `ADMINISTRATOR`
 - `DIRECT_SPONSORED_CONTENT_POSTER`
 - `RECRUITING_POSTER`
 
-2. The company needs to verify your LinkedIn API app. To request verification, visit the `Settings` tab of your app, then click the `Verify` button on the company page card.
+2. Next, ensure your company page has verified the app. You can create a verification link on the `Settings` tab of your app, then click the `Verify` button on the company page card.
+3. Once requesting access, you'll need to fill out a form for verification. Once submitted, you should receive an email stating you've been granted developer access which will give you the proper permission to test out the API until it's been approved.
+4. Inside the [authorization server file (./src/clients/auth-server.ts)](./src/clients/auth-server.ts), ensure the `w_organization_social` scope is enabled inside the scopes string in the `/auth/linkedin` route. Once done, the scopes string should look like this: `openid profile email w_member_social w_organization_social`
+5. Get the organization ID from the URL of the company page when you're logged in as an admin and set it as the `LINKEDIN_ORGANIZATION_ID` environment variable. For example, if the URL is `https://www.linkedin.com/company/12345678/admin/dashboard/`, the organization ID would be `12345678`.
 
-3. Enable the `Advertising API` product, and fill out the request form.
+> [!NOTE]
+> If you plan on only posting from the company account, you can set the `POST_TO_LINKEDIN_ORGANIZATION` to `"true"` in your `.env` file. If you want to choose dynamically, you can set this to `true`/`false` in the configurable fields (`postToLinkedInOrganization`) when invoking the `generate_post` graph.
+> This value will take precedence over the `POST_TO_LINKEDIN_ORGANIZATION` environment variable.
 
-Once your request has been approved, you will be able to authorize your user with write permissions to the company page.
+</details>
+
+4. Save the following environment variables in your `.env` file:
+
+- `LINKEDIN_CLIENT_ID`
+- `LINKEDIN_CLIENT_SECRET`
+
+5. Run the `yarn start:auth` command to run the LinkedIn OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with LinkedIn`.
+6. After logging in, copy the `access_token` and `sub` values from the objects logged to the terminal. Set these values as `LINKEDIN_ACCESS_TOKEN` (`access_token`) and `LINKEDIN_PERSON_URN` (`sub`) in your `.env` file.
 
 #### Setup Supabase
 
@@ -133,12 +152,12 @@ Once all the required environment variables are set, you can try out the agent b
 
 Before running, ensure you have the following environment variables set:
 
-- `TWITTER_USER_ID` & `LINKEDIN_USER_ID` - The email address/username of the Twitter & LinkedIn account you'd like to have the agent use. (only one of these must be set).
+- `TWITTER_USER_ID` & `LINKEDIN_USER_ID` - The email address/username of the Twitter & LinkedIn account you'd like to have the agent use. (only one of these must be set). Optionally, you can pass these as configurable fields by editing the [`generate-demo-post.ts`](./scripts/generate-demo-post.ts) script.
 - `LANGGRAPH_API_URL` - The URL of the local LangGraph server. **not** required if you passed `--port 54367` when running `langgraph up`.
 
-This will run the [`generate-demo-post.ts`](scripts/generate-demo-post.ts) script, which generates a demo post on the [Open Canvas](https://github.com/langchain-ai/open-canvas) project.
+This will run the [`generate-demo-post.ts`](./scripts/generate-demo-post.ts) script, which generates a demo post on the [Open Canvas](https://github.com/langchain-ai/open-canvas) project.
 
-After invoking, visit the [Agent Inbox](https://agent-inbox-nu.vercel.app) and add the local inbox in settings, passing in the following fields:
+After invoking, visit the [Agent Inbox](https://agent-inbox-nu.vercel.app) and add the Generate Post inbox in settings, passing in the following fields:
 
 - Your LangSmith API key
 
