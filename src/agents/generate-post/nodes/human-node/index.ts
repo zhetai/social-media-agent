@@ -25,43 +25,55 @@ function constructDescription({
   imageOptions,
 }: ConstructDescriptionArgs): string {
   const linksText = `### Relevant URLs:\n- ${relevantLinks.join("\n- ")}\nOriginal URL: ${originalLink}`;
-  const header = `# Schedule post\n\nUsing these URL(s), a post was generated for Twitter/LinkedIn:\n${linksText}\n### Post:\n\n\`\`\`\n${post}\n\`\`\``;
   const imageOptionsText = imageOptions?.length
     ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
     : "";
-  const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
-  const respondInstructions = `If a response is sent, it will be sent to a router which can be routed to either
-1. A node which will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.
-2. A node which will be used to update the scheduled date for the post.`;
-  const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
-  const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
-  const scheduleDateInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST', _OR_ you can use a priority level:
+
+  return `# Schedule post
+  
+Using these URL(s), a post was generated for Twitter/LinkedIn:
+${linksText}
+
+### Post:
+\`\`\`
+${post}
+\`\`\`
+
+${imageOptionsText}
+
+## Instructions
+
+There are a few different actions which can be taken:\n
+- **Edit**: If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.
+- **Response**: If a response is sent, it will be sent to a router which can be routed to either
+  1. A node which will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.
+  2. A node which will be used to update the scheduled date for the post.
+- **Accept**: If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.
+- **Ignore**: If 'ignore' is selected, this post will not be scheduled, and the thread will end.
+
+## Additional Instructions
+
+### Schedule Date
+
+The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST', _OR_ you can use a priority level:
 - **P1**: Saturday/Sunday between 8:00 AM and 10:00 AM PST.
 - **P2**: Friday/Monday between 8:00 AM and 10:00 AM PST _OR_ Saturday/Sunday between 11:30 AM and 1:00 PM PST.
-- **P3**: Saturday/Sunday between 1:00 PM and 5:00 PM PST.`;
-  const imageInstructions = `If you wish to attach an image to the post, please add a public image URL.
+- **P3**: Saturday/Sunday between 1:00 PM and 5:00 PM PST.
+
+### Image
+
+If you wish to attach an image to the post, please add a public image URL.
 
 You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field
 To replace the image, simply add a new public image URL to the field.
 
 MIME types will be automatically extracted from the image.
-Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\``;
-  const instructionsText = `## Instructions\n\nThere are a few different actions which can be taken:\n
-- **Edit**: ${editInstructions}
-- **Response**: ${respondInstructions}
-- **Accept**: ${acceptInstructions}
-- **Ignore**: ${ignoreInstructions}
+Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\`
 
-## Additional Instructions
+## Report
 
-### Schedule Date
-${scheduleDateInstructions}
-
-### Image
-${imageInstructions}`;
-  const reportText = `Here is the report that was generated for the posts:\n${report}`;
-
-  return `${header}\n\n${imageOptionsText}\n\n${instructionsText}\n\n${reportText}`;
+Here is the report that was generated for the posts:\n${report}
+`;
 }
 
 export async function humanNode(
