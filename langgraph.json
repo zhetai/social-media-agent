@@ -3,7 +3,8 @@
   "graphs": {
     "ingest_data": "./src/agents/ingest-data/ingest-data-graph.ts:graph",
     "generate_post": "./src/agents/generate-post/generate-post-graph.ts:generatePostGraph",
-    "upload_post": "./src/agents/upload-post/index.ts:uploadPostGraph"
+    "upload_post": "./src/agents/upload-post/index.ts:uploadPostGraph",
+    "reflection": "./src/agents/reflection/index.ts:reflectionGraph"
   },
   "env": ".env",
   "dependencies": ["."],
