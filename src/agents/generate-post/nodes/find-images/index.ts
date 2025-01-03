@@ -9,8 +9,8 @@ import { takeScreenshotAndUpload } from "./screenshot.js";
 import { getFileContents } from "../../../../utils/github-repo-contents.js";
 
 export async function findImages(state: typeof GeneratePostAnnotation.State) {
-  const { pageContents, links, imageOptions } = state;
-  const link = links[0];
+  const { pageContents, imageOptions, relevantLinks } = state;
+  const link = relevantLinks[0];
   const imageUrls = new Set<string>();
 
   const screenshotUrl = await takeScreenshotAndUpload(link);
@@ -25,6 +25,7 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
   }
 
   if (pageContents && pageContents.length) {
+    console.log("\n\n\n---\nExtracting images from page contents", pageContents);
     const allImageUrls = pageContents.flatMap(extractAllImageUrlsFromMarkdown);
 
     for await (const urlOrPathname of allImageUrls) {
