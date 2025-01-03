@@ -25,7 +25,6 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
   }
 
   if (pageContents && pageContents.length) {
-    console.log("\n\n\n---\nExtracting images from page contents", pageContents);
     const allImageUrls = pageContents.flatMap(extractAllImageUrlsFromMarkdown);
 
     for await (const urlOrPathname of allImageUrls) {
