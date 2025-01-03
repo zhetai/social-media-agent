@@ -85,11 +85,20 @@ export async function humanNode(
   }
 
   const defaultDate = state.scheduleDate || getNextSaturdayDate();
-  const defaultDateString = formatInTimeZone(
-    defaultDate,
-    "America/Los_Angeles",
-    "MM/dd/yyyy hh:mm a z",
-  );
+  let defaultDateString = "";
+  if (
+    typeof state.scheduleDate === "string" &&
+    ["p1", "p2", "p3"].includes(state.scheduleDate)
+  ) {
+    defaultDateString = state.scheduleDate as string;
+  } else {
+    defaultDateString = formatInTimeZone(
+      defaultDate,
+      "America/Los_Angeles",
+      "MM/dd/yyyy hh:mm a z",
+    );
+  }
+
   const imageURL = state.image?.imageUrl ?? "";
   const interruptValue: HumanInterrupt = {
     action_request: {

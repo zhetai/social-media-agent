@@ -30,11 +30,13 @@ export async function getReflections(
  */
 export async function putReflections(
   config: LangGraphRunnableConfig,
-  value: Record<string, any>,
+  reflections: string[],
 ): Promise<void> {
   const { store } = config;
   if (!store) {
     throw new Error("No store provided");
   }
-  await store.put(NAMESPACE, KEY, value);
+  await store.put(NAMESPACE, KEY, {
+    [RULESET_KEY]: reflections,
+  });
 }

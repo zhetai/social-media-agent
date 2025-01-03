@@ -1,6 +1,6 @@
 import * as ls from "langsmith/jest";
 import { type SimpleEvaluator } from "langsmith/jest";
-import { validateImages } from "../agents/generate-post/nodes/validate-images.js";
+import { validateImages } from "../agents/generate-post/nodes/find-images/validate-images.js";
 import { GeneratePostAnnotation } from "../agents/generate-post/generate-post-state.js";
 
 const REPORT = `News TL;DR: An Intelligent News Processing Agent
@@ -105,8 +105,8 @@ ls.describe("SMA - Validate Images", () => {
       );
       const evalResult = ls.expect(result).evaluatedBy(myEvaluator);
       // Ensure the result is greater than 0.8 and less than or equal to 1
-      evalResult.toBeGreaterThanOrEqual(0.8);
-      evalResult.toBeLessThanOrEqual(1);
+      await evalResult.toBeGreaterThanOrEqual(0.8);
+      await evalResult.toBeLessThanOrEqual(1);
       return result;
     },
   );

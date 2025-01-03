@@ -39,7 +39,6 @@ export async function getTweetContent(
   const mediaUrls = tweetContent.data.attachments?.media_keys?.map(
     (k) => `https://pbs.twimg.com/media/${k}?format=jpg&name=medium`,
   );
-  console.dir(result, { depth: null });
   // Extract any links from inside the tweet content.
   // Then, fetch the content of those links to include in the main content.
   const urlsInTweet = extractUrls(tweetContent.data.text);

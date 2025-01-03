@@ -20,7 +20,7 @@ const newRuleSchema = z.object({
 
 const updateRulesetSchema = z
   .object({
-    updatedRuleset: z.string().describe("The updated ruleset."),
+    updatedRuleset: z.array(z.string()).describe("The updated ruleset."),
   })
   .describe("The updated ruleset.");
 
@@ -88,11 +88,9 @@ async function reflection(
 
   const existingRules = await getReflections(config);
 
-  if (!existingRules) {
+  if (!existingRules?.value?.[RULESET_KEY]?.length) {
     // No rules exist yet. Create and return early.
-    await putReflections(config, {
-      [RULESET_KEY]: [newRule],
-    });
+    await putReflections(config, [newRule]);
     return {};
   }
 
@@ -101,7 +99,7 @@ async function reflection(
   });
   const updateRulesetPrompt = UPDATE_RULES_PROMPT.replace(
     "{EXISTING_RULES}",
-    existingRules?.value.ruleset.join("\n") || "",
+    existingRules?.value[RULESET_KEY].join("\n") || "",
   ).replace("{NEW_RULE}", newRule);
   const updateRulesetResult = await updateRulesetModel.invoke([
     {
@@ -110,9 +108,7 @@ async function reflection(
     },
   ]);
 
-  await putReflections(config, {
-    [RULESET_KEY]: updateRulesetResult.updatedRuleset,
-  });
+  await putReflections(config, updateRulesetResult.updatedRuleset);
 
   return {};
 }

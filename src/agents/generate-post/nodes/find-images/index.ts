@@ -7,6 +7,7 @@ import {
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { takeScreenshotAndUpload } from "./screenshot.js";
 import { getFileContents } from "../../../../utils/github-repo-contents.js";
+import { validateImages } from "./validate-images.js";
 
 export async function findImages(state: typeof GeneratePostAnnotation.State) {
   const { pageContents, imageOptions, relevantLinks } = state;
@@ -47,7 +48,13 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
     throw new Error("No page content or images found");
   }
 
-  return {
+  const validatedImages = await validateImages({
     imageOptions: Array.from(imageUrls),
+    report: state.report,
+    post: state.post,
+  });
+
+  return {
+    imageOptions: validatedImages.imageOptions,
   };
 }

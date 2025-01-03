@@ -1,6 +1,5 @@
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
-import { GeneratePostAnnotation } from "../generate-post-state.js";
-import { getMimeTypeFromUrl } from "../../utils.js";
+import { getMimeTypeFromUrl } from "../../../utils.js";
 
 const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
 Your goal is to identify which images from a given set are relevant to the post, based on the content of the post and an associated marketing report.
@@ -55,25 +54,35 @@ function chunk<T>(arr: T[], size: number): T[][] {
   );
 }
 
-export async function validateImages(
-  state: typeof GeneratePostAnnotation.State,
-): Promise<Partial<typeof GeneratePostAnnotation.State>> {
+interface ValidateImagesArgs {
+  imageOptions: string[];
+  report: string;
+  post: string;
+}
+
+export async function validateImages({
+  imageOptions,
+  report,
+  post,
+}: ValidateImagesArgs): Promise<{
+  imageOptions: string[];
+}> {
   const model = new ChatVertexAI({
     model: "gemini-2.0-flash-exp",
     temperature: 0,
   });
 
-  let imagesWithoutSupabase = state.imageOptions;
+  let imagesWithoutSupabase = imageOptions;
   if (process.env.SUPABASE_URL) {
     // Do not include the supabase screenshot in the image list to validate.
-    imagesWithoutSupabase = state.imageOptions.filter(
+    imagesWithoutSupabase = imageOptions.filter(
       (fileUri) => !fileUri.startsWith(process.env.SUPABASE_URL as string),
     );
   }
 
   if (imagesWithoutSupabase.length === 0) {
     return {
-      imageOptions: state.imageOptions,
+      imageOptions: imageOptions,
     };
   }
 
@@ -84,8 +93,8 @@ export async function validateImages(
 
   const formattedSystemPrompt = VALIDATE_IMAGES_PROMPT.replace(
     "{POST}",
-    state.post,
-  ).replace("{REPORT}", state.report);
+    post,
+  ).replace("{REPORT}", report);
 
   // Process each chunk
   for (const imageChunk of imageChunks) {
@@ -126,7 +135,7 @@ export async function validateImages(
     baseIndex += imageChunk.length;
   }
 
-  const supabaseUrl = state.imageOptions.find((fileUri) =>
+  const supabaseUrl = imageOptions.find((fileUri) =>
     fileUri.startsWith(process.env.SUPABASE_URL as string),
   );
 

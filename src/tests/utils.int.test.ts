@@ -90,7 +90,7 @@ describe("Screenshot utils", () => {
     expect(parsedUrl).toBeDefined();
   });
 
-  it("Can take a screenshot of a GitHub readme and clip only the file contents", async () => {
+  it.only("Can take a screenshot of a GitHub readme and clip only the file contents", async () => {
     const screenshot = await takeScreenshot(`${repoUrl}/blob/main/README.md`, {
       screenshotOptions: GITHUB_SCREENSHOT_OPTIONS,
       browserContextOptions: GITHUB_BROWSER_CONTEXT_OPTIONS,

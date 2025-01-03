@@ -70,9 +70,9 @@ export const ALLOWED_TIMES = [
 
 export const GITHUB_SCREENSHOT_OPTIONS: PageScreenshotOptions = {
   clip: {
-    width: 1920,
+    width: 1200,
     height: 1500,
-    x: 325,
+    x: 525,
     y: 350,
   },
 };

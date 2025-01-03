@@ -33,7 +33,7 @@ async function runReflections({
   });
 
   const thread = await client.threads.create();
-  await client.runs.create(thread.thread_id, "reflections", {
+  await client.runs.create(thread.thread_id, "reflection", {
     input: {
       originalPost,
       newPost,

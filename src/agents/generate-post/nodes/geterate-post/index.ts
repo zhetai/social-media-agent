@@ -26,7 +26,10 @@ export async function generatePost(
 
   const reflections = await getReflections(config);
   let reflectionsPrompt = "";
-  if (reflections?.value?.[RULESET_KEY]?.length) {
+  if (
+    reflections?.value?.[RULESET_KEY]?.length &&
+    Array.isArray(reflections?.value?.[RULESET_KEY])
+  ) {
     const rulesetString = `- ${reflections.value[RULESET_KEY].join("\n- ")}`;
     reflectionsPrompt = REFLECTIONS_PROMPT.replace(
       "{reflections}",
