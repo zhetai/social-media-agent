@@ -1,13 +1,14 @@
 import { END, LangGraphRunnableConfig, interrupt } from "@langchain/langgraph";
-import { GeneratePostAnnotation } from "../generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { formatInTimeZone } from "date-fns-tz";
-import { HumanInterrupt, HumanResponse } from "../../types.js";
+import { HumanInterrupt, HumanResponse } from "../../../types.js";
 import {
   getNextSaturdayDate,
   isValidDateString,
   processImageInput,
-} from "../../utils.js";
-import { timezoneToUtc } from "../../../utils/dateUtils.js";
+} from "../../../utils.js";
+import { timezoneToUtc } from "../../../../utils/dateUtils.js";
+import { routeResponse } from "./route-response.js";
 
 interface ConstructDescriptionArgs {
   report: string;
@@ -28,7 +29,9 @@ function constructDescription({
     ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
     : "";
   const editInstructions = `If the post is edited and submitted, it will be scheduled for Twitter/LinkedIn.`;
-  const respondInstructions = `If a response is sent, it will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.`;
+  const respondInstructions = `If a response is sent, it will be sent to a router which can be routed to either
+1. A node which will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.
+2. A node which will be used to update the scheduled date for the post.`;
   const acceptInstructions = `If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.`;
   const ignoreInstructions = `If 'ignore' is selected, this post will not be scheduled, and the thread will end.`;
   const scheduleDateInstructions = `The date the post will be scheduled for may be edited, but it must follow the format 'MM/dd/yyyy hh:mm a z'. Example: '12/25/2024 10:00 AM PST'`;
@@ -120,9 +123,22 @@ export async function humanNode(
       throw new Error("Response args must be a string.");
     }
 
+    const { route } = await routeResponse({
+      post: state.post,
+      dateOrPriority: defaultDateString,
+      userResponse: response.args,
+    });
+
+    if (route === "rewrite_post") {
+      return {
+        userResponse: response.args,
+        next: "rewritePost",
+      };
+    }
+
     return {
       userResponse: response.args,
-      next: "rewritePost",
+      next: "updateScheduleDate",
     };
   }
 
@@ -159,6 +175,7 @@ export async function humanNode(
   }
 
   const processedImage = await processImageInput(castArgs.image);
+
   let imageState: { imageUrl: string; mimeType: string } | undefined =
     undefined;
   if (processedImage && processedImage !== "remove") {

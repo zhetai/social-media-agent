@@ -1,3 +1,4 @@
+import { Client } from "@langchain/langgraph-sdk";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
@@ -11,6 +12,35 @@ The original post you wrote is as follows:
 </original-post>
 
 Listen to your boss closely, and make the necessary changes to the post. You should respond ONLY with the updated post, with no additional information, or text before or after the post.`;
+
+interface RunReflectionsArgs {
+  originalPost: string;
+  newPost: string;
+  userResponse: string;
+}
+
+/**
+ * Kick off a new run to generate reflections.
+ * @param param0
+ */
+async function runReflections({
+  originalPost,
+  newPost,
+  userResponse,
+}: RunReflectionsArgs) {
+  const client = new Client({
+    apiUrl: `http://localhost:${process.env.PORT}`,
+  });
+
+  const thread = await client.threads.create();
+  await client.runs.create(thread.thread_id, "reflections", {
+    input: {
+      originalPost,
+      newPost,
+      userResponse,
+    },
+  });
+}
 
 export async function rewritePost(
   state: typeof GeneratePostAnnotation.State,
@@ -43,6 +73,12 @@ export async function rewritePost(
       content: state.userResponse,
     },
   ]);
+
+  await runReflections({
+    originalPost: state.post,
+    newPost: revisePostResponse.content as string,
+    userResponse: state.userResponse,
+  });
 
   return {
     post: revisePostResponse.content as string,

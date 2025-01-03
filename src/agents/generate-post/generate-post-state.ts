@@ -70,7 +70,13 @@ export const GeneratePostAnnotation = Annotation.Root({
   /**
    * The node to execute next.
    */
-  next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
+  next: Annotation<
+    | "schedulePost"
+    | "rewritePost"
+    | "updateScheduleDate"
+    | typeof END
+    | undefined
+  >,
   /**
    * The image to attach to the post, and the MIME type.
    */
