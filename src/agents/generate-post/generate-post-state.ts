@@ -10,6 +10,7 @@ import {
   TWITTER_TOKEN_SECRET,
   TWITTER_USER_ID,
 } from "./constants.js";
+import { DateType } from "../types.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 
@@ -61,7 +62,7 @@ export const GeneratePostAnnotation = Annotation.Root({
   /**
    * The date to schedule the post for.
    */
-  scheduleDate: Annotation<Date>,
+  scheduleDate: Annotation<DateType>,
   /**
    * Response from the user for the post. Typically used to request
    * changes to be made to the post.
@@ -70,7 +71,13 @@ export const GeneratePostAnnotation = Annotation.Root({
   /**
    * The node to execute next.
    */
-  next: Annotation<"schedulePost" | "rewritePost" | typeof END | undefined>,
+  next: Annotation<
+    | "schedulePost"
+    | "rewritePost"
+    | "updateScheduleDate"
+    | typeof END
+    | undefined
+  >,
   /**
    * The image to attach to the post, and the MIME type.
    */

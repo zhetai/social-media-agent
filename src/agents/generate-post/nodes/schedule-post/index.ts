@@ -1,5 +1,5 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { GeneratePostAnnotation } from "../generate-post-state.js";
+import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { Client } from "@langchain/langgraph-sdk";
 import {
   LINKEDIN_ACCESS_TOKEN,
@@ -10,7 +10,8 @@ import {
   TWITTER_TOKEN,
   TWITTER_TOKEN_SECRET,
   TWITTER_USER_ID,
-} from "../constants.js";
+} from "../../constants.js";
+import { getScheduledDateSeconds } from "./find-date.js";
 
 export async function schedulePost(
   state: typeof GeneratePostAnnotation.State,
@@ -32,17 +33,10 @@ export async function schedulePost(
     apiUrl: `http://localhost:${process.env.PORT}`,
   });
 
-  const currentDate = new Date();
-  const afterSeconds = Math.floor(
-    (state.scheduleDate.getTime() - currentDate.getTime()) / 1000,
+  const afterSeconds = await getScheduledDateSeconds(
+    state.scheduleDate,
+    config,
   );
-
-  // if after seconds is negative, throw an error
-  if (afterSeconds < 0) {
-    throw new Error(
-      `Schedule date must be in the future. Instead, received: ${afterSeconds} seconds.`,
-    );
-  }
 
   const thread = await client.threads.create();
   await client.runs.create(thread.thread_id, "upload_post", {

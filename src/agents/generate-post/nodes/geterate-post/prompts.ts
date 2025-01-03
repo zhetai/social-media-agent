@@ -80,6 +80,11 @@ export const RULES = `- Focus your post on what the content covers, aims to achi
 - ALWAYS use present tense to make announcements feel immediate (e.g., "Microsoft just launched..." instead of "Microsoft launches...").
 - ALWAYS include the link to the content being promoted in the call to action section of the post.`;
 
+export const REFLECTIONS_PROMPT = `You have also been provided with a handful of reflections based on requests the user has made. Be sure to follow these rules when writing this new post so the user does not need to repeat their requests:
+<reflections>
+{reflections}
+</reflections>`;
+
 export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
 Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
@@ -100,6 +105,8 @@ Here are a set of rules and guidelines you should strictly follow when creating 
 <rules>
 ${RULES}
 </rules>
+
+{reflectionsPrompt}
 
 Lastly, you should follow the process below when writing the LinkedIn/Twitter post:
 <writing-process>

@@ -5,14 +5,15 @@ import {
 } from "./generate-post-state.js";
 import { generateContentReport } from "./nodes/generate-content-report.js";
 import { generatePost } from "./nodes/geterate-post/index.js";
-import { humanNode } from "./nodes/human-node.js";
+import { humanNode } from "./nodes/human-node/index.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
-import { schedulePost } from "./nodes/schedule-post.js";
+import { schedulePost } from "./nodes/schedule-post/index.js";
 import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
 import { findImages } from "./nodes/find-images/index.js";
+import { updateScheduledDate } from "./nodes/update-scheduled-date.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -25,7 +26,7 @@ function routeAfterGeneratingReport(
 
 function rewriteOrEndConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
-): "rewritePost" | "schedulePost" | typeof END {
+): "rewritePost" | "schedulePost" | "updateScheduleDate" | typeof END {
   if (state.next) {
     return state.next;
   }
@@ -36,7 +37,7 @@ function condenseOrHumanConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
 ): "condensePost" | "humanNode" {
   const cleanedPost = removeUrls(state.post || "");
-  if (cleanedPost.length > 300) {
+  if (cleanedPost.length > 280) {
     return "condensePost";
   }
   return "humanNode";
@@ -80,6 +81,8 @@ const generatePostBuilder = new StateGraph(
   .addNode("generateContentReport", generateContentReport)
   // Finds images in the content.
   .addNode("findImages", findImages)
+  // Updated the scheduled date from the natural language response from the user.
+  .addNode("updateScheduleDate", updateScheduledDate)
 
   // Start node
   .addEdge(START, "authSocialsPassthrough")
@@ -112,13 +115,15 @@ const generatePostBuilder = new StateGraph(
   // After condensing the post, always route to the human node.
   .addEdge("condensePost", "humanNode")
 
-  // Always route back to `humanNode` if the post was re-written.
+  // Always route back to `humanNode` if the post was re-written or date was updated.
   .addEdge("rewritePost", "humanNode")
+  .addEdge("updateScheduleDate", "humanNode")
 
   // If the schedule post is successful, end the graph.
   .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
     "rewritePost",
     "schedulePost",
+    "updateScheduleDate",
     END,
   ])
   // Always end after scheduling the post.

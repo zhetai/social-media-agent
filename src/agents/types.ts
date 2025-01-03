@@ -20,3 +20,5 @@ export type HumanResponse = {
   type: "accept" | "ignore" | "response" | "edit";
   args: null | string | ActionRequest;
 };
+
+export type DateType = Date | "p1" | "p2" | "p3";

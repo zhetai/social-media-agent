@@ -1,5 +1,3 @@
-import { nextSaturday, setHours, setMinutes, parse, isValid } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import * as cheerio from "cheerio";
 
 /**
@@ -53,37 +51,6 @@ export function extractUrls(text: string): string[] {
 export function removeUrls(text: string): string {
   const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
   return text.replace(urlRegex, "").replace(/\s+/g, " ").trim();
-}
-
-/**
- * Get a date for the next Saturday at the specified hour in Pacific Time (PST/PDT)
- * @param {number} hour - The hour to set for the next Saturday in PST/PDT (default: 12)
- * @param {number} minute - The minute to set for the next Saturday in PST/PDT (default: 0)
- * @returns {Date} The date for the next Saturday at the specified hour in PST/PDT
- */
-export function getNextSaturdayDate(hour = 12, minute = 0): Date {
-  const saturday = nextSaturday(new Date());
-  const saturdayWithTime = setMinutes(setHours(saturday, hour), minute);
-  return toZonedTime(saturdayWithTime, "America/Los_Angeles");
-}
-
-/**
- * Validates a date string in the format 'MM/dd/yyyy hh:mm a z'
- * @param dateString - The date string to validate
- * @returns {boolean} - Whether the date string is valid
- */
-export function isValidDateString(dateString: string): boolean {
-  try {
-    // Remove timezone abbreviation if present
-    const dateWithoutTz = dateString.replace(/ [A-Z]{3}$/, "");
-
-    // Parse the date without timezone
-    const parsedDate = parse(dateWithoutTz, "MM/dd/yyyy hh:mm a", new Date());
-    return isValid(parsedDate);
-  } catch (e) {
-    console.error("Failed to parse date string:", e);
-    return false;
-  }
 }
 
 /**
@@ -394,4 +361,42 @@ export function getUrlType(url: string): UrlType {
   }
 
   return "general";
+}
+
+/**
+ * Extracts the MIME type from a URL based on its file extension or path
+ * @param url The URL to extract MIME type from
+ * @returns The MIME type (e.g., 'image/jpeg', 'image/png') or undefined if not determinable
+ */
+export function getMimeTypeFromUrl(url: string): string | undefined {
+  try {
+    // Handle encoded URLs (like in Substack CDN URLs)
+    const decodedUrl = decodeURIComponent(url);
+
+    // Try to find the last occurrence of a file extension
+    const extensionMatch = decodedUrl.match(/\.([^./\\?#]+)(?:[?#].*)?$/i);
+
+    if (!extensionMatch) {
+      return undefined;
+    }
+
+    const extension = extensionMatch[1].toLowerCase();
+
+    // Map common image extensions to MIME types
+    const mimeTypeMap: Record<string, string> = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      ico: "image/x-icon",
+      bmp: "image/bmp",
+    };
+
+    return mimeTypeMap[extension];
+  } catch (error) {
+    console.error("Error extracting MIME type from URL:", error);
+    return undefined;
+  }
 }
