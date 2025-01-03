@@ -17,7 +17,11 @@ import {
 } from "../generate-post/constants.js";
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { getReflections, putReflections } from "../../utils/reflections.js";
+import {
+  getReflections,
+  putReflections,
+  RULESET_KEY,
+} from "../../utils/reflections.js";
 
 const REFLECTION_PROMPT = `You are an AI assistant tasked with analyzing social media post revisions and user feedback to determine if a new rule should be created for future post modifications.
 Your goal is to identify patterns in the changes requested by the user and decide if these changes should be applied automatically in the future.
@@ -186,7 +190,7 @@ async function reflection(
   if (!existingRules) {
     // No rules exist yet. Create and return early.
     await putReflections(config, {
-      ruleset: [newRule],
+      [RULESET_KEY]: [newRule],
     });
     return {};
   }
@@ -206,7 +210,7 @@ async function reflection(
   ]);
 
   await putReflections(config, {
-    ruleset: updateRulesetResult.updatedRuleset,
+    [RULESET_KEY]: updateRulesetResult.updatedRuleset,
   });
 
   return {};

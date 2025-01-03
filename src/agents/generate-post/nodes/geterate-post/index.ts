@@ -1,14 +1,15 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { GENERATE_POST_PROMPT } from "./prompts.js";
+import { GENERATE_POST_PROMPT, REFLECTIONS_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
 import { getNextSaturdayDate } from "../../../utils.js";
+import { getReflections, RULESET_KEY } from "../../../../utils/reflections.js";
 
 export async function generatePost(
   state: typeof GeneratePostAnnotation.State,
-  _config: LangGraphRunnableConfig,
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.report) {
     throw new Error("No report found");
@@ -23,10 +24,25 @@ export async function generatePost(
 
   const prompt = formatPrompt(state.report, state.relevantLinks[0]);
 
+  const reflections = await getReflections(config);
+  let reflectionsPrompt = "";
+  if (reflections?.value?.[RULESET_KEY]?.length) {
+    const rulesetString = `- ${reflections.value[RULESET_KEY].join("\n- ")}`;
+    reflectionsPrompt = REFLECTIONS_PROMPT.replace(
+      "{reflections}",
+      rulesetString,
+    );
+  }
+
+  const generatePostPrompt = GENERATE_POST_PROMPT.replace(
+    "{reflectionsPrompt}",
+    reflectionsPrompt,
+  );
+
   const postResponse = await postModel.invoke([
     {
       role: "system",
-      content: GENERATE_POST_PROMPT,
+      content: generatePostPrompt,
     },
     {
       role: "user",

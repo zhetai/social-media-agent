@@ -2,6 +2,7 @@ import { Item, LangGraphRunnableConfig } from "@langchain/langgraph";
 
 const NAMESPACE = ["reflection_rules"];
 const KEY = "rules";
+export const RULESET_KEY = "ruleset";
 
 /**
  * Retrieves reflection rules from the store
