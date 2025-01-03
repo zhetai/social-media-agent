@@ -362,3 +362,41 @@ export function getUrlType(url: string): UrlType {
 
   return "general";
 }
+
+/**
+ * Extracts the MIME type from a URL based on its file extension or path
+ * @param url The URL to extract MIME type from
+ * @returns The MIME type (e.g., 'image/jpeg', 'image/png') or undefined if not determinable
+ */
+export function getMimeTypeFromUrl(url: string): string | undefined {
+  try {
+    // Handle encoded URLs (like in Substack CDN URLs)
+    const decodedUrl = decodeURIComponent(url);
+
+    // Try to find the last occurrence of a file extension
+    const extensionMatch = decodedUrl.match(/\.([^./\\?#]+)(?:[?#].*)?$/i);
+
+    if (!extensionMatch) {
+      return undefined;
+    }
+
+    const extension = extensionMatch[1].toLowerCase();
+
+    // Map common image extensions to MIME types
+    const mimeTypeMap: Record<string, string> = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      ico: "image/x-icon",
+      bmp: "image/bmp",
+    };
+
+    return mimeTypeMap[extension];
+  } catch (error) {
+    console.error("Error extracting MIME type from URL:", error);
+    return undefined;
+  }
+}

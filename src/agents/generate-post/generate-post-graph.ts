@@ -14,6 +14,7 @@ import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
 import { findImages } from "./nodes/find-images/index.js";
 import { updateScheduledDate } from "./nodes/update-scheduled-date.js";
+import { validateImages } from "./nodes/validate-images.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -81,6 +82,8 @@ const generatePostBuilder = new StateGraph(
   .addNode("generateContentReport", generateContentReport)
   // Finds images in the content.
   .addNode("findImages", findImages)
+  // Validate the images and update state to only include relevant images.
+  .addNode("validateImages", validateImages)
   // Updated the scheduled date from the natural language response from the user.
   .addNode("updateScheduleDate", updateScheduledDate)
 
@@ -96,7 +99,8 @@ const generatePostBuilder = new StateGraph(
   )
 
   // Once generating a report & finding images, we should confirm the report exists (meaning the content is relevant).
-  .addConditionalEdges("findImages", routeAfterGeneratingReport, [
+  .addEdge("findImages", "validateImages")
+  .addConditionalEdges("validateImages", routeAfterGeneratingReport, [
     "generatePost",
     END,
   ])
