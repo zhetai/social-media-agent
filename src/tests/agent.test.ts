@@ -6,7 +6,7 @@ import {
   extractUrls,
   extractUrlsFromSlackText,
 } from "../agents/utils.js";
-import { timezoneToUtc } from "../utils/dateUtils.js";
+import { timezoneToUtc } from "../utils/date.js";
 
 describe("extractUrlsFromSlackText", () => {
   it("Can extract URL from Slack-style message text", () => {

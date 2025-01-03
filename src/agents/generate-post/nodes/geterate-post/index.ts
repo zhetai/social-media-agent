@@ -4,8 +4,8 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { GENERATE_POST_PROMPT, REFLECTIONS_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
-import { getNextSaturdayDate } from "../../../utils.js";
 import { getReflections, RULESET_KEY } from "../../../../utils/reflections.js";
+import { getNextSaturdayDate } from "../../../../utils/date.js";
 
 export async function generatePost(
   state: typeof GeneratePostAnnotation.State,

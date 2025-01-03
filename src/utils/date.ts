@@ -1,4 +1,6 @@
-import { fromZonedTime } from "date-fns-tz";
+import { nextSaturday, setHours, setMinutes, parse, isValid } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { DateType } from "../agents/types.js";
 
 /**
  * Converts a date string in any timezone to a UTC Date object
@@ -61,4 +63,54 @@ export function timezoneToUtc(dateString: string): Date | undefined {
     return undefined;
   }
   return newDate;
+}
+
+/**
+ * Get a date for the next Saturday at the specified hour in Pacific Time (PST/PDT)
+ * @param {number} hour - The hour to set for the next Saturday in PST/PDT (default: 12)
+ * @param {number} minute - The minute to set for the next Saturday in PST/PDT (default: 0)
+ * @returns {Date} The date for the next Saturday at the specified hour in PST/PDT
+ */
+export function getNextSaturdayDate(hour = 12, minute = 0): Date {
+  const saturday = nextSaturday(new Date());
+  const saturdayWithTime = setMinutes(setHours(saturday, hour), minute);
+  return toZonedTime(saturdayWithTime, "America/Los_Angeles");
+}
+
+/**
+ * Validates a date string in the format 'MM/dd/yyyy hh:mm a z'
+ * @param dateString - The date string to validate
+ * @returns {boolean} - Whether the date string is valid
+ */
+export function isValidDateString(dateString: string): boolean {
+  try {
+    // Remove timezone abbreviation if present
+    const dateWithoutTz = dateString.replace(/ [A-Z]{3}$/, "");
+
+    // Parse the date without timezone
+    const parsedDate = parse(dateWithoutTz, "MM/dd/yyyy hh:mm a", new Date());
+    return isValid(parsedDate);
+  } catch (e) {
+    console.error("Failed to parse date string:", e);
+    return false;
+  }
+}
+
+/**
+ * Parses a date string into a DateType, handling both priority values and UTC date conversion
+ * @param dateString - Input string that can be either a priority value (p1, p2, p3) or a valid date string
+ * @returns Priority value (p1/p2/p3), UTC converted Date if valid date string, or undefined if invalid
+ */
+export function parseDateResponse(dateString: string): DateType | undefined {
+  const cleanedDate = dateString.toLowerCase().trim();
+  if (["p1", "p2", "p3"].find((p) => cleanedDate === p)) {
+    return cleanedDate as DateType;
+  }
+
+  const isDateValid = isValidDateString(dateString);
+  if (!isDateValid) {
+    return undefined;
+  }
+
+  return timezoneToUtc(dateString);
 }

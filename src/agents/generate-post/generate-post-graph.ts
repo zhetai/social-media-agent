@@ -7,7 +7,7 @@ import { generateContentReport } from "./nodes/generate-content-report.js";
 import { generatePost } from "./nodes/geterate-post/index.js";
 import { humanNode } from "./nodes/human-node/index.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
-import { schedulePost } from "./nodes/schedule-post.js";
+import { schedulePost } from "./nodes/schedule-post/index.js";
 import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
