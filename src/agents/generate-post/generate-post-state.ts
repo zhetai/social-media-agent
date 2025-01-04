@@ -67,7 +67,7 @@ export const GeneratePostAnnotation = Annotation.Root({
    * Response from the user for the post. Typically used to request
    * changes to be made to the post.
    */
-  userResponse: Annotation<string>,
+  userResponse: Annotation<string | undefined>,
   /**
    * The node to execute next.
    */

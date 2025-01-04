@@ -158,10 +158,11 @@ export function isValidUrl(str: string): boolean {
   try {
     new URL(str);
     return true;
-  } catch (error) {
-    if (error instanceof TypeError) {
+  } catch (error: any) {
+    if (error?.message === "Invalid URL" || error instanceof TypeError) {
       return false;
     }
+
     // Re-throw unexpected errors
     throw error;
   }

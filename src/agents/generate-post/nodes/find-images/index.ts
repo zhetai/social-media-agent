@@ -27,13 +27,27 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
 
   if (pageContents && pageContents.length) {
     const allImageUrls = pageContents.flatMap(extractAllImageUrlsFromMarkdown);
-
     for await (const urlOrPathname of allImageUrls) {
       if (isValidUrl(urlOrPathname)) {
-        imageUrls.add(urlOrPathname);
+        if (getUrlType(urlOrPathname) !== "github") {
+          imageUrls.add(urlOrPathname);
+        } else {
+          // If a full github URL. extract the file name from the path. to do this, extract the path after `blob/<branch>`
+          const filePath = urlOrPathname.match(/blob\/[^/]+\/(.+)/)?.[1];
+          if (!filePath) {
+            console.warn("Could not extract file path from URL", urlOrPathname);
+            continue;
+          }
+          const getContents = await getFileContents(urlOrPathname, filePath);
+          if (getContents.download_url) {
+            imageUrls.add(getContents.download_url);
+          }
+        }
+
         continue;
       }
 
+      // We have to assume the path is from the relevant link.
       const fullUrl = new URL(link);
       if (getUrlType(link) === "github") {
         const parsedPathname = path.normalize(urlOrPathname);

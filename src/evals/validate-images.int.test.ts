@@ -3,6 +3,11 @@ import { type SimpleEvaluator } from "langsmith/jest";
 import { validateImages } from "../agents/generate-post/nodes/find-images/validate-images.js";
 import { GeneratePostAnnotation } from "../agents/generate-post/generate-post-state.js";
 
+/**
+ * TODO: These URLs return images which should but are not filtered out:
+ * https://levelup.gitconnected.com/learn-how-to-build-ai-agents-chatbots-with-langgraph-1fe09c4558c6
+ */
+
 const REPORT = `News TL;DR: An Intelligent News Processing Agent
 
 The News TL;DR agent is an innovative open-source solution developed by Jason Sheinkopf during a LangChain hackathon. This sophisticated system transforms how users consume news by intelligently processing, analyzing, and summarizing articles across multiple sources. Instead of overwhelming users with content, it delivers concise, meaningful insights by understanding the context and relevance of news articles.

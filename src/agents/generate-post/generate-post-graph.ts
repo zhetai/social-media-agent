@@ -1,4 +1,4 @@
-import { END, Send, START, StateGraph } from "@langchain/langgraph";
+import { END, START, StateGraph } from "@langchain/langgraph";
 import {
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
@@ -35,26 +35,19 @@ function rewriteOrEndConditionalEdge(
 
 function condenseOrHumanConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
-): "condensePost" | "humanNode" {
+): "condensePost" | "findImages" {
   const cleanedPost = removeUrls(state.post || "");
   if (cleanedPost.length > 280) {
     return "condensePost";
   }
-  return "humanNode";
+  return "findImages";
 }
 
 function generateReportOrEndConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
-): Send[] | typeof END {
+): "generateContentReport" | typeof END {
   if (state.pageContents.length) {
-    return [
-      new Send("generateContentReport", {
-        ...state,
-      }),
-      new Send("findImages", {
-        ...state,
-      }),
-    ];
+    return "generateContentReport";
   }
   return END;
 }
@@ -92,14 +85,10 @@ const generatePostBuilder = new StateGraph(
   .addConditionalEdges(
     "verifyLinksSubGraph",
     generateReportOrEndConditionalEdge,
-    ["generateContentReport", "findImages", END],
+    ["generateContentReport", END],
   )
 
-  // Once generating a report & finding images, we should confirm the report exists (meaning the content is relevant).
-  .addConditionalEdges("findImages", routeAfterGeneratingReport, [
-    "generatePost",
-    END,
-  ])
+  // Once generating a report, we should confirm the report exists (meaning the content is relevant).
   .addConditionalEdges("generateContentReport", routeAfterGeneratingReport, [
     "generatePost",
     END,
@@ -109,11 +98,13 @@ const generatePostBuilder = new StateGraph(
   // and if so, condense it. Otherwise, route to the human node.
   .addConditionalEdges("generatePost", condenseOrHumanConditionalEdge, [
     "condensePost",
-    "humanNode",
+    "findImages",
   ])
 
-  // After condensing the post, always route to the human node.
-  .addEdge("condensePost", "humanNode")
+  // After condensing the post, we can find & filter images. This needs to happen after the post
+  // has been generated because the image validator requires the post content.
+  .addEdge("condensePost", "findImages")
+  .addEdge("findImages", "humanNode")
 
   // Always route back to `humanNode` if the post was re-written or date was updated.
   .addEdge("rewritePost", "humanNode")

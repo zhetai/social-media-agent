@@ -28,6 +28,7 @@ Provide your response in the following format:
 1. <analysis> tag: Briefly explain your thought process for each image, referencing specific elements from the post and report.
 2. <relevant_indices> tag: List the indices of the relevant images, starting from 0, separated by commas.
 
+Ensure you ALWAYS WRAP your analysis and relevant indices inside the <analysis> and <relevant_indices> tags, respectively. Do not only prefix, but ensure they are wrapped completely.
 
 Remember to carefully consider each image in relation to both the post content and the marketing report.
 Be thorough in your analysis, but focus on the most important factors that determine relevance.
@@ -36,8 +37,10 @@ If an image is borderline, err on the side of inclusion.
 Provide your complete response within <answer> tags.
 `;
 
-function parseResult(result: string): number[] {
-  const match = result.match(/<relevant_indices>(.*?)<\/relevant_indices>/);
+export function parseResult(result: string): number[] {
+  const match = result.match(
+    /<relevant_indices>\s*([\d,\s]*?)\s*<\/relevant_indices>/s,
+  );
   if (!match) return [];
 
   return match[1]
@@ -82,7 +85,7 @@ export async function validateImages({
 
   if (imagesWithoutSupabase.length === 0) {
     return {
-      imageOptions: imageOptions,
+      imageOptions,
     };
   }
 

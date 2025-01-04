@@ -30,7 +30,7 @@ async function backfill() {
     config: {
       configurable: {
         slackChannelId: "ADD_SLACK_CHANNEL_ID_HERE",
-        maxDaysHistory: 7, // Or change to desired number of days
+        maxDaysHistory: 10, // Or change to desired number of days
       },
     },
     input: {},
