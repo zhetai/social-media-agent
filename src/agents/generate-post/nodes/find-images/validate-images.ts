@@ -18,9 +18,13 @@ Now, review the marketing report that was used to generate this post:
 
 To determine which images are relevant, consider the following criteria:
 1. Does the image directly illustrate a key point or theme from the post?
-2. Does the image align with the tone and style described in the marketing report?
 3. Does the image represent any products, services, or concepts mentioned in either the post or the report?
-4. Would the image likely resonate with the target audience described in the report?
+
+You should NEVER include images which are:
+- Logos, icons, or profile pictures (unless it is a LangChain/LangGraph/LangSmith logo).
+- Personal, or non-essential images from a business perspective.
+- Small, low-resolution images. These are likely accidentally included in the post and should be excluded.
+
 
 You will be presented with a list of image options. Your task is to identify which of these images are relevant to the post based on the criteria above.
 
