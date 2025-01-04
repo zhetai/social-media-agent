@@ -23,7 +23,7 @@ export interface SimpleSlackMessage {
   files?: SlackMessageFile[];
 }
 
-export interface SlackMessageFetcherArgs {
+export interface SlackClientArgs {
   /**
    * An OAuth token for the Slack API.
    * If not provided, the token will be read from the SLACK_BOT_OAUTH_TOKEN environment variable.
@@ -48,14 +48,14 @@ export interface SlackMessageFetcherArgs {
  * - 'channels:history' - used to fetch messages from a channel
  * - 'channels:read' - used to fetch message contents from a channel.
  */
-export class SlackMessageFetcher {
+export class SlackClient {
   private client: WebClient;
 
   private channelId: string;
 
   private channelName: string;
 
-  constructor(args: SlackMessageFetcherArgs) {
+  constructor(args: SlackClientArgs) {
     if (!args.channelId && !args.channelName) {
       throw new Error("Either channelId or channelName must be provided");
     }
@@ -179,5 +179,12 @@ export class SlackMessageFetcher {
       console.error("Error getting channel ID:", error);
       throw error;
     }
+  }
+
+  async sendMessage(message: string): Promise<void> {
+    await this.client.chat.postMessage({
+      channel: this.channelId,
+      text: message,
+    });
   }
 }

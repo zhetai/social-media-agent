@@ -12,6 +12,8 @@ import {
   TWITTER_USER_ID,
 } from "../../constants.js";
 import { getScheduledDateSeconds } from "./find-date.js";
+import { SlackClient } from "../../../../clients/slack.js";
+import { getFutureDate } from "./get-future-date.js";
 
 export async function schedulePost(
   state: typeof GeneratePostAnnotation.State,
@@ -39,7 +41,7 @@ export async function schedulePost(
   );
 
   const thread = await client.threads.create();
-  await client.runs.create(thread.thread_id, "upload_post", {
+  const run = await client.runs.create(thread.thread_id, "upload_post", {
     input: {
       post: state.post,
       image: state.image,
@@ -70,6 +72,26 @@ export async function schedulePost(
     },
     afterSeconds,
   });
+
+  try {
+    const linkedInClient = new SlackClient({
+      channelId: process.env.SLACK_CHANNEL_ID,
+    });
+
+    await linkedInClient.sendMessage(`Scheduled post for ${getFutureDate(afterSeconds)}.
+Run ID: ${run.run_id}
+Thread ID: ${thread.thread_id}
+
+Post:
+\`\`\`
+${state.post}
+\`\`\`
+
+Image:
+${state.image}`);
+  } catch (e) {
+    console.error("Failed to schedule post", e);
+  }
 
   return {};
 }

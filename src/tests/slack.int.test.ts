@@ -1,12 +1,12 @@
 import { test, expect } from "@jest/globals";
-import { SlackMessageFetcher } from "../clients/slack.js";
+import { SlackClient } from "../clients/slack.js";
 
 // NOTE: Change this to your specific channel name and ID.
 const TEST_CHANNEL_NAME = "external-community-content";
 const TEST_CHANNEL_ID = "C06BU7XF5S7";
 
 test("Slack client can get the channel ID from a channel name", async () => {
-  const client = new SlackMessageFetcher({
+  const client = new SlackClient({
     channelName: TEST_CHANNEL_NAME,
   });
   const channelId = await client.getChannelId();
@@ -16,7 +16,7 @@ test("Slack client can get the channel ID from a channel name", async () => {
 });
 
 test("Slack client can fetch messages from channel name", async () => {
-  const client = new SlackMessageFetcher({
+  const client = new SlackClient({
     channelId: TEST_CHANNEL_ID,
   });
 

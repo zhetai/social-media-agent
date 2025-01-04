@@ -1,13 +1,13 @@
 import { IngestDataAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { SlackMessageFetcher } from "../../../clients/slack.js";
+import { SlackClient } from "../../../clients/slack.js";
 import { extractUrlsFromSlackText } from "../../utils.js";
 
 const getChannelIdFromConfig = async (
   config: LangGraphRunnableConfig,
 ): Promise<string | undefined> => {
   if (config.configurable?.slackChannelName) {
-    const client = new SlackMessageFetcher({
+    const client = new SlackClient({
       channelName: config.configurable.slackChannelName,
     });
     return await client.getChannelId();
@@ -31,7 +31,7 @@ export async function ingestSlackData(
     throw new Error("Channel ID not found");
   }
 
-  const client = new SlackMessageFetcher({
+  const client = new SlackClient({
     channelId,
   });
   const recentMessages = await client.fetchLast24HoursMessages({
