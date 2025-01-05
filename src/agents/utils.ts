@@ -318,6 +318,15 @@ export function extractAllImageUrlsFromMarkdown(text: string): string[] {
   return urls;
 }
 
+const BLACKLISTED_IMAGE_URL_ENDINGS = [".svg", ".ico", ".bmp"];
+
+export function filterUnwantedImageUrls(urls: string[]): string[] {
+  return urls.filter(
+    (url) =>
+      !BLACKLISTED_IMAGE_URL_ENDINGS.find((ending) => url.endsWith(ending)),
+  );
+}
+
 /**
  * The type of a URL. One of "github", "youtube", "general"
  * `undefined` if the URL type could not be determined
@@ -363,6 +372,12 @@ export function getUrlType(url: string): UrlType {
 
   return "general";
 }
+
+export const BLACKLISTED_MIME_TYPES = [
+  "image/svg+xml",
+  "image/x-icon",
+  "image/bmp",
+];
 
 /**
  * Extracts the MIME type from a URL based on its file extension or path

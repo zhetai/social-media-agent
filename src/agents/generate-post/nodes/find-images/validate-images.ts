@@ -1,5 +1,5 @@
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
-import { getMimeTypeFromUrl } from "../../../utils.js";
+import { BLACKLISTED_MIME_TYPES, getMimeTypeFromUrl } from "../../../utils.js";
 
 const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
 Your goal is to identify which images from a given set are relevant to the post, based on the content of the post and an associated marketing report.
@@ -107,7 +107,7 @@ export async function validateImages({
   for (const imageChunk of imageChunks) {
     const imageMessages = imageChunk.flatMap((fileUri, chunkIndex) => {
       const mimeType = getMimeTypeFromUrl(fileUri);
-      if (!mimeType) {
+      if (!mimeType || BLACKLISTED_MIME_TYPES.find((mt) => mt === mimeType)) {
         return [];
       }
       return [

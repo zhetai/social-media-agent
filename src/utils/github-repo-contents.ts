@@ -191,9 +191,8 @@ export async function getFileContents(
     const [owner, repo] = pathSegments;
     const cleanRepo = repo.replace(".git", "");
 
-    // Normalize file path by removing leading and trailing slashes
-    const normalizedPath = filePath.replace(/^\/+|\/+$/g, "");
-
+    // Normalize file path by removing leading and trailing slashes and query parameters
+    const normalizedPath = filePath.split("?")[0].replace(/^\/+|\/+$/g, "");
     const response = await octokit.repos.getContent({
       owner,
       repo: cleanRepo,

@@ -20,6 +20,23 @@ import {
   TWITTER_TOKEN_SECRET,
   TWITTER_USER_ID,
 } from "../generate-post/constants.js";
+import { getUrlType } from "../utils.js";
+
+function getAfterSecondsFromLinks(links: string[]): {
+  link: string;
+  afterSeconds: number;
+}[] {
+  const baseDelaySeconds = 30;
+  return links.map((link, index) => {
+    const isTwitterUrl = getUrlType(link) === "twitter";
+    const additionalDelay = isTwitterUrl ? baseDelaySeconds : 0;
+    const afterSeconds = index * baseDelaySeconds + additionalDelay;
+    return {
+      link,
+      afterSeconds,
+    };
+  });
+}
 
 async function generatePostFromMessages(
   state: typeof IngestDataAnnotation.State,
@@ -28,12 +45,16 @@ async function generatePostFromMessages(
   const client = new Client({
     apiUrl: `http://localhost:${process.env.PORT}`,
   });
-  for await (const link of state.links) {
+
+  const linkAndDelay = getAfterSecondsFromLinks(state.links);
+
+  for await (const { link, afterSeconds } of linkAndDelay) {
     const thread = await client.threads.create();
     const postToLinkedInOrg =
       config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
         ? config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION]
         : process.env.POST_TO_LINKEDIN_ORGANIZATION;
+
     await client.runs.create(thread.thread_id, "generate_post", {
       input: {
         links: [link],
@@ -64,6 +85,7 @@ async function generatePostFromMessages(
           [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
         },
       },
+      afterSeconds,
     });
   }
   return {};
