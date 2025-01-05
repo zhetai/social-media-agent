@@ -22,6 +22,22 @@ import {
 } from "../generate-post/constants.js";
 import { getUrlType } from "../utils.js";
 
+/**
+ * Calculates delay times for processing a list of URLs to prevent rate limiting.
+ * Each URL gets a minimum 30-second delay from the previous URL's processing time.
+ * Twitter URLs receive an additional 30-second delay due to stricter rate limits.
+ *
+ * @param links - Array of URLs to process
+ * @returns Array of objects containing the original URL and its calculated delay time
+ * @example
+ * // For URLs: ['https://example.com', 'https://twitter.com/user', 'https://github.com']
+ * // Returns:
+ * // [
+ * //   { link: 'https://example.com', afterSeconds: 0 },
+ * //   { link: 'https://twitter.com/user', afterSeconds: 60 }, // 30 (base) + 30 (twitter)
+ * //   { link: 'https://github.com', afterSeconds: 60 } // 30 * 2 (third position)
+ * // ]
+ */
 function getAfterSecondsFromLinks(links: string[]): {
   link: string;
   afterSeconds: number;

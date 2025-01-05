@@ -78,17 +78,23 @@ export async function schedulePost(
       channelId: process.env.SLACK_CHANNEL_ID,
     });
 
-    await linkedInClient.sendMessage(`Scheduled post for ${getFutureDate(afterSeconds)}.
-Run ID: ${run.run_id}
-Thread ID: ${thread.thread_id}
+    const imageString = state.image?.imageUrl
+      ? `Image:
+${state.image?.imageUrl}`
+      : "No image provided";
+
+    await linkedInClient.sendMessage(`**New Post Scheduled**
+      
+Scheduled post for: **${getFutureDate(afterSeconds)}**
+Run ID: **${run.run_id}**
+Thread ID: **${thread.thread_id}**
 
 Post:
 \`\`\`
 ${state.post}
 \`\`\`
 
-Image:
-${state.image}`);
+${imageString}`);
   } catch (e) {
     console.error("Failed to schedule post", e);
   }
