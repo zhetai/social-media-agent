@@ -95,6 +95,14 @@ export const GeneratePostAnnotation = Annotation.Root({
     reducer: (_state, update) => update,
     default: () => [],
   }),
+  /**
+   * The number of times the post has been condensed. We should stop condensing after
+   * 3 times to prevent an infinite loop.
+   */
+  condenseCount: Annotation<number>({
+    reducer: (_state, update) => update,
+    default: () => 0,
+  }),
 });
 
 export const GeneratePostConfigurableAnnotation = Annotation.Root({

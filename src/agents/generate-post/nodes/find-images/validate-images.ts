@@ -123,6 +123,10 @@ export async function validateImages({
       ];
     });
 
+    if (!imageMessages.length) {
+      continue;
+    }
+
     const response = await model.invoke([
       {
         role: "system",

@@ -2,6 +2,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { STRUCTURE_INSTRUCTIONS, RULES } from "./geterate-post/prompts.js";
 import { parseGeneration } from "./geterate-post/utils.js";
+import { removeUrls } from "../../utils.js";
 
 const CONDENSE_POST_PROMPT = `You're a highly skilled marketer at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You wrote a post for the LangChain LinkedIn and Twitter pages, however it's a bit too long for Twitter, and thus needs to be condensed.
@@ -31,7 +32,7 @@ ${RULES}
 
 </rules-and-structure>
 
-Given the marketing report, link, rules and structure, please condense the post down to roughly 280 characters (not including the link. Going over 280 characters is okay, but ensure it's close to 280). The original post was {originalPostLength} characters long.
+Given the marketing report, link, rules and structure, please condense the post down to roughly 280 characters (not including the link). The original post was {originalPostLength} characters long.
 Ensure you keep the same structure, and do not omit any crucial content outright.
 
 Follow this flow to rewrite the post in a condensed format:
@@ -62,12 +63,14 @@ export async function condensePost(
     throw new Error("No relevant links found");
   }
 
+  const originalPostLength = removeUrls(state.post || "").length.toString();
+
   const formattedSystemPrompt = CONDENSE_POST_PROMPT.replace(
     "{report}",
     state.report,
   )
     .replace("{link}", state.relevantLinks[0])
-    .replace("{originalPostLength}", state.post.length.toString());
+    .replace("{originalPostLength}", originalPostLength);
 
   const condensePostModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
@@ -89,5 +92,6 @@ export async function condensePost(
 
   return {
     post: parseGeneration(condensePostResponse.content as string),
+    condenseCount: state.condenseCount + 1,
   };
 }
