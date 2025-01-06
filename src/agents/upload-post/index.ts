@@ -13,11 +13,7 @@ import {
   LINKEDIN_ACCESS_TOKEN,
   LINKEDIN_ORGANIZATION_ID,
   LINKEDIN_PERSON_URN,
-  LINKEDIN_USER_ID,
   POST_TO_LINKEDIN_ORGANIZATION,
-  TWITTER_TOKEN,
-  TWITTER_TOKEN_SECRET,
-  TWITTER_USER_ID,
 } from "../generate-post/constants.js";
 
 async function getMediaFromImage(image?: {
@@ -44,13 +40,6 @@ const UploadPostAnnotation = Annotation.Root({
 });
 
 const UploadPostGraphConfiguration = Annotation.Root({
-  [TWITTER_USER_ID]: Annotation<string | undefined>,
-  [LINKEDIN_USER_ID]: Annotation<string | undefined>,
-  [TWITTER_TOKEN]: Annotation<string | undefined>,
-  [TWITTER_TOKEN_SECRET]: Annotation<string | undefined>,
-  [LINKEDIN_ACCESS_TOKEN]: Annotation<string | undefined>,
-  [LINKEDIN_PERSON_URN]: Annotation<string | undefined>,
-  [LINKEDIN_ORGANIZATION_ID]: Annotation<string | undefined>,
   [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
 });
 
@@ -61,20 +50,15 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
-  const twitterUserId =
-    config.configurable?.[TWITTER_USER_ID] || process.env.TWITTER_USER_ID;
-  const linkedInUserId =
-    config.configurable?.[LINKEDIN_USER_ID] || process.env.LINKEDIN_USER_ID;
+  const twitterUserId = process.env.TWITTER_USER_ID;
+  const linkedInUserId = process.env.LINKEDIN_USER_ID;
 
   if (!twitterUserId && !linkedInUserId) {
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
-  const twitterToken =
-    config.configurable?.[TWITTER_TOKEN] || process.env.TWITTER_USER_TOKEN;
-  const twitterTokenSecret =
-    config.configurable?.[TWITTER_TOKEN_SECRET] ||
-    process.env.TWITTER_USER_TOKEN_SECRET;
+  const twitterToken = process.env.TWITTER_TOKEN;
+  const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
 
   if (twitterUserId) {
     if (!twitterToken || !twitterTokenSecret) {
