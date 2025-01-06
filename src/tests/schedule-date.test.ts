@@ -264,6 +264,97 @@ describe("Schedule Date Tests", () => {
       });
     });
 
+    describe("Priority Time Window Tests", () => {
+      beforeEach(() => {
+        mockStore.get.mockResolvedValue({
+          value: { taken_dates: { p1: [], p2: [], p3: [] } },
+        });
+      });
+
+      describe("P1 Time Window Tests", () => {
+        it("should only return dates on weekends between 8:00 AM and 10:00 AM PST", async () => {
+          // Test for 100 iterations to ensure we never get invalid times
+          for (let i = 0; i < 100; i++) {
+            const result = await getScheduledDateSeconds("p1", mockConfig, MOCK_CURRENT_DATE);
+            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
+            
+            // Verify it's a weekend
+            const day = pstDate.getDay();
+            expect(day === 0 || day === 6).toBe(true); // Sunday or Saturday
+            
+            // Verify time is between 8:00 AM and 10:00 AM PST
+            expect(pstDate.getHours()).toBeGreaterThanOrEqual(8);
+            expect(pstDate.getHours()).toBeLessThanOrEqual(10);
+            if (pstDate.getHours() === 10) {
+              expect(pstDate.getMinutes()).toBe(0);
+            }
+          }
+        });
+      });
+
+      describe("P2 Time Window Tests", () => {
+        it("should return dates on Friday/Monday between 8:00 AM and 10:00 AM PST, or weekends between 10:30 AM and 1:00 PM PST", async () => {
+          // Test for 100 iterations to ensure we never get invalid times
+          for (let i = 0; i < 100; i++) {
+            const result = await getScheduledDateSeconds("p2", mockConfig, MOCK_CURRENT_DATE);
+            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
+            
+            const day = pstDate.getDay();
+            const hour = pstDate.getHours();
+            const minutes = pstDate.getMinutes();
+
+            const isWeekday = day === 1 || day === 5; // Monday or Friday
+            const isWeekend = day === 0 || day === 6; // Saturday or Sunday
+            expect(isWeekday || isWeekend).toBe(true);
+
+            if (isWeekday) {
+              // Verify time is between 8:00 AM and 10:00 AM PST
+              expect(hour).toBeGreaterThanOrEqual(8);
+              expect(hour).toBeLessThanOrEqual(10);
+              if (hour === 10) {
+                expect(minutes).toBe(0);
+              }
+            } else {
+              // Verify time is between 10:30 AM and 1:00 PM PST
+              if (hour === 10) {
+                expect(minutes).toBeGreaterThanOrEqual(30);
+              } else {
+                expect(hour).toBeGreaterThanOrEqual(11);
+                expect(hour).toBeLessThanOrEqual(13);
+                if (hour === 13) {
+                  expect(minutes).toBe(0);
+                }
+              }
+            }
+          }
+        });
+      });
+
+      describe("P3 Time Window Tests", () => {
+        it("should only return dates on weekends between 1:00 PM and 5:00 PM PST", async () => {
+          // Test for 100 iterations to ensure we never get invalid times
+          for (let i = 0; i < 100; i++) {
+            const result = await getScheduledDateSeconds("p3", mockConfig, MOCK_CURRENT_DATE);
+            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
+            
+            // Verify it's a weekend
+            const day = pstDate.getDay();
+            expect(day === 0 || day === 6).toBe(true); // Sunday or Saturday
+            
+            // Verify time is between 1:00 PM and 5:00 PM PST
+            expect(pstDate.getHours()).toBeGreaterThanOrEqual(13);
+            expect(pstDate.getHours()).toBeLessThanOrEqual(17);
+            if (pstDate.getHours() === 17) {
+              expect(pstDate.getMinutes()).toBe(0);
+            }
+          }
+        });
+      });
+    });
+
     it("should throw error for invalid priority", async () => {
       await expect(
         getScheduledDateSeconds("p4" as any, mockConfig, MOCK_CURRENT_DATE),
