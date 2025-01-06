@@ -23,14 +23,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+
       - name: Install dependencies
         run: yarn install --immutable
+
       - name: Build project
         run: yarn build
+
       - name: Run integration tests
         run: yarn test:int
