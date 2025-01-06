@@ -2,9 +2,9 @@ import * as ls from "langsmith/jest";
 import { type SimpleEvaluator } from "langsmith/jest";
 import { validateImages } from "../../agents/generate-post/nodes/find-images/validate-images.js";
 import { GeneratePostAnnotation } from "../../agents/generate-post/generate-post-state.js";
-import { INPUTS, OUTPUTS } from "./inputs.js";
+import { TEST_EACH_INPUTS_OUTPUTS } from "./inputs.js";
 
-const myEvaluator: SimpleEvaluator = ({ expected, actual }) => {
+const checkCorrectImages: SimpleEvaluator = ({ expected, actual }) => {
   const expectedImageOptions = expected.imageOptions as string[];
   const actualImageOptions = actual.imageOptions as string[];
   let numCorrect = 0;
@@ -22,25 +22,19 @@ const myEvaluator: SimpleEvaluator = ({ expected, actual }) => {
 };
 
 ls.describe("SMA - Validate Images", () => {
-  ls.test.each([
-    {
-      inputs: INPUTS[0],
-      outputs: OUTPUTS[0],
+  ls.test.each(TEST_EACH_INPUTS_OUTPUTS)(
+    "Should validate images",
+    async ({ inputs }) => {
+      // Import and run your app, or some part of it here
+      const result = await validateImages(
+        inputs as typeof GeneratePostAnnotation.State,
+      );
+      console.log("result!", result);
+      const evalResult = ls.expect(result).evaluatedBy(checkCorrectImages);
+      // Ensure the result is greater than 0.8 and less than or equal to 1
+      await evalResult.toBeGreaterThanOrEqual(0.8);
+      await evalResult.toBeLessThanOrEqual(1);
+      return result;
     },
-    {
-      inputs: INPUTS[1],
-      outputs: OUTPUTS[1],
-    },
-  ])("Should validate images", async ({ inputs }) => {
-    // Import and run your app, or some part of it here
-    const result = await validateImages(
-      inputs as typeof GeneratePostAnnotation.State,
-    );
-    console.log("result!", result);
-    const evalResult = ls.expect(result).evaluatedBy(myEvaluator);
-    // Ensure the result is greater than 0.8 and less than or equal to 1
-    await evalResult.toBeGreaterThanOrEqual(0.8);
-    await evalResult.toBeLessThanOrEqual(1);
-    return result;
-  });
+  );
 });

@@ -2,6 +2,7 @@ import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import {
   BLACKLISTED_MIME_TYPES,
   getMimeTypeFromUrl,
+  imageUrlToBuffer,
   removeQueryParams,
 } from "../../../utils.js";
 
@@ -22,13 +23,12 @@ Now, review the marketing report that was used to generate this post:
 
 To determine which images are relevant, consider the following criteria:
 1. Does the image directly illustrate a key point or theme from the post?
-3. Does the image represent any products, services, or concepts mentioned in either the post or the report?
+2. Does the image represent any products, services, or concepts mentioned in either the post or the report?
 
 You should NEVER include images which are:
 - Logos, icons, or profile pictures (unless it is a LangChain/LangGraph/LangSmith logo).
 - Personal, or non-essential images from a business perspective.
 - Small, low-resolution images. These are likely accidentally included in the post and should be excluded.
-
 
 You will be presented with a list of image options. Your task is to identify which of these images are relevant to the post based on the criteria above.
 
@@ -109,29 +109,50 @@ export async function validateImages({
 
   // Process each chunk
   for (const imageChunk of imageChunks) {
-    const imageMessages = imageChunk.flatMap((fileUri, chunkIndex) => {
-      const mimeType = getMimeTypeFromUrl(fileUri);
-      const cleanedFileUri = removeQueryParams(fileUri);
-      if (!mimeType || BLACKLISTED_MIME_TYPES.find((mt) => mt === mimeType)) {
-        return [];
-      }
-      return [
-        {
-          type: "text",
-          text: `The below image is index ${baseIndex + chunkIndex}`,
-        },
-        {
-          type: "media",
-          mimeType,
-          fileUri: cleanedFileUri,
-        },
-      ];
-    });
+    const imageMessagesPromises = imageChunk.flatMap(
+      async (fileUri, chunkIndex) => {
+        const cleanedFileUri = removeQueryParams(fileUri);
+        let mimeType = getMimeTypeFromUrl(fileUri);
+
+        if (!mimeType) {
+          try {
+            const { contentType } = await imageUrlToBuffer(fileUri);
+            if (!contentType) {
+              throw new Error("Failed to fetch content type");
+            }
+            mimeType = contentType;
+          } catch (e) {
+            console.warn(
+              "No mime type found, and failed to fetch content type:",
+              e,
+            );
+          }
+        }
+        if (
+          !mimeType ||
+          BLACKLISTED_MIME_TYPES.find((mt) => mimeType.startsWith(mt))
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            type: "text",
+            text: `The below image is index ${baseIndex + chunkIndex}`,
+          },
+          {
+            type: "media",
+            mimeType,
+            fileUri: cleanedFileUri,
+          },
+        ];
+      },
+    );
+    const imageMessages = (await Promise.all(imageMessagesPromises)).flat();
 
     if (!imageMessages.length) {
       continue;
     }
-
     const response = await model.invoke([
       {
         role: "system",
