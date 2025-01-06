@@ -14,25 +14,9 @@ import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-g
 import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
 import { Command, MemorySaver } from "@langchain/langgraph";
 import { verifyTweetGraph } from "../agents/verify-tweet/verify-tweet-graph.js";
-import {
-  LINKEDIN_ACCESS_TOKEN,
-  LINKEDIN_ORGANIZATION_ID,
-  LINKEDIN_PERSON_URN,
-  LINKEDIN_USER_ID,
-  POST_TO_LINKEDIN_ORGANIZATION,
-  TWITTER_TOKEN,
-  TWITTER_TOKEN_SECRET,
-  TWITTER_USER_ID,
-} from "../agents/generate-post/constants.js";
+import { POST_TO_LINKEDIN_ORGANIZATION } from "../agents/generate-post/constants.js";
 
 const BASE_CONFIG = {
-  [TWITTER_USER_ID]: undefined,
-  [LINKEDIN_USER_ID]: undefined,
-  [TWITTER_TOKEN]: undefined,
-  [TWITTER_TOKEN_SECRET]: undefined,
-  [LINKEDIN_ACCESS_TOKEN]: undefined,
-  [LINKEDIN_PERSON_URN]: undefined,
-  [LINKEDIN_ORGANIZATION_ID]: undefined,
   [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
 };
 
@@ -176,7 +160,6 @@ test("can generate post", async () => {
     {
       configurable: {
         ...BASE_CONFIG,
-        [TWITTER_USER_ID]: "braceasproul@gmail.com",
       },
     },
   );
@@ -200,7 +183,6 @@ test("can interrupt and resume", async () => {
     configurable: {
       ...BASE_CONFIG,
       thread_id: "123",
-      [TWITTER_USER_ID]: "braceasproul@gmail.com",
     },
   };
   await generatePostGraph.invoke(
@@ -225,17 +207,9 @@ test("can interrupt and resume", async () => {
 });
 
 test("Verify tweets returns valid media URLs when tweet has media", async () => {
-  const result = await verifyTweetGraph.invoke(
-    {
-      link: "https://x.com/LangChainAI/status/1869125903139402215",
-    },
-    {
-      configurable: {
-        [TWITTER_USER_ID]: "braceasproul@gmail.com",
-        [LINKEDIN_USER_ID]: undefined,
-      },
-    },
-  );
+  const result = await verifyTweetGraph.invoke({
+    link: "https://x.com/LangChainAI/status/1869125903139402215",
+  });
 
   console.log("result");
   console.dir(result, { depth: null });

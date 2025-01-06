@@ -1,9 +1,5 @@
 import { Annotation } from "@langchain/langgraph";
 import { VerifyContentAnnotation } from "../shared/shared-state.js";
-import {
-  LINKEDIN_USER_ID,
-  TWITTER_USER_ID,
-} from "../generate-post/constants.js";
 
 export const VerifyTweetAnnotation = Annotation.Root({
   /**
@@ -56,16 +52,4 @@ export const VerifyTweetAnnotation = Annotation.Root({
     reducer: (_state, update) => update,
     default: () => [],
   }),
-});
-
-export const VerifyTweetConfigurableAnnotation = Annotation.Root({
-  /**
-   * The user ID or email of the user to use for fetching & posting Tweets.
-   */
-  [TWITTER_USER_ID]: Annotation<string>,
-  /**
-   * The user ID or email of the user to use for fetching
-   * content & posting on LinkedIn.
-   */
-  [LINKEDIN_USER_ID]: Annotation<string | undefined>,
 });
