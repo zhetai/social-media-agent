@@ -15,4 +15,5 @@ export default {
   setupFiles: ["dotenv/config"],
   passWithNoTests: true,
   testTimeout: 20_000,
+  setupFiles: ["./jest.setup.cjs"],
 };

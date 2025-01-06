@@ -7,11 +7,9 @@ import {
   validateAfterSeconds,
 } from "../agents/generate-post/nodes/schedule-post/find-date.js";
 
-// Mock the current date to be fixed at 2025-01-03 12:00:00 PST
-const MOCK_CURRENT_DATE = toZonedTime(
-  new Date("2025-01-03T20:00:00Z"),
-  "America/Los_Angeles",
-);
+// Define MOCK_CURRENT_DATE in UTC or as per the mocked timezone
+const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
+
 jest.useFakeTimers();
 jest.setSystemTime(MOCK_CURRENT_DATE);
 
