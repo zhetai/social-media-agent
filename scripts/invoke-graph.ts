@@ -10,7 +10,7 @@ async function main() {
     channelId: "C06BU7XF5S7",
   });
   const messages = await slackClient.fetchLast24HoursMessages({
-    maxDaysHistory: 62,
+    maxDaysHistory: 63,
   });
 
   const links = messages.flatMap((msg) => {

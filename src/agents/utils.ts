@@ -415,3 +415,24 @@ export function getMimeTypeFromUrl(url: string): string | undefined {
     return undefined;
   }
 }
+
+/**
+ * Removes query parameters from a URL while preserving the base URL and path
+ * @param url The URL to remove query parameters from
+ * @returns The URL without query parameters
+ *
+ * @example
+ * ```typescript
+ * removeQueryParams('https://example.com/path?query=123'); // returns 'https://example.com/path'
+ * removeQueryParams('https://example.com'); // returns 'https://example.com'
+ * ```
+ */
+export function removeQueryParams(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+  } catch (error) {
+    // If URL parsing fails, return the original string
+    return url;
+  }
+}

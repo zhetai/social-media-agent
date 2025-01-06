@@ -5,30 +5,29 @@ import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
 import { verifyGitHubContent } from "../shared/nodes/verify-github.js";
 import { verifyTweetGraph } from "../verify-tweet/verify-tweet-graph.js";
 import { VerifyLinksGraphAnnotation } from "./verify-links-state.js";
-
-const isTwitterUrl = (url: string) => {
-  return url.includes("twitter.com") || url.includes("x.com");
-};
+import { getUrlType } from "../utils.js";
 
 function routeLinkTypes(state: typeof VerifyLinksGraphAnnotation.State) {
   return state.links.map((link) => {
-    if (link.includes("youtube.com")) {
-      return new Send("verifyYouTubeContent", {
-        link,
-      });
-    } else if (link.includes("github.com")) {
-      return new Send("verifyGitHubContent", {
-        link,
-      });
-    } else if (isTwitterUrl(link)) {
+    const type = getUrlType(link);
+    if (type === "twitter") {
       return new Send("verifyTweetSubGraph", {
         link,
       });
-    } else {
-      return new Send("verifyGeneralContent", {
+    }
+    if (type === "youtube") {
+      return new Send("verifyYouTubeContent", {
         link,
       });
     }
+    if (type === "github") {
+      return new Send("verifyGitHubContent", {
+        link,
+      });
+    }
+    return new Send("verifyGeneralContent", {
+      link,
+    });
   });
 }
 
