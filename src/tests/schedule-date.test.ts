@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { fromZonedTime } from "date-fns-tz";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import {
   getScheduledDateSeconds,
   validateAfterSeconds,
@@ -73,7 +73,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -103,7 +105,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -111,7 +115,7 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all weekend slots in the next 7 days
         const takenSlots = [];
-        const currentDate = MOCK_CURRENT_DATE;
+        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
 
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
@@ -153,7 +157,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -178,7 +184,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -210,7 +218,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -218,7 +228,7 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all valid P2 slots in the next 7 days
         const takenSlots = [];
-        const currentDate = MOCK_CURRENT_DATE;
+        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
 
         // Fill up the next 7 days
         for (let i = 0; i < 7; i++) {
@@ -271,7 +281,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -295,7 +307,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -303,7 +317,7 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all P3 weekend slots in the next 7 days
         const takenSlots = [];
-        const currentDate = MOCK_CURRENT_DATE;
+        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
 
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
@@ -345,7 +359,9 @@ describe("Schedule Date Tests", () => {
           "America/Los_Angeles",
         );
         const expectedSeconds = Math.floor(
-          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
+          (toZonedTime(expectedDate, "America/Los_Angeles").getTime() -
+            toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles").getTime()) /
+            1000,
         );
         expect(result).toBe(expectedSeconds);
       });
