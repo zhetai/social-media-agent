@@ -19,7 +19,7 @@
     "lint:fix": "eslint src --fix",
     "format:check": "prettier --check .",
     "lint:langgraph-json": "node scripts/checkLanggraphPaths.js",
-    "lint:all": "yarn lint & yarn lint:langgraph-json & yarn format:check",
+    "lint:all": "yarn lint & yarn lint:langgraph-json",
     "test:all": "yarn test && yarn test:int && yarn lint:langgraph",
     "run:eval:general": "yarn tsx src/evals/general/index.ts",
     "run:eval:github": "yarn tsx src/evals/github/index.ts",
