@@ -1,13 +1,17 @@
 import { jest } from "@jest/globals";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { toZonedTime } from "date-fns-tz";
+
 import {
   getScheduledDateSeconds,
   validateAfterSeconds,
 } from "../agents/generate-post/nodes/schedule-post/find-date.js";
 
 // Mock the current date to be fixed at 2025-01-03 12:00:00 PST
-const MOCK_CURRENT_DATE = new Date("2025-01-03T20:00:00Z"); // 12:00 PST = 20:00 UTC
+const MOCK_CURRENT_DATE = toZonedTime(
+  new Date("2025-01-03T20:00:00Z"),
+  "America/Los_Angeles",
+);
 jest.useFakeTimers();
 jest.setSystemTime(MOCK_CURRENT_DATE);
 
@@ -39,13 +43,19 @@ describe("Schedule Date Tests", () => {
 
   describe("getScheduledDateSeconds", () => {
     it("should return seconds for a valid future date", async () => {
-      const futureDate = new Date("2025-01-04T18:00:00Z"); // 10:00 PST
+      const futureDate = toZonedTime(
+        new Date("2025-01-04T18:00:00Z"),
+        "America/Los_Angeles",
+      );
       const result = await getScheduledDateSeconds(futureDate, mockConfig);
       expect(result).toBeGreaterThan(0);
     });
 
     it("should throw error for past date", async () => {
-      const pastDate = new Date("2024-01-01T18:00:00Z"); // 10:00 PST
+      const pastDate = toZonedTime(
+        new Date("2024-01-01T18:00:00Z"),
+        "America/Los_Angeles",
+      );
       await expect(
         getScheduledDateSeconds(pastDate, mockConfig),
       ).rejects.toThrow("Schedule date must be in the future");
@@ -59,7 +69,10 @@ describe("Schedule Date Tests", () => {
       });
 
       it("should skip taken slots and find next available", async () => {
-        const takenSlot = new Date("2025-01-04T16:00:00Z"); // 8:00 PST
+        const takenSlot = toZonedTime(
+          new Date("2025-01-04T16:00:00Z"),
+          "America/Los_Angeles",
+        );
         mockStore.get.mockResolvedValue({
           value: {
             taken_dates: {
@@ -75,10 +88,14 @@ describe("Schedule Date Tests", () => {
           mockConfig,
           MOCK_CURRENT_DATE,
         );
-        
+
         // Expected: Jan 4, 2025 9:00 PST = 17:00 UTC
+        const expectedDate = toZonedTime(
+          new Date("2025-01-04T17:00:00Z"),
+          "America/Los_Angeles",
+        );
         const expectedSeconds = Math.floor(
-          (new Date("2025-01-04T17:00:00Z").getTime() - MOCK_CURRENT_DATE.getTime()) / 1000
+          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -98,7 +115,7 @@ describe("Schedule Date Tests", () => {
             for (let hour = 8; hour <= 10; hour++) {
               const slotDate = new Date(date);
               slotDate.setUTCHours(hour + 8, 0, 0, 0); // Convert PST to UTC
-              takenSlots.push(slotDate);
+              takenSlots.push(toZonedTime(slotDate, "America/Los_Angeles"));
             }
           }
         }
@@ -120,8 +137,12 @@ describe("Schedule Date Tests", () => {
         );
 
         // Next available slot should be on Saturday, January 11th at 8:00 PST = 16:00 UTC
+        const expectedDate = toZonedTime(
+          new Date("2025-01-11T16:00:00Z"),
+          "America/Los_Angeles",
+        );
         const expectedSeconds = Math.floor(
-          (new Date("2025-01-11T16:00:00Z").getTime() - MOCK_CURRENT_DATE.getTime()) / 1000
+          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -149,7 +170,7 @@ describe("Schedule Date Tests", () => {
             for (let hour = 8; hour <= 10; hour++) {
               const slotDate = new Date(date);
               slotDate.setUTCHours(hour + 8, 0, 0, 0); // Convert PST to UTC
-              takenSlots.push(slotDate);
+              takenSlots.push(toZonedTime(slotDate, "America/Los_Angeles"));
             }
           }
           if (pstDate.getDay() === 0 || pstDate.getDay() === 6) {
@@ -157,7 +178,7 @@ describe("Schedule Date Tests", () => {
             for (let hour = 11; hour <= 13; hour++) {
               const slotDate = new Date(date);
               slotDate.setUTCHours(hour + 8, 0, 0, 0); // Convert PST to UTC
-              takenSlots.push(slotDate);
+              takenSlots.push(toZonedTime(slotDate, "America/Los_Angeles"));
             }
           }
         }
@@ -179,8 +200,12 @@ describe("Schedule Date Tests", () => {
         );
 
         // Next available slot should be on Friday, January 10th at 8:00 PST = 16:00 UTC
+        const expectedDate = toZonedTime(
+          new Date("2025-01-10T16:00:00Z"),
+          "America/Los_Angeles",
+        );
         const expectedSeconds = Math.floor(
-          (new Date("2025-01-10T16:00:00Z").getTime() - MOCK_CURRENT_DATE.getTime()) / 1000
+          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
         );
         expect(result).toBe(expectedSeconds);
       });
@@ -208,7 +233,7 @@ describe("Schedule Date Tests", () => {
             for (let hour = 13; hour <= 17; hour++) {
               const slotDate = new Date(date);
               slotDate.setUTCHours(hour + 8, 0, 0, 0); // Convert PST to UTC
-              takenSlots.push(slotDate);
+              takenSlots.push(toZonedTime(slotDate, "America/Los_Angeles"));
             }
           }
         }
@@ -230,8 +255,12 @@ describe("Schedule Date Tests", () => {
         );
 
         // Next available slot should be on Saturday, January 11th at 13:00 PST = 21:00 UTC
+        const expectedDate = toZonedTime(
+          new Date("2025-01-11T21:00:00Z"),
+          "America/Los_Angeles",
+        );
         const expectedSeconds = Math.floor(
-          (new Date("2025-01-11T21:00:00Z").getTime() - MOCK_CURRENT_DATE.getTime()) / 1000
+          (expectedDate.getTime() - MOCK_CURRENT_DATE.getTime()) / 1000,
         );
         expect(result).toBe(expectedSeconds);
       });
