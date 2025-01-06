@@ -213,29 +213,13 @@ export async function getScheduledDateSeconds(
 
   const takenScheduleDates = await getTakenScheduleDates(config);
 
-  // For P1 and P3, only look at the next weekend
+  // For P1 and P3, look for available weekend slots indefinitely
   if (priority === "p1" || priority === "p3") {
-    const nextWeekendDay = getNextValidDay(baseDate, priority);
-    const { start, end } = getTimeRangeForPriority(nextWeekendDay, priority);
-
-    let currentTime = start;
-    while (currentTime <= end) {
-      if (!isDateTaken(currentTime, takenScheduleDates)) {
-        // Convert to UTC before storing
-        const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
-        validateScheduleDate(utcDate, baseDate);
-        takenScheduleDates[priority].push(utcDate);
-        await putTakenScheduleDates(takenScheduleDates, config);
-        return getAfterSeconds(utcDate, baseDate);
-      }
-      currentTime = addMinutes(currentTime, 5);
-    }
-
-    // For weekend priorities, if we didn't find a slot in the next weekend day,
-    // try the day after
-    if (isSaturday(nextWeekendDay)) {
-      const nextDay = addDays(nextWeekendDay, 1);
-      const { start, end } = getTimeRangeForPriority(nextDay, priority);
+    let weekOffset = 0;
+    while (true) {
+      const candidateDate = addDays(baseDate, weekOffset * 7);
+      const nextWeekendDay = getNextValidDay(candidateDate, priority);
+      const { start, end } = getTimeRangeForPriority(nextWeekendDay, priority);
 
       let currentTime = start;
       while (currentTime <= end) {
@@ -247,26 +231,34 @@ export async function getScheduledDateSeconds(
           await putTakenScheduleDates(takenScheduleDates, config);
           return getAfterSeconds(utcDate, baseDate);
         }
-        currentTime = addMinutes(currentTime, 5);
+        currentTime = addMinutes(currentTime, 60);
       }
-    }
 
-    // If all slots are taken, pick a random one from the existing slots
-    if (takenScheduleDates[priority].length > 0) {
-      const randomIndex = Math.floor(
-        Math.random() * takenScheduleDates[priority].length,
-      );
-      const randomDate = takenScheduleDates[priority][randomIndex];
-      return getAfterSeconds(randomDate, baseDate);
-    }
+      // If Saturday slots are full, try Sunday
+      if (isSaturday(nextWeekendDay)) {
+        const nextDay = addDays(nextWeekendDay, 1);
+        const { start, end } = getTimeRangeForPriority(nextDay, priority);
 
-    throw new Error(
-      `No existing schedule dates found for priority level ${priority}. This is unexpected - there should always be at least one taken date.`,
-    );
+        let currentTime = start;
+        while (currentTime <= end) {
+          if (!isDateTaken(currentTime, takenScheduleDates)) {
+            // Convert to UTC before storing
+            const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
+            validateScheduleDate(utcDate, baseDate);
+            takenScheduleDates[priority].push(utcDate);
+            await putTakenScheduleDates(takenScheduleDates, config);
+            return getAfterSeconds(utcDate, baseDate);
+          }
+          currentTime = addMinutes(currentTime, 60);
+        }
+      }
+      weekOffset++;
+    }
   }
 
-  // For P2, try the next 7 days
-  for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+  // For P2, try until we find an available slot
+  let dayOffset = 0;
+  while (true) {
     const candidateDate = addDays(baseDate, dayOffset);
     const nextValidDay = getNextValidDay(candidateDate, priority);
     const { start, end } = getTimeRangeForPriority(nextValidDay, priority);
@@ -281,20 +273,8 @@ export async function getScheduledDateSeconds(
         await putTakenScheduleDates(takenScheduleDates, config);
         return getAfterSeconds(utcDate, baseDate);
       }
-      currentTime = addMinutes(currentTime, 5);
+      currentTime = addMinutes(currentTime, 60);
     }
+    dayOffset++;
   }
-
-  // If all slots are taken for P2, pick a random one from the existing slots
-  if (takenScheduleDates[priority].length > 0) {
-    const randomIndex = Math.floor(
-      Math.random() * takenScheduleDates[priority].length,
-    );
-    const randomDate = takenScheduleDates[priority][randomIndex];
-    return getAfterSeconds(randomDate, baseDate);
-  }
-
-  throw new Error(
-    `No existing schedule dates found for priority level ${priority}. This is unexpected - there should always be at least one taken date.`,
-  );
 }
