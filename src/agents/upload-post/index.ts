@@ -47,75 +47,76 @@ export async function uploadPost(
   state: typeof UploadPostAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof UploadPostAnnotation.State>> {
-  if (!state.post) {
-    throw new Error("No post text found");
-  }
-  const twitterUserId = process.env.TWITTER_USER_ID;
-  const linkedInUserId = process.env.LINKEDIN_USER_ID;
+  throw new Error("DO NOT POST");
+  // if (!state.post) {
+  //   throw new Error("No post text found");
+  // }
+  // const twitterUserId = process.env.TWITTER_USER_ID;
+  // const linkedInUserId = process.env.LINKEDIN_USER_ID;
 
-  if (!twitterUserId && !linkedInUserId) {
-    throw new Error("One of twitterUserId or linkedInUserId must be provided");
-  }
+  // if (!twitterUserId && !linkedInUserId) {
+  //   throw new Error("One of twitterUserId or linkedInUserId must be provided");
+  // }
 
-  const twitterToken = process.env.TWITTER_TOKEN;
-  const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
+  // const twitterToken = process.env.TWITTER_TOKEN;
+  // const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
 
-  if (twitterUserId) {
-    if (!twitterToken || !twitterTokenSecret) {
-      throw new Error(
-        "Twitter token or token secret not found in configurable fields.",
-      );
-    }
+  // if (twitterUserId) {
+  //   if (!twitterToken || !twitterTokenSecret) {
+  //     throw new Error(
+  //       "Twitter token or token secret not found in configurable fields.",
+  //     );
+  //   }
 
-    const twitterClient = await TwitterClient.fromUserId(twitterUserId, {
-      twitterToken,
-      twitterTokenSecret,
-    });
-    const mediaBuffer = await getMediaFromImage(state.image);
+  //   const twitterClient = await TwitterClient.fromUserId(twitterUserId, {
+  //     twitterToken,
+  //     twitterTokenSecret,
+  //   });
+  //   const mediaBuffer = await getMediaFromImage(state.image);
 
-    await twitterClient.uploadTweet({
-      text: state.post,
-      ...(mediaBuffer && { media: mediaBuffer }),
-    });
-    console.log("✅ Successfully uploaded Tweet ✅");
-  } else {
-    console.log("❌ Not uploading Tweet ❌");
-  }
+  //   await twitterClient.uploadTweet({
+  //     text: state.post,
+  //     ...(mediaBuffer && { media: mediaBuffer }),
+  //   });
+  //   console.log("✅ Successfully uploaded Tweet ✅");
+  // } else {
+  //   console.log("❌ Not uploading Tweet ❌");
+  // }
 
-  if (linkedInUserId) {
-    const linkedInClient = new LinkedInClient({
-      accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
-      personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
-      organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
-    });
+  // if (linkedInUserId) {
+  //   const linkedInClient = new LinkedInClient({
+  //     accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+  //     personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
+  //     organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+  //   });
 
-    const postToOrg =
-      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
-        ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
-        : false;
+  //   const postToOrg =
+  //     config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
+  //       ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
+  //       : false;
 
-    if (state.image) {
-      await linkedInClient.createImagePost(
-        {
-          text: state.post,
-          imageUrl: state.image.imageUrl,
-        },
-        {
-          postToOrganization: postToOrg,
-        },
-      );
-    } else {
-      await linkedInClient.createTextPost(state.post, {
-        postToOrganization: postToOrg,
-      });
-    }
+  //   if (state.image) {
+  //     await linkedInClient.createImagePost(
+  //       {
+  //         text: state.post,
+  //         imageUrl: state.image.imageUrl,
+  //       },
+  //       {
+  //         postToOrganization: postToOrg,
+  //       },
+  //     );
+  //   } else {
+  //     await linkedInClient.createTextPost(state.post, {
+  //       postToOrganization: postToOrg,
+  //     });
+  //   }
 
-    console.log("✅ Successfully uploaded post to LinkedIn ✅");
-  } else {
-    console.log("❌ Not uploading post to LinkedIn ❌");
-  }
+  //   console.log("✅ Successfully uploaded post to LinkedIn ✅");
+  // } else {
+  //   console.log("❌ Not uploading post to LinkedIn ❌");
+  // }
 
-  return {};
+  // return {};
 }
 
 const uploadPostWorkflow = new StateGraph(
