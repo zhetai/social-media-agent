@@ -22,16 +22,8 @@ jobs:
         os: [ubuntu-latest]
         node-version: [18.x, 20.x]
     runs-on: ${{ matrix.os }}
-    env:
-      TZ: America/Los_Angeles  # Set the TZ environment variable
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set Timezone to America/Los_Angeles
-        run: |
-          sudo ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
-          echo "America/Los_Angeles" | sudo tee /etc/timezone
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
