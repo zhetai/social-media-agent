@@ -20,6 +20,6 @@
     "types": ["jest", "node"],
     "resolveJsonModule": true
   },
-  "include": ["**/*.ts", "**/*.js"],
+  "include": ["**/*.ts", "**/*.js", "jest.setup.cjs"],
   "exclude": ["node_modules", "dist"]
 }
