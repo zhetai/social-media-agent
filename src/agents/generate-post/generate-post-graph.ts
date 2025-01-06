@@ -37,7 +37,7 @@ function condenseOrHumanConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
 ): "condensePost" | "findImages" {
   const cleanedPost = removeUrls(state.post || "");
-  if (cleanedPost.length > 280) {
+  if (cleanedPost.length > 280 && state.condenseCount <= 3) {
     return "condensePost";
   }
   return "findImages";
@@ -100,10 +100,15 @@ const generatePostBuilder = new StateGraph(
     "condensePost",
     "findImages",
   ])
-
-  // After condensing the post, we can find & filter images. This needs to happen after the post
+  // After condensing the post, we should verify again that the content is below the character limit.
+  // Once the post is below the character limit, we can find & filter images. This needs to happen after the post
   // has been generated because the image validator requires the post content.
-  .addEdge("condensePost", "findImages")
+  .addConditionalEdges("condensePost", condenseOrHumanConditionalEdge, [
+    "condensePost",
+    "findImages",
+  ])
+
+  // After finding images, we are done and can interrupt for the human to respond.
   .addEdge("findImages", "humanNode")
 
   // Always route back to `humanNode` if the post was re-written or date was updated.

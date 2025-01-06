@@ -1,6 +1,7 @@
 import * as path from "path";
 import {
   extractAllImageUrlsFromMarkdown,
+  filterUnwantedImageUrls,
   getUrlType,
   isValidUrl,
 } from "../../../utils.js";
@@ -26,7 +27,9 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
   }
 
   if (pageContents && pageContents.length) {
-    const allImageUrls = pageContents.flatMap(extractAllImageUrlsFromMarkdown);
+    const allImageUrls = filterUnwantedImageUrls(
+      pageContents.flatMap(extractAllImageUrlsFromMarkdown),
+    );
     for await (const urlOrPathname of allImageUrls) {
       if (isValidUrl(urlOrPathname)) {
         if (getUrlType(urlOrPathname) !== "github") {
@@ -38,6 +41,7 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
             console.warn("Could not extract file path from URL", urlOrPathname);
             continue;
           }
+
           const getContents = await getFileContents(urlOrPathname, filePath);
           if (getContents.download_url) {
             imageUrls.add(getContents.download_url);

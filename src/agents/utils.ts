@@ -288,19 +288,11 @@ export async function processImageInput(
 
 // Regex to match markdown image syntax: ![alt text](url)
 const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
+// Regex to match HTML img tags with src attribute (handles both single and double quotes)
+const HTML_IMG_REGEX = /<img[^>]+src=["']([^"'>]+)["']/g;
 
 /**
- * Extracts a single image URL from a markdown string
- * @param text The markdown text to search
- * @returns The first matched image URL or null if no match found
- */
-export function extractFirstImageUrlFromMarkdown(text: string): string | null {
-  const match = MARKDOWN_IMAGE_REGEX.exec(text);
-  return match ? match[2] : null;
-}
-
-/**
- * Extracts all image URLs from a markdown string
+ * Extracts all image URLs from a markdown string, including both markdown syntax and HTML img tags
  * @param text The markdown text to search
  * @returns Array of all matched image URLs
  */
@@ -308,14 +300,30 @@ export function extractAllImageUrlsFromMarkdown(text: string): string[] {
   const urls: string[] = [];
   let match;
 
-  // Reset regex state
+  // Reset regex states
   MARKDOWN_IMAGE_REGEX.lastIndex = 0;
+  HTML_IMG_REGEX.lastIndex = 0;
 
+  // Extract markdown style images
   while ((match = MARKDOWN_IMAGE_REGEX.exec(text)) !== null) {
     urls.push(match[2]);
   }
 
+  // Extract HTML img tags
+  while ((match = HTML_IMG_REGEX.exec(text)) !== null) {
+    urls.push(match[1]);
+  }
+
   return urls;
+}
+
+const BLACKLISTED_IMAGE_URL_ENDINGS = [".svg", ".ico", ".bmp"];
+
+export function filterUnwantedImageUrls(urls: string[]): string[] {
+  return urls.filter(
+    (url) =>
+      !BLACKLISTED_IMAGE_URL_ENDINGS.find((ending) => url.endsWith(ending)),
+  );
 }
 
 /**
@@ -363,6 +371,12 @@ export function getUrlType(url: string): UrlType {
 
   return "general";
 }
+
+export const BLACKLISTED_MIME_TYPES = [
+  "image/svg+xml",
+  "image/x-icon",
+  "image/bmp",
+];
 
 /**
  * Extracts the MIME type from a URL based on its file extension or path
