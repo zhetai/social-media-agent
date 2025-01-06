@@ -115,7 +115,10 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all weekend slots in the next 7 days
         const takenSlots = [];
-        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
+        const currentDate = toZonedTime(
+          MOCK_CURRENT_DATE,
+          "America/Los_Angeles",
+        );
 
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
@@ -228,7 +231,10 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all valid P2 slots in the next 7 days
         const takenSlots = [];
-        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
+        const currentDate = toZonedTime(
+          MOCK_CURRENT_DATE,
+          "America/Los_Angeles",
+        );
 
         // Fill up the next 7 days
         for (let i = 0; i < 7; i++) {
@@ -317,7 +323,10 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all P3 weekend slots in the next 7 days
         const takenSlots = [];
-        const currentDate = toZonedTime(MOCK_CURRENT_DATE, "America/Los_Angeles");
+        const currentDate = toZonedTime(
+          MOCK_CURRENT_DATE,
+          "America/Los_Angeles",
+        );
 
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
