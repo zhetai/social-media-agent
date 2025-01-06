@@ -111,20 +111,21 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all weekend slots in the next 7 days
         const takenSlots = [];
-        let currentDate = MOCK_CURRENT_DATE;
-        
+        const currentDate = MOCK_CURRENT_DATE;
+
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
           const date = new Date(currentDate);
           date.setDate(date.getDate() + i);
-          
-          if (date.getDay() === 0 || date.getDay() === 6) { // Saturday or Sunday
+
+          if (date.getDay() === 0 || date.getDay() === 6) {
+            // Saturday or Sunday
             for (let hour = 8; hour <= 10; hour++) {
               takenSlots.push(
                 fromZonedTime(
                   new Date(date.setHours(hour, 0, 0, 0)),
-                  "America/Los_Angeles"
-                )
+                  "America/Los_Angeles",
+                ),
               );
             }
           }
@@ -217,21 +218,21 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all valid P2 slots in the next 7 days
         const takenSlots = [];
-        let currentDate = MOCK_CURRENT_DATE;
-        
+        const currentDate = MOCK_CURRENT_DATE;
+
         // Fill up the next 7 days
         for (let i = 0; i < 7; i++) {
           const date = new Date(currentDate);
           date.setDate(date.getDate() + i);
-          
+
           // For weekdays (Monday and Friday)
           if (isMonday(date) || isFriday(date)) {
             for (let hour = 8; hour <= 10; hour++) {
               takenSlots.push(
                 fromZonedTime(
                   new Date(date.setHours(hour, 0, 0, 0)),
-                  "America/Los_Angeles"
-                )
+                  "America/Los_Angeles",
+                ),
               );
             }
           }
@@ -241,8 +242,8 @@ describe("Schedule Date Tests", () => {
               takenSlots.push(
                 fromZonedTime(
                   new Date(date.setHours(hour, 0, 0, 0)),
-                  "America/Los_Angeles"
-                )
+                  "America/Los_Angeles",
+                ),
               );
             }
           }
@@ -302,20 +303,21 @@ describe("Schedule Date Tests", () => {
       it("should find slots beyond 7 days when all closer slots are taken", async () => {
         // Create taken slots for all P3 weekend slots in the next 7 days
         const takenSlots = [];
-        let currentDate = MOCK_CURRENT_DATE;
-        
+        const currentDate = MOCK_CURRENT_DATE;
+
         // Fill up the next 7 days of weekend slots
         for (let i = 0; i < 7; i++) {
           const date = new Date(currentDate);
           date.setDate(date.getDate() + i);
-          
-          if (date.getDay() === 0 || date.getDay() === 6) { // Saturday or Sunday
+
+          if (date.getDay() === 0 || date.getDay() === 6) {
+            // Saturday or Sunday
             for (let hour = 13; hour <= 17; hour++) {
               takenSlots.push(
                 fromZonedTime(
                   new Date(date.setHours(hour, 0, 0, 0)),
-                  "America/Los_Angeles"
-                )
+                  "America/Los_Angeles",
+                ),
               );
             }
           }

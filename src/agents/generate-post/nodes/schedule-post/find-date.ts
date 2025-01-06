@@ -193,6 +193,9 @@ function validateScheduleDate(date: Date, baseDate: Date): void {
   }
 }
 
+const MAX_WEEKS_AHEAD = 52; // Maximum weeks to look ahead (1 year)
+const MAX_DAYS_AHEAD = 365; // Maximum days to look ahead (1 year)
+
 export async function getScheduledDateSeconds(
   scheduleDate: DateType,
   config: LangGraphRunnableConfig,
@@ -213,10 +216,10 @@ export async function getScheduledDateSeconds(
 
   const takenScheduleDates = await getTakenScheduleDates(config);
 
-  // For P1 and P3, look for available weekend slots indefinitely
+  // For P1 and P3, look for available weekend slots within the next 52 weeks
   if (priority === "p1" || priority === "p3") {
     let weekOffset = 0;
-    while (true) {
+    while (weekOffset < MAX_WEEKS_AHEAD) {
       const candidateDate = addDays(baseDate, weekOffset * 7);
       const nextWeekendDay = getNextValidDay(candidateDate, priority);
       const { start, end } = getTimeRangeForPriority(nextWeekendDay, priority);
@@ -256,9 +259,9 @@ export async function getScheduledDateSeconds(
     }
   }
 
-  // For P2, try until we find an available slot
+  // For P2, try until we find an available slot within the next 365 days
   let dayOffset = 0;
-  while (true) {
+  while (dayOffset < MAX_DAYS_AHEAD) {
     const candidateDate = addDays(baseDate, dayOffset);
     const nextValidDay = getNextValidDay(candidateDate, priority);
     const { start, end } = getTimeRangeForPriority(nextValidDay, priority);
@@ -277,4 +280,6 @@ export async function getScheduledDateSeconds(
     }
     dayOffset++;
   }
+
+  throw new Error("No available schedule date found");
 }
