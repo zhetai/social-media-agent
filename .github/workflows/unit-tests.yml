@@ -1,6 +1,6 @@
 # This workflow will run unit tests for the current project
 
-name: CI
+name: Unit Tests
 
 on:
   push:
