@@ -1,4 +1,4 @@
-export const INPUTS = [
+const INPUTS = [
   {
     report: `News TL;DR: An Intelligent News Processing Agent
 
@@ -108,9 +108,29 @@ Ready to start building? Check out the tutorial 👉 https://levelup.gitconnecte
       "https://miro.medium.com/v2/resize:fill:20:20/1*R8zEd59FDf0l8Re94ImV0Q.png",
     ],
   },
+  {
+    report: `## Content Transformation Tool with Model Context Protocol\n\n### Overview\nA sophisticated web content transformation application that leverages the Model Context Protocol (MCP) to convert any website into query-relevant content. The tool specializes in creating LLM-optimized text files, documentation indexing, and research automation, while offering seamless integration with platforms like X and Slack through Arcade.\n\n### LangChain Implementation\nThe application demonstrates robust integration of LangChain's ecosystem:\n- **LangGraph**: Serves as the primary MCP client, handling the core content transformation logic\n- **LangSmith**: Powers the tracing functionality, enabling comprehensive monitoring and debugging of the transformation pipeline\n\n### Technical Details\nThe solution employs a sophisticated tech stack:\n- Firecrawll technology for intelligent web research, including site mapping and selective scraping\n- Integration with OpenAI's structured outputs for reliable content processing\n- Robust error handling through exponential backoff mechanisms\n- Data validation using Pydantic models\n- Asynchronous processing for improved performance\n- Arcade integration for multi-platform support (X, Slack)\n\nThe architecture prioritizes reliability and efficiency, making it an ideal solution for developers looking to transform web content into LLM-ready formats while maintaining high accuracy and performance standards.`,
+    post: `🔍 Web Content Transformer\n\nTransform websites into LLM-optimized content with this powerful research automation tool. Leveraging LangGraph for content transformation and LangSmith for monitoring, it seamlessly integrates with X and Slack through Arcade.\n\nKey features:\n• Intelligent web research with Firecrawll\n• Real-time monitoring\n• Multi-platform support\n\n🚀 Check it out: https://github.com/lgesuellip/researcher_agent/tree/main/servers`,
+    imageOptions: [
+      "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736197683143.jpeg",
+      "https://raw.githubusercontent.com/lgesuellip/researcher_agent/main/app_architecture.png",
+    ],
+  },
+  {
+    report: `<thinking>\nKey observations from the content:\n1. This is an enterprise AI case study analysis tool that uses Claude 3.5 Sonnet and Firecrawl APIs\n2. Two main operation modes: CSV analysis and website discovery\n3. Uses LangChain for orchestrating the AI workflows and processing\n4. Comprehensive reporting system with 3 types of reports\n5. Well-structured technical architecture with clear integration points\n6. Interesting features include automated discovery, intelligent identification, and detailed analysis\n7. Open source project with MIT license\n8. Uses modern AI/ML tech stack\n9. Focuses on enterprise AI implementation analysis\n10. Has visualization capabilities for executive dashboards\n</thinking>\n\n<report>\n## Part 1: Introduction and Summary\nThe AI Enterprise Case Study Analyzer is an intelligent system designed to automate the discovery, analysis, and reporting of enterprise AI case studies. This open-source tool leverages the Claude 3.5 Sonnet API and Firecrawl API to provide comprehensive analysis through two main modes: CSV-based URL analysis and automated website discovery. The system stands out for its ability to automatically identify relevant case studies, extract meaningful content, and generate detailed reports including individual analyses, cross-case comparisons, and executive dashboards.\n\n## Part 2: LangChain Implementation\nThe system utilizes LangChain's orchestration capabilities to create sophisticated AI workflows. LangChain is implemented to:\n- Coordinate interactions between Claude 3.5 Sonnet and Firecrawl APIs\n- Manage the content processing pipeline\n- Handle the multi-step analysis workflow from discovery to report generation\n- Structure and process the extracted data for various report formats\n\n## Part 3: Technical Details\nThe analyzer features a robust technical architecture with several notable components:\n- **Content Processing Pipeline**: Implements Firecrawl's map and scrape endpoints for content discovery and extraction\n- **Intelligent Analysis**: Uses Claude 3.5 Sonnet for case study identification and detailed analysis\n- **Comprehensive Reporting**: Generates three types of reports (individual case studies, cross-case analysis, executive dashboard)\n- **Structured Output**: Produces well-formatted markdown and JSON reports with detailed metrics and insights\n- **API Integration**: Features detailed integration with both Firecrawl and Claude APIs with configurable parameters\n\nThe project is open source (MIT licensed) and available for contributions, with a clear installation process and documentation. View the project structure and setup instructions at [GitHub](https://github.com/yourusername/ai-case-study-analyzer.git).`,
+    post: `🔍 AI Investigator\n\nAn open-source tool that automates enterprise AI case study discovery and analysis. Powered by Claude 3.5 Sonnet and LangChain's orchestration, it transforms raw data into comprehensive reports and executive dashboards.\n\nExplore this powerful research tool! 🚀\nhttps://github.com/muratcankoylan/AI-Investigator`,
+    imageOptions: [
+      "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736197436305.jpeg",
+      "https://github.com/user-attachments/assets/95be2e76-12bd-4dea-bd91-1b7d309f0f6d",
+      "https://github.com/user-attachments/assets/7b935a1b-b79e-4fb3-85c7-cb18d48601bb",
+      "https://github.com/user-attachments/assets/1669df59-a81a-4aab-b62b-149e1480a82a",
+      "https://github.com/user-attachments/assets/370e2f63-fd1c-4af4-ae78-130b99fe4b0b",
+      "https://api.star-history.com/svg?repos=muratcankoylan/AI-Investigator&type=Date",
+    ],
+  },
 ];
 
-export const OUTPUTS = [
+const OUTPUTS = [
   {
     imageOptions: [
       "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-diamantai.substack.com-1735869048739.jpeg", // 0 - approved
@@ -124,5 +144,39 @@ export const OUTPUTS = [
       "https://miro.medium.com/v2/resize:fit:700/1*xwU1Nf9qpggbIB73CGaNRg.png", // yes
       "https://miro.medium.com/v2/resize:fit:700/1*ldsEjgVFdxhpcKtgc9ddvQ.png", // yes
     ],
+  },
+  {
+    imageOptions: [
+      "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736197683143.jpeg",
+      "https://raw.githubusercontent.com/lgesuellip/researcher_agent/main/app_architecture.png",
+    ],
+  },
+  {
+    imageOptions: [
+      "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736197436305.jpeg",
+      "https://github.com/user-attachments/assets/95be2e76-12bd-4dea-bd91-1b7d309f0f6d",
+      "https://github.com/user-attachments/assets/7b935a1b-b79e-4fb3-85c7-cb18d48601bb",
+      "https://github.com/user-attachments/assets/1669df59-a81a-4aab-b62b-149e1480a82a",
+      "https://github.com/user-attachments/assets/370e2f63-fd1c-4af4-ae78-130b99fe4b0b",
+    ],
+  },
+];
+
+export const TEST_EACH_INPUTS_OUTPUTS = [
+  {
+    inputs: INPUTS[0],
+    outputs: OUTPUTS[0],
+  },
+  {
+    inputs: INPUTS[1],
+    outputs: OUTPUTS[1],
+  },
+  {
+    inputs: INPUTS[2],
+    outputs: OUTPUTS[2],
+  },
+  {
+    inputs: INPUTS[3],
+    outputs: OUTPUTS[3],
   },
 ];
