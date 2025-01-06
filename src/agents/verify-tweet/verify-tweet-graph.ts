@@ -1,8 +1,5 @@
 import { END, Send, START, StateGraph } from "@langchain/langgraph";
-import {
-  VerifyTweetAnnotation,
-  VerifyTweetConfigurableAnnotation,
-} from "./verify-tweet-state.js";
+import { VerifyTweetAnnotation } from "./verify-tweet-state.js";
 import { getTweetContent } from "./nodes/get-tweet-content.js";
 import { verifyYouTubeContent } from "../shared/nodes/verify-youtube.js";
 import { verifyGeneralContent } from "../shared/nodes/verify-general.js";
@@ -36,10 +33,7 @@ function routeTweetUrls(state: typeof VerifyTweetAnnotation.State) {
   });
 }
 
-const verifyTweetBuilder = new StateGraph(
-  VerifyTweetAnnotation,
-  VerifyTweetConfigurableAnnotation,
-)
+const verifyTweetBuilder = new StateGraph(VerifyTweetAnnotation)
   // Calls the Twitter API to get the content, and extracts + validates any
   // URLs found in the Tweet content.
   .addNode("getTweetContent", getTweetContent)
