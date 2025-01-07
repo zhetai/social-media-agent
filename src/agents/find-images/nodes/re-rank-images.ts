@@ -105,6 +105,15 @@ export async function reRankImages(state: typeof FindImagesAnnotation.State) {
     baseIndex += imageChunk.length;
   }
 
+  if (reRankedIndices.length !== state.imageOptions.length) {
+    console.warn(
+      "Re-ranked indices length does not match image options length. Returning original image options.",
+    );
+    return {
+      imageOptions: state.imageOptions,
+    };
+  }
+
   const imageOptionsInOrder = reRankedIndices.map(
     (index) => state.imageOptions[index],
   );
