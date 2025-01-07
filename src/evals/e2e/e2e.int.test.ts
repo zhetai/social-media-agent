@@ -10,7 +10,10 @@ import { removeUrls } from "../../agents/utils.js";
 import { GeneratePostAnnotation } from "../../agents/generate-post/generate-post-state.js";
 import { HumanInterrupt } from "../../agents/types.js";
 
-const checkGeneratePostResult: SimpleEvaluator = ({ expected: _expected, actual }) => {
+const checkGeneratePostResult: SimpleEvaluator = ({
+  expected: _expected,
+  actual,
+}) => {
   // Check the following:
   // 1(a). A post was generated
   // 1(b). Check post length is less than or equal to 280 after removing URL.
@@ -58,7 +61,8 @@ const checkGeneratePostResult: SimpleEvaluator = ({ expected: _expected, actual 
     interruptScore = 1;
   }
 
-  const totalScore = postScore + pageContentsScore + reportScore + imagesScore + interruptScore;
+  const totalScore =
+    postScore + pageContentsScore + reportScore + imagesScore + interruptScore;
   let score = 0;
   if (totalScore === 5) {
     score = 1;
@@ -73,13 +77,13 @@ const checkGeneratePostResult: SimpleEvaluator = ({ expected: _expected, actual 
       reportScore,
       imagesScore,
       interruptScore,
-    }
+    },
   };
 };
 
 const BASE_CONFIG = {
   [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
-}
+};
 
 ls.describe("SMA - E2E", () => {
   const graph = generatePostGraph;
@@ -87,7 +91,7 @@ ls.describe("SMA - E2E", () => {
   beforeAll(async () => {
     graph.checkpointer = new MemorySaver();
     graph.store = new InMemoryStore();
-  })
+  });
 
   ls.test.each(INPUTS)(
     "Should validate the end to end flow of the generate post agent",
@@ -97,8 +101,8 @@ ls.describe("SMA - E2E", () => {
         configurable: {
           thread_id: threadId,
           ...BASE_CONFIG,
-        }
-      }
+        },
+      };
 
       expect(await generatePostGraph.invoke(inputs, config)).not.toThrow();
       const graphState = await generatePostGraph.getState(config);
@@ -106,10 +110,13 @@ ls.describe("SMA - E2E", () => {
       const interruptValue = graphState.tasks[0]?.interrupts?.[0]?.value;
       console.log("\nState\n", state);
       console.log("\nInterrupt Value\n", interruptValue);
-      await ls.expect({
-        state,
-        interrupt: interruptValue,
-      }).evaluatedBy(checkGeneratePostResult).toBe(1);
+      await ls
+        .expect({
+          state,
+          interrupt: interruptValue,
+        })
+        .evaluatedBy(checkGeneratePostResult)
+        .toBe(1);
       return graphState;
     },
   );
