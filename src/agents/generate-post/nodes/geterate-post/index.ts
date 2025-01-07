@@ -1,10 +1,14 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { GENERATE_POST_PROMPT, REFLECTIONS_PROMPT } from "./prompts.js";
+import { GENERATE_POST_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
-import { getReflections, RULESET_KEY } from "../../../../utils/reflections.js";
+import {
+  getReflections,
+  REFLECTIONS_PROMPT,
+  RULESET_KEY,
+} from "../../../../utils/reflections.js";
 import { getNextSaturdayDate } from "../../../../utils/date.js";
 
 export async function generatePost(

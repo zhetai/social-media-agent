@@ -2,6 +2,11 @@ import { Client } from "@langchain/langgraph-sdk";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
+import {
+  getReflections,
+  REFLECTIONS_PROMPT,
+  RULESET_KEY,
+} from "../../../utils/reflections.js";
 
 const REWRITE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You wrote a post for the LangChain LinkedIn and Twitter pages, however your boss has asked for some changes to be made before it can be published.
@@ -10,6 +15,8 @@ The original post you wrote is as follows:
 <original-post>
 {originalPost}
 </original-post>
+
+{reflectionsPrompt}
 
 Listen to your boss closely, and make the necessary changes to the post. You should respond ONLY with the updated post, with no additional information, or text before or after the post.`;
 
@@ -44,7 +51,7 @@ async function runReflections({
 
 export async function rewritePost(
   state: typeof GeneratePostAnnotation.State,
-  _config: LangGraphRunnableConfig,
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.post) {
     throw new Error("No post found");
@@ -58,10 +65,23 @@ export async function rewritePost(
     temperature: 0.5,
   });
 
+  const reflections = await getReflections(config);
+  let reflectionsPrompt = "";
+  if (
+    reflections?.value?.[RULESET_KEY]?.length &&
+    Array.isArray(reflections?.value?.[RULESET_KEY])
+  ) {
+    const rulesetString = `- ${reflections.value[RULESET_KEY].join("\n- ")}`;
+    reflectionsPrompt = REFLECTIONS_PROMPT.replace(
+      "{reflections}",
+      rulesetString,
+    );
+  }
+
   const systemPrompt = REWRITE_POST_PROMPT.replace(
     "{originalPost}",
     state.post,
-  );
+  ).replace("{reflectionsPrompt}", reflectionsPrompt);
 
   const revisePostResponse = await rewritePostModel.invoke([
     {
