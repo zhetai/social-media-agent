@@ -66,6 +66,7 @@ export const GeneratePostAnnotation = Annotation.Root({
     | "schedulePost"
     | "rewritePost"
     | "updateScheduleDate"
+    | "unknownResponse"
     | typeof END
     | undefined
   >,

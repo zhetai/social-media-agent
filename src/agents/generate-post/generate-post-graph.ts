@@ -26,8 +26,17 @@ function routeAfterGeneratingReport(
 
 function rewriteOrEndConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
-): "rewritePost" | "schedulePost" | "updateScheduleDate" | typeof END {
+):
+  | "rewritePost"
+  | "schedulePost"
+  | "updateScheduleDate"
+  | "humanNode"
+  | typeof END {
   if (state.next) {
+    if (state.next === "unknownResponse") {
+      // If the user's response is unknown, we should route back to the human node.
+      return "humanNode";
+    }
     return state.next;
   }
   return END;
@@ -120,6 +129,7 @@ const generatePostBuilder = new StateGraph(
     "rewritePost",
     "schedulePost",
     "updateScheduleDate",
+    "humanNode",
     END,
   ])
   // Always end after scheduling the post.

@@ -24,7 +24,9 @@ Carefully analyze the user's response:
 Based on the user's response, determine which of the two routes they intend to take. Consider the following:
 
 1. If the user mentions editing, changing, or rewriting the content of the post, choose the "rewrite_post" route.
-2. If the user mentions changing the date, time, or priority level of the post, choose the "update_date" route.
+2. If the user mentions changing the date, time, or priority level of the post, choose the "update_date" route. Ensure you only call this if the user mentions a date, or one of P1, P2 or P3.
+
+If the user's response can not be handled by one of the two routes, choose the "unknown_response" route.
 
 Provide your answer in the following format:
 <explanation>
@@ -49,6 +51,16 @@ User: "This should be a P1 priority."
 Route: update_date
 Explanation: The user wants to change the priority level of the post.
 
+Example 3:
+User: "This should be a P0 priority."
+Route: unknown_response
+Explanation: P0 is not a valid priority level.
+
+Example 3:
+User: "Hi! How are you?"
+Route: unknown_response
+Explanation: The user is engaging in general conversation, not a request to change the post.
+
 Remember to always base your decision on the actual content of the user's response, not on these examples.`;
 
 interface RouteResponseArgs {
@@ -68,7 +80,7 @@ export async function routeResponse({
   });
 
   const routeSchema = z.object({
-    route: z.enum(["rewrite_post", "update_date"]),
+    route: z.enum(["rewrite_post", "update_date", "unknown_response"]),
   });
   const modelWithSchema = model.withStructuredOutput(routeSchema, {
     name: "route",
