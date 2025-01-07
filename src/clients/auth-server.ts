@@ -78,7 +78,7 @@ export class SocialAuthServer {
         {
           consumerKey: process.env.TWITTER_API_KEY,
           consumerSecret: process.env.TWITTER_API_KEY_SECRET,
-          callbackURL: `http://localhost:${this.port}/callback`,
+          callbackURL: `http://localhost:${this.port}/auth/twitter/callback`,
         },
         (
           token: string,
@@ -121,7 +121,7 @@ export class SocialAuthServer {
 
     // Twitter routes
     this.app.get("/auth/twitter", passport.authenticate("twitter"));
-    this.app.get("/callback", (req: Request, res: Response) => {
+    this.app.get("/auth/twitter/callback", (req: Request, res: Response) => {
       passport.authenticate("twitter", {
         failureRedirect: "/login",
       })(req, res, (err: any) => {
@@ -252,7 +252,7 @@ export class SocialAuthServer {
   public start(): void {
     this.app.listen(this.port, () => {
       console.log(
-        `Social authentication server is running on port ${this.port}`,
+        `Social authentication server is running on port ${this.port}. Go to http://localhost:${this.port} to login`,
       );
     });
   }

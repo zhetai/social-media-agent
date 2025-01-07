@@ -1,4 +1,9 @@
-import { END, START, StateGraph } from "@langchain/langgraph";
+import {
+  END,
+  LangGraphRunnableConfig,
+  START,
+  StateGraph,
+} from "@langchain/langgraph";
 import {
   GeneratePostAnnotation,
   GeneratePostConfigurableAnnotation,
@@ -14,6 +19,7 @@ import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
 import { updateScheduledDate } from "./nodes/update-scheduled-date.js";
 import { findImagesGraph } from "../find-images/find-images-graph.js";
+import { TEXT_ONLY_MODE } from "./constants.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -44,10 +50,14 @@ function rewriteOrEndConditionalEdge(
 
 function condenseOrHumanConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
-): "condensePost" | "findImages" {
+  config: LangGraphRunnableConfig,
+): "condensePost" | "findImages" | "humanNode" {
   const cleanedPost = removeUrls(state.post || "");
   if (cleanedPost.length > 280 && state.condenseCount <= 3) {
     return "condensePost";
+  }
+  if (config.configurable?.[TEXT_ONLY_MODE]) {
+    return "humanNode";
   }
   return "findImages";
 }
@@ -108,6 +118,7 @@ const generatePostBuilder = new StateGraph(
   .addConditionalEdges("generatePost", condenseOrHumanConditionalEdge, [
     "condensePost",
     "findImagesSubGraph",
+    "humanNode",
   ])
   // After condensing the post, we should verify again that the content is below the character limit.
   // Once the post is below the character limit, we can find & filter images. This needs to happen after the post
@@ -115,6 +126,7 @@ const generatePostBuilder = new StateGraph(
   .addConditionalEdges("condensePost", condenseOrHumanConditionalEdge, [
     "condensePost",
     "findImagesSubGraph",
+    "humanNode",
   ])
 
   // After finding images, we are done and can interrupt for the human to respond.

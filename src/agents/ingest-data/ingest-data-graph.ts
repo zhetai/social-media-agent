@@ -10,7 +10,10 @@ import {
 } from "./ingest-data-state.js";
 import { ingestSlackData } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../generate-post/constants.js";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "../generate-post/constants.js";
 import { getUrlType } from "../utils.js";
 
 /**
@@ -69,6 +72,7 @@ async function generatePostFromMessages(
       config: {
         configurable: {
           [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
+          [TEXT_ONLY_MODE]: config.configurable?.[TEXT_ONLY_MODE],
         },
       },
       afterSeconds,
