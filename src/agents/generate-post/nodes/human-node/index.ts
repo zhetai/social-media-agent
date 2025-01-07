@@ -8,6 +8,7 @@ import {
   parseDateResponse,
 } from "../../../../utils/date.js";
 import { routeResponse } from "./route-response.js";
+import { TEXT_ONLY_MODE } from "../../constants.js";
 
 interface ConstructDescriptionArgs {
   unknownResponseDescription: string;
@@ -16,6 +17,7 @@ interface ConstructDescriptionArgs {
   relevantLinks: string[];
   post: string;
   imageOptions?: string[];
+  isTextOnlyMode: boolean;
 }
 
 function constructDescription({
@@ -25,15 +27,31 @@ function constructDescription({
   relevantLinks,
   post,
   imageOptions,
+  isTextOnlyMode,
 }: ConstructDescriptionArgs): string {
   const linksText = `### Relevant URLs:\n- ${relevantLinks.join("\n- ")}\nOriginal URL: ${originalLink}`;
-  const imageOptionsText = imageOptions?.length
-    ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
-    : "";
+  const imageOptionsText =
+    imageOptions?.length && !isTextOnlyMode
+      ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
+      : "";
 
   const unknownResponseString = unknownResponseDescription
     ? `${unknownResponseDescription}\n\n`
     : "";
+
+  const imageInstructionsString =
+    imageOptions?.length && !isTextOnlyMode
+      ? `If you wish to attach an image to the post, please add a public image URL.
+
+You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field
+To replace the image, simply add a new public image URL to the field.
+
+MIME types will be automatically extracted from the image.
+Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\``
+      : isTextOnlyMode
+        ? "Text only mode enabled. Image support has been disabled.\n"
+        : "No image options available.";
+
   return `${unknownResponseString}# Schedule post
   
 Using these URL(s), a post was generated for Twitter/LinkedIn:
@@ -68,13 +86,7 @@ The date the post will be scheduled for may be edited, but it must follow the fo
 
 ### Image
 
-If you wish to attach an image to the post, please add a public image URL.
-
-You may remove the image by setting the 'image' field to 'remove', or by removing all text from the field
-To replace the image, simply add a new public image URL to the field.
-
-MIME types will be automatically extracted from the image.
-Supported image types: \`image/jpeg\` | \`image/gif\` | \`image/png\` | \`image/webp\`
+${imageInstructionsString}
 
 ## Report
 
@@ -99,11 +111,12 @@ const getUnknownResponseDescription = (
 
 export async function humanNode(
   state: typeof GeneratePostAnnotation.State,
-  _config: LangGraphRunnableConfig,
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.post) {
     throw new Error("No post found");
   }
+  const isTextOnlyMode = !!config.configurable?.[TEXT_ONLY_MODE];
 
   const unknownResponseDescription = getUnknownResponseDescription(state);
   const defaultDate = state.scheduleDate || getNextSaturdayDate();
@@ -121,14 +134,14 @@ export async function humanNode(
     );
   }
 
-  const imageURL = state.image?.imageUrl ?? "";
   const interruptValue: HumanInterrupt = {
     action_request: {
       action: "Schedule Twitter/LinkedIn posts",
       args: {
         post: state.post,
         date: defaultDateString,
-        image: imageURL,
+        // Do not provide an image field if the mode is text only
+        ...(!isTextOnlyMode && { image: state.image?.imageUrl ?? "" }),
       },
     },
     config: {
@@ -144,6 +157,7 @@ export async function humanNode(
       post: state.post,
       imageOptions: state.imageOptions,
       unknownResponseDescription,
+      isTextOnlyMode,
     }),
   };
 
@@ -226,16 +240,17 @@ export async function humanNode(
     );
   }
 
-  const processedImage = await processImageInput(castArgs.image);
-
   let imageState: { imageUrl: string; mimeType: string } | undefined =
     undefined;
-  if (processedImage && processedImage !== "remove") {
-    imageState = processedImage;
-  } else if (processedImage === "remove") {
-    imageState = undefined;
-  } else {
-    imageState = state.image;
+  if (!isTextOnlyMode) {
+    const processedImage = await processImageInput(castArgs.image);
+    if (processedImage && processedImage !== "remove") {
+      imageState = processedImage;
+    } else if (processedImage === "remove") {
+      imageState = undefined;
+    } else {
+      imageState = state.image;
+    }
   }
 
   return {

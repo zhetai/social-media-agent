@@ -1,4 +1,5 @@
 const timezoneMock = require("timezone-mock");
+require("dotenv").config();
 
 // Mock the timezone to 'America/Los_Angeles'
 timezoneMock.register("US/Pacific"); // Alternatively, use 'America/Los_Angeles'

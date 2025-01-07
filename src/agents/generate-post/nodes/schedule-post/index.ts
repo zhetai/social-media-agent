@@ -1,7 +1,10 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { Client } from "@langchain/langgraph-sdk";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../../constants.js";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "../../constants.js";
 import { getScheduledDateSeconds } from "./find-date.js";
 import { SlackClient } from "../../../../clients/slack.js";
 import { getFutureDate } from "./get-future-date.js";
@@ -13,6 +16,8 @@ export async function schedulePost(
   if (!state.post || !state.scheduleDate) {
     throw new Error("No post or schedule date found");
   }
+  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
 
@@ -40,6 +45,7 @@ export async function schedulePost(
         [POST_TO_LINKEDIN_ORGANIZATION]:
           config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] ||
           process.env.POST_TO_LINKEDIN_ORGANIZATION,
+        [TEXT_ONLY_MODE]: isTextOnlyMode,
       },
     },
     afterSeconds,
@@ -66,7 +72,7 @@ Post:
 ${state.post}
 \`\`\`
 
-${imageString}`);
+${!isTextOnlyMode ? imageString : "Text only mode enabled. Image support has been disabled."}`);
   } catch (e) {
     console.error("Failed to schedule post", e);
   }

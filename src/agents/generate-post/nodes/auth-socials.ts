@@ -2,17 +2,16 @@ import { interrupt, LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
 import Arcade from "@arcadeai/arcadejs";
 import { getLinkedInAuthOrInterrupt } from "../../shared/auth/linkedin.js";
-import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
+import {
+  getArcadeTwitterAuthOrInterrupt,
+  getBasicTwitterAuthOrInterrupt,
+} from "../../shared/auth/twitter.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
 
 export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const arcade = new Arcade({
-    apiKey: process.env.ARCADE_API_KEY,
-  });
-
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
@@ -26,11 +25,20 @@ export async function authSocialsPassthrough(
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId = process.env.TWITTER_USER_ID;
   if (twitterUserId) {
-    twitterHumanInterrupt = await getTwitterAuthOrInterrupt(
-      twitterUserId,
-      arcade,
-      { returnInterrupt: true },
-    );
+    const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+    if (useArcadeAuth === "true") {
+      const arcade = new Arcade({
+        apiKey: process.env.ARCADE_API_KEY,
+      });
+
+      twitterHumanInterrupt = await getArcadeTwitterAuthOrInterrupt(
+        twitterUserId,
+        arcade,
+        { returnInterrupt: true },
+      );
+    } else {
+      twitterHumanInterrupt = await getBasicTwitterAuthOrInterrupt();
+    }
   }
 
   if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {

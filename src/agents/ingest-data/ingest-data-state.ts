@@ -1,6 +1,9 @@
 import { Annotation } from "@langchain/langgraph";
 import { SimpleSlackMessage } from "../../clients/slack.js";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../generate-post/constants.js";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "../generate-post/constants.js";
 
 export type LangChainProduct = "langchain" | "langgraph" | "langsmith";
 export type SimpleSlackMessageWithLinks = SimpleSlackMessage & {
@@ -50,4 +53,14 @@ export const IngestDataConfigurableAnnotation = Annotation.Root({
    * If true, [LINKEDIN_ORGANIZATION_ID] is required.
    */
   [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
+  /**
+   * Whether or not to use text only mode throughout the graph.
+   * If true, it will not try to extract, validate, or upload images.
+   * Additionally, it will not be able to handle validating YouTube videos.
+   * @default false
+   */
+  [TEXT_ONLY_MODE]: Annotation<boolean | undefined>({
+    reducer: (_state, update) => update,
+    default: () => false,
+  }),
 });
