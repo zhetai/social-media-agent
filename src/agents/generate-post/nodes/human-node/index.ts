@@ -10,6 +10,7 @@ import {
 import { routeResponse } from "./route-response.js";
 
 interface ConstructDescriptionArgs {
+  unknownResponseDescription: string;
   report: string;
   originalLink: string;
   relevantLinks: string[];
@@ -18,6 +19,7 @@ interface ConstructDescriptionArgs {
 }
 
 function constructDescription({
+  unknownResponseDescription,
   report,
   originalLink,
   relevantLinks,
@@ -29,7 +31,10 @@ function constructDescription({
     ? `## Image Options\n\nThe following image options are available. Select one by copying and pasting the URL into the 'image' field.\n\n${imageOptions.map((url) => `URL: ${url}\nImage: <details><summary>Click to view image</summary>\n\n![](${url})\n</details>\n`).join("\n")}`
     : "";
 
-  return `# Schedule post
+  const unknownResponseString = unknownResponseDescription
+    ? `${unknownResponseDescription}\n\n`
+    : "";
+  return `${unknownResponseString}# Schedule post
   
 Using these URL(s), a post was generated for Twitter/LinkedIn:
 ${linksText}
@@ -48,6 +53,7 @@ There are a few different actions which can be taken:\n
 - **Response**: If a response is sent, it will be sent to a router which can be routed to either
   1. A node which will be used to rewrite the post. Please note, the response will be used as the 'user' message in an LLM call to rewrite the post, so ensure your response is properly formatted.
   2. A node which will be used to update the scheduled date for the post.
+  If an unknown/invalid response is sent, nothing will happen, and it will be routed back to the human node.
 - **Accept**: If 'accept' is selected, the post will be scheduled for Twitter/LinkedIn.
 - **Ignore**: If 'ignore' is selected, this post will not be scheduled, and the thread will end.
 
@@ -76,6 +82,21 @@ Here is the report that was generated for the posts:\n${report}
 `;
 }
 
+const getUnknownResponseDescription = (
+  state: typeof GeneratePostAnnotation.State,
+) => {
+  if (state.next === "unknownResponse" && state.userResponse) {
+    return `# <div style="color: red;">UNKNOWN/INVALID RESPONSE RECEIVED: '${state.userResponse}'</div>
+
+<div style="color: red;">Please respond with either a request to update/rewrite the post, or a valid priority level or a date to schedule the post.</div>
+
+<div style="color: red;">See the \`Schedule Date\`, or \`Instructions\` sections for more information.</div>
+
+<hr />`;
+  }
+  return "";
+};
+
 export async function humanNode(
   state: typeof GeneratePostAnnotation.State,
   _config: LangGraphRunnableConfig,
@@ -84,6 +105,7 @@ export async function humanNode(
     throw new Error("No post found");
   }
 
+  const unknownResponseDescription = getUnknownResponseDescription(state);
   const defaultDate = state.scheduleDate || getNextSaturdayDate();
   let defaultDateString = "";
   if (
@@ -121,6 +143,7 @@ export async function humanNode(
       relevantLinks: state.relevantLinks,
       post: state.post,
       imageOptions: state.imageOptions,
+      unknownResponseDescription,
     }),
   };
 
@@ -161,10 +184,16 @@ export async function humanNode(
         next: "rewritePost",
       };
     }
+    if (route === "update_date") {
+      return {
+        userResponse: response.args,
+        next: "updateScheduleDate",
+      };
+    }
 
     return {
       userResponse: response.args,
-      next: "updateScheduleDate",
+      next: "unknownResponse",
     };
   }
 
@@ -213,5 +242,6 @@ export async function humanNode(
     next: "schedulePost",
     scheduleDate: postDate,
     image: imageState,
+    userResponse: undefined,
   };
 }

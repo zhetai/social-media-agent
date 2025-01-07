@@ -103,5 +103,6 @@ export async function rewritePost(
   return {
     post: revisePostResponse.content as string,
     next: undefined,
+    userResponse: undefined,
   };
 }
