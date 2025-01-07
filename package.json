@@ -60,6 +60,7 @@
     "passport-twitter": "^1.0.4",
     "playwright": "^1.49.1",
     "twitter-api-v2": "^1.18.2",
+    "uuid": "^11.0.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
