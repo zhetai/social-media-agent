@@ -3,6 +3,12 @@ import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { STRUCTURE_INSTRUCTIONS, RULES } from "./geterate-post/prompts.js";
 import { parseGeneration } from "./geterate-post/utils.js";
 import { removeUrls } from "../../utils.js";
+import {
+  getReflections,
+  RULESET_KEY,
+  REFLECTIONS_PROMPT,
+} from "../../../utils/reflections.js";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 
 const CONDENSE_POST_PROMPT = `You're a highly skilled marketer at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You wrote a post for the LangChain LinkedIn and Twitter pages, however it's a bit too long for Twitter, and thus needs to be condensed.
@@ -30,6 +36,8 @@ ${STRUCTURE_INSTRUCTIONS}
 ${RULES}
 </rules>
 
+{reflectionsPrompt}
+
 </rules-and-structure>
 
 Given the marketing report, link, rules and structure, please condense the post down to roughly 280 characters (not including the link). The original post was {originalPostLength} characters long.
@@ -52,6 +60,7 @@ Follow all rules and instructions outlined above. The user message below will pr
  */
 export async function condensePost(
   state: typeof GeneratePostAnnotation.State,
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<typeof GeneratePostAnnotation.State>> {
   if (!state.post) {
     throw new Error("No post found");
@@ -65,12 +74,26 @@ export async function condensePost(
 
   const originalPostLength = removeUrls(state.post || "").length.toString();
 
+  const reflections = await getReflections(config);
+  let reflectionsPrompt = "";
+  if (
+    reflections?.value?.[RULESET_KEY]?.length &&
+    Array.isArray(reflections?.value?.[RULESET_KEY])
+  ) {
+    const rulesetString = `- ${reflections.value[RULESET_KEY].join("\n- ")}`;
+    reflectionsPrompt = REFLECTIONS_PROMPT.replace(
+      "{reflections}",
+      rulesetString,
+    );
+  }
+
   const formattedSystemPrompt = CONDENSE_POST_PROMPT.replace(
     "{report}",
     state.report,
   )
     .replace("{link}", state.relevantLinks[0])
-    .replace("{originalPostLength}", originalPostLength);
+    .replace("{originalPostLength}", originalPostLength)
+    .replace("{reflectionsPrompt}", reflectionsPrompt);
 
   const condensePostModel = new ChatAnthropic({
     model: "claude-3-5-sonnet-20241022",
