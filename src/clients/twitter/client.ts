@@ -358,8 +358,12 @@ export class TwitterClient {
       return result.output?.value as TweetV2SingleResult;
     }
 
-    const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {};
-    if (!fieldsWithDefaults.includeMedia) {
+    const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {
+      // This allows us to access the full text of the Tweet.
+      // Access via `response.data.note_tweet.text`
+      "tweet.fields": ["note_tweet"],
+    };
+    if (fieldsWithDefaults.includeMedia) {
       fetchTweetOptions.expansions = ["attachments.media_keys"];
       fetchTweetOptions["media.fields"] = ["type", "url"];
     }

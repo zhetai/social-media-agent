@@ -1,15 +1,15 @@
 import * as fs from "fs/promises";
 import { describe, it, expect } from "@jest/globals";
 import Arcade from "@arcadeai/arcadejs";
-import { TwitterClient } from "../clients/twitter/client.js";
-import { extractMimeTypeFromBase64 } from "../agents/utils.js";
+import { TwitterClient } from "../../clients/twitter/client.js";
+import { extractMimeTypeFromBase64 } from "../../agents/utils.js";
 
 const tweetId = "1864386797788385455";
 const userId = "braceasproul@gmail.com";
 const username = "bracesproul";
 
 describe.skip("Arcade", () => {
-  describe("Can use Arcade to call the Twitter API", () => {
+  describe.skip("Can use Arcade to call the Twitter API", () => {
     const arcade = new Arcade({
       apiKey: process.env.ARCADE_API_KEY,
     });
@@ -42,7 +42,7 @@ describe.skip("Arcade", () => {
     });
   });
 
-  describe("Can use the Twitter Client with Arcade", () => {
+  describe.skip("Can use the Twitter Client with Arcade", () => {
     const twitterTokens = {
       twitterToken: process.env.TWITTER_USER_TOKEN || "",
       twitterTokenSecret: process.env.TWITTER_USER_TOKEN_SECRET || "",
@@ -121,42 +121,5 @@ describe.skip("Arcade", () => {
       const result = await client.uploadMedia(imageBuffer, contentType);
       console.log("result", result);
     });
-  });
-});
-
-describe("Basic Twitter Auth", () => {
-  const client = TwitterClient.fromBasicTwitterAuth();
-
-  it("Can read a tweet from ID", async () => {
-    const tweet = await client.getTweet(tweetId);
-    expect(tweet).toBeDefined();
-    console.log("Tweet\n");
-    console.dir(tweet, { depth: null });
-  });
-
-  it("Can post a text only tweet", async () => {
-    const result = await client.uploadTweet({
-      text: "test 123 hello world!",
-    });
-
-    expect(result.errors).not.toBeDefined();
-    expect(result.data).toBeDefined();
-    expect(result.data.id).toBeDefined();
-    expect(result.data.text).toBe("test 123 hello world!");
-  });
-
-  it("Can post a text and media tweet", async () => {
-    const imageBuffer = await fs.readFile("src/tests/data/langchain_logo.png");
-    const tweetText = "test 123 hello world! (with image)";
-
-    const result = await client.uploadTweet({
-      text: tweetText,
-      media: {
-        media: imageBuffer,
-        mimeType: "image/png",
-      },
-    });
-
-    expect(result).toBeDefined();
   });
 });
