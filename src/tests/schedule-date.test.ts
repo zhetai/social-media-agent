@@ -275,14 +275,20 @@ describe("Schedule Date Tests", () => {
         it("should only return dates on weekends between 8:00 AM and 10:00 AM PST", async () => {
           // Test for 100 iterations to ensure we never get invalid times
           for (let i = 0; i < 100; i++) {
-            const result = await getScheduledDateSeconds("p1", mockConfig, MOCK_CURRENT_DATE);
-            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const result = await getScheduledDateSeconds(
+              "p1",
+              mockConfig,
+              MOCK_CURRENT_DATE,
+            );
+            const scheduledDate = new Date(
+              MOCK_CURRENT_DATE.getTime() + result * 1000,
+            );
             const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
-            
+
             // Verify it's a weekend
             const day = pstDate.getDay();
             expect(day === 0 || day === 6).toBe(true); // Sunday or Saturday
-            
+
             // Verify time is between 8:00 AM and 10:00 AM PST
             expect(pstDate.getHours()).toBeGreaterThanOrEqual(8);
             expect(pstDate.getHours()).toBeLessThanOrEqual(10);
@@ -297,10 +303,16 @@ describe("Schedule Date Tests", () => {
         it("should return dates on Friday/Monday between 8:00 AM and 10:00 AM PST, or weekends between 10:30 AM and 1:00 PM PST", async () => {
           // Test for 100 iterations to ensure we never get invalid times
           for (let i = 0; i < 100; i++) {
-            const result = await getScheduledDateSeconds("p2", mockConfig, MOCK_CURRENT_DATE);
-            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const result = await getScheduledDateSeconds(
+              "p2",
+              mockConfig,
+              MOCK_CURRENT_DATE,
+            );
+            const scheduledDate = new Date(
+              MOCK_CURRENT_DATE.getTime() + result * 1000,
+            );
             const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
-            
+
             const day = pstDate.getDay();
             const hour = pstDate.getHours();
             const minutes = pstDate.getMinutes();
@@ -336,14 +348,20 @@ describe("Schedule Date Tests", () => {
         it("should only return dates on weekends between 1:00 PM and 5:00 PM PST", async () => {
           // Test for 100 iterations to ensure we never get invalid times
           for (let i = 0; i < 100; i++) {
-            const result = await getScheduledDateSeconds("p3", mockConfig, MOCK_CURRENT_DATE);
-            const scheduledDate = new Date(MOCK_CURRENT_DATE.getTime() + result * 1000);
+            const result = await getScheduledDateSeconds(
+              "p3",
+              mockConfig,
+              MOCK_CURRENT_DATE,
+            );
+            const scheduledDate = new Date(
+              MOCK_CURRENT_DATE.getTime() + result * 1000,
+            );
             const pstDate = toZonedTime(scheduledDate, "America/Los_Angeles");
-            
+
             // Verify it's a weekend
             const day = pstDate.getDay();
             expect(day === 0 || day === 6).toBe(true); // Sunday or Saturday
-            
+
             // Verify time is between 1:00 PM and 5:00 PM PST
             expect(pstDate.getHours()).toBeGreaterThanOrEqual(13);
             expect(pstDate.getHours()).toBeLessThanOrEqual(17);

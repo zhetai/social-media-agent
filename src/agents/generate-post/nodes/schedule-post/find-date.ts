@@ -79,9 +79,9 @@ async function putTakenScheduleDates(
   }
   // Convert Date objects to ISO strings for storage
   const serializedDates = {
-    p1: takenDates.p1.map(d => d.toISOString()),
-    p2: takenDates.p2.map(d => d.toISOString()),
-    p3: takenDates.p3.map(d => d.toISOString()),
+    p1: takenDates.p1.map((d) => d.toISOString()),
+    p2: takenDates.p2.map((d) => d.toISOString()),
+    p3: takenDates.p3.map((d) => d.toISOString()),
   };
   await store.put(NAMESPACE, KEY, {
     [TAKEN_DATES_KEY]: serializedDates,
