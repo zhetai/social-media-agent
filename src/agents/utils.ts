@@ -436,3 +436,16 @@ export function removeQueryParams(url: string): string {
     return url;
   }
 }
+
+/**
+ * Splits an array into smaller chunks of a specified size
+ * @param {T[]} arr - The array to be chunked
+ * @param {number} size - The size of each chunk
+ * @returns {T[][]} An array of chunks, where each chunk is an array of size elements (except possibly the last chunk which may be smaller)
+ * @template T - The type of elements in the array
+ */
+export function chunkArray<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size),
+  );
+}

@@ -1,10 +1,7 @@
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
-import {
-  BLACKLISTED_MIME_TYPES,
-  getMimeTypeFromUrl,
-  imageUrlToBuffer,
-  removeQueryParams,
-} from "../../../utils.js";
+import { FindImagesAnnotation } from "../find-images-graph.js";
+import { chunkArray } from "../../utils.js";
+import { getImageMessageContents } from "../utils.js";
 
 const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
 Your goal is to identify which images from a given set are relevant to the post, based on the content of the post and an associated marketing report.
@@ -59,25 +56,13 @@ export function parseResult(result: string): number[] {
     .filter((n) => !isNaN(n));
 }
 
-function chunk<T>(arr: T[], size: number): T[][] {
-  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-    arr.slice(i * size, i * size + size),
-  );
-}
-
-interface ValidateImagesArgs {
-  imageOptions: string[];
-  report: string;
-  post: string;
-}
-
-export async function validateImages({
-  imageOptions,
-  report,
-  post,
-}: ValidateImagesArgs): Promise<{
+export async function validateImages(
+  state: typeof FindImagesAnnotation.State,
+): Promise<{
   imageOptions: string[];
 }> {
+  const { imageOptions, report, post } = state;
+
   const model = new ChatVertexAI({
     model: "gemini-2.0-flash-exp",
     temperature: 0,
@@ -98,7 +83,7 @@ export async function validateImages({
   }
 
   // Split images into chunks of 10
-  const imageChunks = chunk(imagesWithoutSupabase, 10);
+  const imageChunks = chunkArray(imagesWithoutSupabase, 10);
   let allIrrelevantIndices: number[] = [];
   let baseIndex = 0;
 
@@ -109,46 +94,7 @@ export async function validateImages({
 
   // Process each chunk
   for (const imageChunk of imageChunks) {
-    const imageMessagesPromises = imageChunk.flatMap(
-      async (fileUri, chunkIndex) => {
-        const cleanedFileUri = removeQueryParams(fileUri);
-        let mimeType = getMimeTypeFromUrl(fileUri);
-
-        if (!mimeType) {
-          try {
-            const { contentType } = await imageUrlToBuffer(fileUri);
-            if (!contentType) {
-              throw new Error("Failed to fetch content type");
-            }
-            mimeType = contentType;
-          } catch (e) {
-            console.warn(
-              "No mime type found, and failed to fetch content type:",
-              e,
-            );
-          }
-        }
-        if (
-          !mimeType ||
-          BLACKLISTED_MIME_TYPES.find((mt) => mimeType.startsWith(mt))
-        ) {
-          return [];
-        }
-
-        return [
-          {
-            type: "text",
-            text: `The below image is index ${baseIndex + chunkIndex}`,
-          },
-          {
-            type: "media",
-            mimeType,
-            fileUri: cleanedFileUri,
-          },
-        ];
-      },
-    );
-    const imageMessages = (await Promise.all(imageMessagesPromises)).flat();
+    const imageMessages = await getImageMessageContents(imageChunk, baseIndex);
 
     if (!imageMessages.length) {
       continue;
