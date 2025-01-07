@@ -1,7 +1,7 @@
 import { IngestDataAnnotation } from "../ingest-data-state.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import Arcade from "@arcadeai/arcadejs";
-import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
+import { getArcadeTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 import { INGEST_TWITTER_USERNAME } from "../../generate-post/constants.js";
 
 type TweetResult = {
@@ -48,7 +48,7 @@ export async function ingestTweets(
   const arcade = new Arcade({
     apiKey: process.env.ARCADE_API_KEY,
   });
-  await getTwitterAuthOrInterrupt(twitterUserId, arcade);
+  await getArcadeTwitterAuthOrInterrupt(twitterUserId, arcade);
 
   let links: string[] = [];
   const result = await arcade.tools.execute({

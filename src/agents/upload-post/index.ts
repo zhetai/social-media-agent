@@ -70,20 +70,27 @@ export async function uploadPost(
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
-  const twitterToken = process.env.TWITTER_TOKEN;
-  const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
-
   if (twitterUserId) {
-    if (!twitterToken || !twitterTokenSecret) {
-      throw new Error(
-        "Twitter token or token secret not found in configurable fields.",
-      );
+    let twitterClient: TwitterClient;
+
+    const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+    if (useArcadeAuth === "true") {
+      const twitterToken = process.env.TWITTER_TOKEN;
+      const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
+      if (!twitterToken || !twitterTokenSecret) {
+        throw new Error(
+          "Twitter token or token secret not found in configurable fields.",
+        );
+      }
+
+      twitterClient = await TwitterClient.fromArcade(twitterUserId, {
+        twitterToken,
+        twitterTokenSecret,
+      });
+    } else {
+      twitterClient = TwitterClient.fromBasicTwitterAuth();
     }
 
-    const twitterClient = await TwitterClient.fromArcade(twitterUserId, {
-      twitterToken,
-      twitterTokenSecret,
-    });
     let mediaBuffer: CreateMediaRequest | undefined = undefined;
     if (!isTextOnlyMode) {
       mediaBuffer = await getMediaFromImage(state.image);

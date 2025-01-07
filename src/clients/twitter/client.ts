@@ -4,7 +4,12 @@ import {
   CreateTweetRequest,
   TwitterClientArgs,
 } from "./types.js";
-import { TwitterApi, TwitterApiReadWrite } from "twitter-api-v2";
+import {
+  Tweetv2FieldsParams,
+  TweetV2SingleResult,
+  TwitterApi,
+  TwitterApiReadWrite,
+} from "twitter-api-v2";
 
 type MediaIdStringArray =
   | [string]
@@ -287,5 +292,82 @@ export class TwitterClient {
     } catch (error: any) {
       throw new Error(`Failed to upload media: ${error.message}`);
     }
+  }
+
+  /**
+   * Retrieves a tweet by its ID. The method supports both basic Twitter authentication and Arcade authentication modes.
+   *
+   * When using basic Twitter auth (USE_ARCADE_AUTH="false"):
+   * - Uses the Twitter API v2 endpoint directly
+   * - Requires standard Twitter API credentials to be set in environment variables
+   *
+   * When using Arcade auth (USE_ARCADE_AUTH="true"):
+   * - Uses Arcade's X.LookupTweetById tool
+   * - Requires ARCADE_API_KEY environment variable
+   * - Requires twitterUserId parameter
+   *
+   * @param {string} id - The ID of the tweet to retrieve
+   * @param {Object} [fields] - Optional parameters for the tweet lookup
+   * @param {string} [fields.twitterUserId] - Required when using Arcade auth. The Twitter user ID making the request
+   * @param {boolean} [fields.includeMedia=true] - Whether to include media attachments in the response
+   * @returns {Promise<TweetV2SingleResult>} The tweet data including text, media (if requested), and other metadata
+   * @throws {Error} When using Arcade auth without providing twitterUserId
+   *
+   * @example
+   * ```typescript
+   * // Using basic Twitter auth
+   * const tweet = await client.getTweet("1234567890");
+   *
+   * // Using Arcade auth
+   * const tweet = await client.getTweet("1234567890", { twitterUserId: "user123" });
+   *
+   * // Without media attachments
+   * const tweet = await client.getTweet("1234567890", { includeMedia: false });
+   * ```
+   */
+  async getTweet(
+    id: string,
+    fields?: {
+      twitterUserId?: string;
+      /**
+       * @default true
+       */
+      includeMedia?: boolean;
+    },
+  ): Promise<TweetV2SingleResult> {
+    const fieldsWithDefaults = {
+      includeMedia: true,
+      ...fields,
+    };
+    const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+    if (useArcadeAuth === "true") {
+      if (!fieldsWithDefaults.twitterUserId) {
+        throw new Error("Must provide Twitter User ID when using Arcade auth.");
+      }
+
+      const arcade = new Arcade({
+        apiKey: process.env.ARCADE_API_KEY,
+      });
+
+      const result = await arcade.tools.execute({
+        tool_name: "X.LookupTweetById",
+        inputs: { tweet_id: id },
+        user_id: fieldsWithDefaults.twitterUserId,
+      });
+
+      return result.output?.value as TweetV2SingleResult;
+    }
+
+    const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {};
+    if (!fieldsWithDefaults.includeMedia) {
+      fetchTweetOptions.expansions = ["attachments.media_keys"];
+      fetchTweetOptions["media.fields"] = ["type", "url"];
+    }
+
+    const tweetContent = await this.twitterClient.v2.singleTweet(
+      id,
+      fetchTweetOptions,
+    );
+    return tweetContent;
   }
 }
