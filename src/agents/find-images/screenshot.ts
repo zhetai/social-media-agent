@@ -1,16 +1,16 @@
-import {
-  getFileContents,
-  getRepoContents,
-} from "../../../../utils/github-repo-contents.js";
-import { takeScreenshot } from "../../../../utils/screenshot.js";
-import { getUrlType } from "../../../utils.js";
-import { createSupabaseClient } from "../../../../utils/supabase.js";
 import { fileTypeFromBuffer } from "file-type";
 import type { BrowserContextOptions, PageScreenshotOptions } from "playwright";
 import {
-  GITHUB_BROWSER_CONTEXT_OPTIONS,
+  getRepoContents,
+  getFileContents,
+} from "../../utils/github-repo-contents.js";
+import { takeScreenshot } from "../../utils/screenshot.js";
+import { createSupabaseClient } from "../../utils/supabase.js";
+import {
   GITHUB_SCREENSHOT_OPTIONS,
-} from "../../constants.js";
+  GITHUB_BROWSER_CONTEXT_OPTIONS,
+} from "../generate-post/constants.js";
+import { getUrlType } from "../utils.js";
 
 /**
  * Take a screenshot of a URL and upload it to Supabase.

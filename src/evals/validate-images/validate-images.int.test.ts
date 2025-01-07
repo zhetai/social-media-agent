@@ -1,8 +1,8 @@
 import * as ls from "langsmith/jest";
 import { type SimpleEvaluator } from "langsmith/jest";
-import { validateImages } from "../../agents/generate-post/nodes/find-images/validate-images.js";
 import { GeneratePostAnnotation } from "../../agents/generate-post/generate-post-state.js";
 import { TEST_EACH_INPUTS_OUTPUTS } from "./inputs.js";
+import { validateImages } from "../../agents/find-images/nodes/validate-images.js";
 
 const checkCorrectImages: SimpleEvaluator = ({ expected, actual }) => {
   const expectedImageOptions = expected.imageOptions as string[];

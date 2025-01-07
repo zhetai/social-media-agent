@@ -12,8 +12,8 @@ import { condensePost } from "./nodes/condense-post.js";
 import { removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
-import { findImages } from "./nodes/find-images/index.js";
 import { updateScheduledDate } from "./nodes/update-scheduled-date.js";
+import { findImagesGraph } from "../find-images/find-images-graph.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -82,7 +82,7 @@ const generatePostBuilder = new StateGraph(
   // Generates a report on the content.
   .addNode("generateContentReport", generateContentReport)
   // Finds images in the content.
-  .addNode("findImages", findImages)
+  .addNode("findImagesSubGraph", findImagesGraph)
   // Updated the scheduled date from the natural language response from the user.
   .addNode("updateScheduleDate", updateScheduledDate)
 
@@ -107,18 +107,18 @@ const generatePostBuilder = new StateGraph(
   // and if so, condense it. Otherwise, route to the human node.
   .addConditionalEdges("generatePost", condenseOrHumanConditionalEdge, [
     "condensePost",
-    "findImages",
+    "findImagesSubGraph",
   ])
   // After condensing the post, we should verify again that the content is below the character limit.
   // Once the post is below the character limit, we can find & filter images. This needs to happen after the post
   // has been generated because the image validator requires the post content.
   .addConditionalEdges("condensePost", condenseOrHumanConditionalEdge, [
     "condensePost",
-    "findImages",
+    "findImagesSubGraph",
   ])
 
   // After finding images, we are done and can interrupt for the human to respond.
-  .addEdge("findImages", "humanNode")
+  .addEdge("findImagesSubGraph", "humanNode")
 
   // Always route back to `humanNode` if the post was re-written or date was updated.
   .addEdge("rewritePost", "humanNode")

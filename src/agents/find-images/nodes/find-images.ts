@@ -1,16 +1,15 @@
 import * as path from "path";
+import { getFileContents } from "../../../utils/github-repo-contents.js";
 import {
-  extractAllImageUrlsFromMarkdown,
   filterUnwantedImageUrls,
-  getUrlType,
+  extractAllImageUrlsFromMarkdown,
   isValidUrl,
-} from "../../../utils.js";
-import { GeneratePostAnnotation } from "../../generate-post-state.js";
-import { takeScreenshotAndUpload } from "./screenshot.js";
-import { getFileContents } from "../../../../utils/github-repo-contents.js";
-import { validateImages } from "./validate-images.js";
+  getUrlType,
+} from "../../utils.js";
+import { takeScreenshotAndUpload } from "../screenshot.js";
+import { FindImagesAnnotation } from "../find-images-graph.js";
 
-export async function findImages(state: typeof GeneratePostAnnotation.State) {
+export async function findImages(state: typeof FindImagesAnnotation.State) {
   const { pageContents, imageOptions, relevantLinks } = state;
   const link = relevantLinks[0];
   const imageUrls = new Set<string>();
@@ -78,13 +77,7 @@ export async function findImages(state: typeof GeneratePostAnnotation.State) {
     throw new Error("No page content or images found");
   }
 
-  const validatedImages = await validateImages({
-    imageOptions: Array.from(imageUrls),
-    report: state.report,
-    post: state.post,
-  });
-
   return {
-    imageOptions: validatedImages.imageOptions,
+    imageOptions: Array.from(imageUrls),
   };
 }

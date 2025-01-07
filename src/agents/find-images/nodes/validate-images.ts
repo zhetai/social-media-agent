@@ -1,10 +1,11 @@
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { FindImagesAnnotation } from "../find-images-graph.js";
 import {
-  BLACKLISTED_MIME_TYPES,
+  removeQueryParams,
   getMimeTypeFromUrl,
   imageUrlToBuffer,
-  removeQueryParams,
-} from "../../../utils.js";
+  BLACKLISTED_MIME_TYPES,
+} from "../../utils.js";
 
 const VALIDATE_IMAGES_PROMPT = `You are an advanced AI assistant tasked with validating image options for a social media post.
 Your goal is to identify which images from a given set are relevant to the post, based on the content of the post and an associated marketing report.
@@ -65,19 +66,13 @@ function chunk<T>(arr: T[], size: number): T[][] {
   );
 }
 
-interface ValidateImagesArgs {
-  imageOptions: string[];
-  report: string;
-  post: string;
-}
-
-export async function validateImages({
-  imageOptions,
-  report,
-  post,
-}: ValidateImagesArgs): Promise<{
+export async function validateImages(
+  state: typeof FindImagesAnnotation.State,
+): Promise<{
   imageOptions: string[];
 }> {
+  const { imageOptions, report, post } = state;
+
   const model = new ChatVertexAI({
     model: "gemini-2.0-flash-exp",
     temperature: 0,
