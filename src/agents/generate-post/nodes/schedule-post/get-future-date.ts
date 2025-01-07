@@ -8,7 +8,7 @@ import { toZonedTime } from "date-fns-tz";
  */
 export function getFutureDate(afterSeconds: number): string {
   // Base date: 2025-01-03T17:27:07-08:00
-  const baseDate = new Date("2025-01-03T17:27:07-08:00");
+  const baseDate = new Date();
   const futureDate = new Date(baseDate.getTime() + afterSeconds * 1000);
 
   // Convert to PST

@@ -46,7 +46,7 @@ export async function schedulePost(
   });
 
   try {
-    const linkedInClient = new SlackClient({
+    const slackClient = new SlackClient({
       channelId: process.env.SLACK_CHANNEL_ID,
     });
 
@@ -55,7 +55,7 @@ export async function schedulePost(
 ${state.image?.imageUrl}`
       : "No image provided";
 
-    await linkedInClient.sendMessage(`**New Post Scheduled**
+    await slackClient.sendMessage(`**New Post Scheduled**
       
 Scheduled post for: **${getFutureDate(afterSeconds)}**
 Run ID: **${run.run_id}**

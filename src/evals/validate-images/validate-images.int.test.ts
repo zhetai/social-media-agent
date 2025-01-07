@@ -32,6 +32,7 @@ ls.describe("SMA - Validate Images", () => {
       console.log("result!", result);
       const evalResult = ls.expect(result).evaluatedBy(checkCorrectImages);
       // Ensure the result is greater than 0.8 and less than or equal to 1
+      // CHECK IF THIS RUNS THE EVALUATOR TWICE
       await evalResult.toBeGreaterThanOrEqual(0.8);
       await evalResult.toBeLessThanOrEqual(1);
       return result;
