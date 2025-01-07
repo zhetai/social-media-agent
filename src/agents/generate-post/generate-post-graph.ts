@@ -51,7 +51,7 @@ function rewriteOrEndConditionalEdge(
 function condenseOrHumanConditionalEdge(
   state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
-): "condensePost" | "findImages" | "humanNode" {
+): "condensePost" | "findImagesSubGraph" | "humanNode" {
   const cleanedPost = removeUrls(state.post || "");
   if (cleanedPost.length > 280 && state.condenseCount <= 3) {
     return "condensePost";
@@ -59,7 +59,7 @@ function condenseOrHumanConditionalEdge(
   if (config.configurable?.[TEXT_ONLY_MODE]) {
     return "humanNode";
   }
-  return "findImages";
+  return "findImagesSubGraph";
 }
 
 function generateReportOrEndConditionalEdge(
