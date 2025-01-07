@@ -51,12 +51,12 @@ User: "This should be a P1 priority."
 Route: update_date
 Explanation: The user wants to change the priority level of the post.
 
-Example 3:
+Example 4:
 User: "This should be a P0 priority."
 Route: unknown_response
 Explanation: P0 is not a valid priority level.
 
-Example 3:
+Example 5:
 User: "Hi! How are you?"
 Route: unknown_response
 Explanation: The user is engaging in general conversation, not a request to change the post.
