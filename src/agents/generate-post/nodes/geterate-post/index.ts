@@ -4,7 +4,11 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { GENERATE_POST_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
-import { getReflections, REFLECTIONS_PROMPT, RULESET_KEY } from "../../../../utils/reflections.js";
+import {
+  getReflections,
+  REFLECTIONS_PROMPT,
+  RULESET_KEY,
+} from "../../../../utils/reflections.js";
 import { getNextSaturdayDate } from "../../../../utils/date.js";
 
 export async function generatePost(
