@@ -30,6 +30,7 @@ Based on your analysis, decide if a new rule should be created. Consider the fol
 3. Is there any potential downside to always making this change?
 
 If you determine that a new rule should be created, formulate it clearly and concisely. The rule should be specific enough to be applied consistently but general enough to cover similar situations in the future.
+You should not be generating a rule which is specific to this post, like business logic. The rule, if created, should be applicable to any future post.
 
 Provide your analysis and decision in the following format:
 
