@@ -40,3 +40,8 @@ export async function putReflections(
     [RULESET_KEY]: reflections,
   });
 }
+
+export const REFLECTIONS_PROMPT = `You have also been provided with a handful of reflections based on previous requests the user has made. Be sure to follow these rules when writing this new post so the user does not need to repeat their requests:
+<reflections>
+{reflections}
+</reflections>`;
