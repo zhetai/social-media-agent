@@ -269,6 +269,8 @@ export async function getScheduledDateSeconds(
       }
       weekOffset++;
     }
+
+    throw new Error("No available schedule date found");
   }
 
   // For P2, try until we find an available slot within the next 365 days
