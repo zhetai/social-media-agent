@@ -14,6 +14,7 @@ import {
   LINKEDIN_ORGANIZATION_ID,
   LINKEDIN_PERSON_URN,
   POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
 } from "../generate-post/constants.js";
 
 async function getMediaFromImage(image?: {
@@ -41,6 +42,16 @@ const UploadPostAnnotation = Annotation.Root({
 
 const UploadPostGraphConfiguration = Annotation.Root({
   [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
+  /**
+   * Whether or not to use text only mode throughout the graph.
+   * If true, it will not try to extract, validate, or upload images.
+   * Additionally, it will not be able to handle validating YouTube videos.
+   * @default false
+   */
+  [TEXT_ONLY_MODE]: Annotation<boolean | undefined>({
+    reducer: (_state, update) => update,
+    default: () => false,
+  }),
 });
 
 export async function uploadPost(
@@ -50,6 +61,8 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
+  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
 
@@ -57,21 +70,31 @@ export async function uploadPost(
     throw new Error("One of twitterUserId or linkedInUserId must be provided");
   }
 
-  const twitterToken = process.env.TWITTER_TOKEN;
-  const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
-
   if (twitterUserId) {
-    if (!twitterToken || !twitterTokenSecret) {
-      throw new Error(
-        "Twitter token or token secret not found in configurable fields.",
-      );
+    let twitterClient: TwitterClient;
+
+    const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+    if (useArcadeAuth === "true") {
+      const twitterToken = process.env.TWITTER_TOKEN;
+      const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
+      if (!twitterToken || !twitterTokenSecret) {
+        throw new Error(
+          "Twitter token or token secret not found in configurable fields.",
+        );
+      }
+
+      twitterClient = await TwitterClient.fromArcade(twitterUserId, {
+        twitterToken,
+        twitterTokenSecret,
+      });
+    } else {
+      twitterClient = TwitterClient.fromBasicTwitterAuth();
     }
 
-    const twitterClient = await TwitterClient.fromUserId(twitterUserId, {
-      twitterToken,
-      twitterTokenSecret,
-    });
-    const mediaBuffer = await getMediaFromImage(state.image);
+    let mediaBuffer: CreateMediaRequest | undefined = undefined;
+    if (!isTextOnlyMode) {
+      mediaBuffer = await getMediaFromImage(state.image);
+    }
 
     await twitterClient.uploadTweet({
       text: state.post,
@@ -94,7 +117,7 @@ export async function uploadPost(
         ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
         : false;
 
-    if (state.image) {
+    if (!isTextOnlyMode && state.image) {
       await linkedInClient.createImagePost(
         {
           text: state.post,

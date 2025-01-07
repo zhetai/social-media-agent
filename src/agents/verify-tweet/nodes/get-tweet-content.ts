@@ -1,9 +1,7 @@
-import { type TweetV2SingleResult } from "twitter-api-v2";
 import { VerifyTweetAnnotation } from "../verify-tweet-state.js";
 import { extractTweetId, extractUrls } from "../../utils.js";
 import { resolveTwitterUrl } from "../utils.js";
-import Arcade from "@arcadeai/arcadejs";
-import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
+import { TwitterClient } from "../../../clients/twitter/client.js";
 
 export async function getTweetContent(
   state: typeof VerifyTweetAnnotation.State,
@@ -13,25 +11,31 @@ export async function getTweetContent(
     throw new Error("Twitter user ID not found in configurable fields.");
   }
 
-  const arcade = new Arcade({
-    apiKey: process.env.ARCADE_API_KEY,
-  });
-
   const tweetId = extractTweetId(state.link);
   if (!tweetId) {
     return {};
   }
 
-  await getTwitterAuthOrInterrupt(twitterUserId, arcade);
+  let twitterClient: TwitterClient;
+  const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+  if (useArcadeAuth === "true") {
+    const twitterToken = process.env.TWITTER_TOKEN;
+    const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
+    if (!twitterToken || !twitterTokenSecret) {
+      throw new Error(
+        "Twitter token or token secret not found in configurable fields.",
+      );
+    }
 
-  // Step 3: Execute the tool
-  const result = await arcade.tools.execute({
-    tool_name: "X.LookupTweetById",
-    inputs: { tweet_id: tweetId },
-    user_id: twitterUserId,
-  });
+    twitterClient = await TwitterClient.fromArcade(twitterUserId, {
+      twitterToken,
+      twitterTokenSecret,
+    });
+  } else {
+    twitterClient = TwitterClient.fromBasicTwitterAuth();
+  }
 
-  const tweetContent = result.output?.value as TweetV2SingleResult;
+  const tweetContent = await twitterClient.getTweet(tweetId);
   const mediaUrls = tweetContent.data.attachments?.media_keys?.map(
     (k) => `https://pbs.twimg.com/media/${k}?format=jpg&name=medium`,
   );
