@@ -8,15 +8,41 @@ import {
 } from "../../utils.js";
 import { takeScreenshotAndUpload } from "../screenshot.js";
 import { FindImagesAnnotation } from "../find-images-graph.js";
+import { validate } from "uuid";
+
+function checkIsGitHubImageUrl(url: string): boolean {
+  if (
+    url?.startsWith("https://github.com/user-attachments/assets") ||
+    url?.includes("githubusercontent.com/")
+  ) {
+    return true;
+  }
+  try {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname;
+    const split = pathname.split("/");
+    const lastEle = split[split.length - 1];
+    const thirdToLastEle = split[split.length - 3];
+    if (thirdToLastEle === "assets" && validate(lastEle)) {
+      return true;
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
 
 export async function findImages(state: typeof FindImagesAnnotation.State) {
   const { pageContents, imageOptions, relevantLinks } = state;
   const link = relevantLinks[0];
   const imageUrls = new Set<string>();
 
-  const screenshotUrl = await takeScreenshotAndUpload(link);
-  if (screenshotUrl) {
-    imageUrls.add(screenshotUrl);
+  let screenshotUrl: string | undefined;
+  if (getUrlType(link) !== "youtube") {
+    screenshotUrl = await takeScreenshotAndUpload(link);
+    if (screenshotUrl) {
+      imageUrls.add(screenshotUrl);
+    }
   }
 
   if (imageOptions.length) {
@@ -38,11 +64,7 @@ export async function findImages(state: typeof FindImagesAnnotation.State) {
           // If a full github URL. extract the file name from the path. to do this, extract the path after `blob/<branch>`
           const filePath = urlOrPathname.match(/blob\/[^/]+\/(.+)/)?.[1];
           if (!filePath) {
-            if (
-              !urlOrPathname?.startsWith(
-                "https://github.com/user-attachments/assets",
-              )
-            ) {
+            if (!checkIsGitHubImageUrl(urlOrPathname)) {
               console.warn(
                 "Could not extract file path from URL",
                 urlOrPathname,

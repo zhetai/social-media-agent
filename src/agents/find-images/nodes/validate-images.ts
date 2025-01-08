@@ -56,6 +56,8 @@ export function parseResult(result: string): number[] {
     .filter((n) => !isNaN(n));
 }
 
+const YOUTUBE_THUMBNAIL_URL = "https://i.ytimg.com/";
+
 export async function validateImages(
   state: typeof FindImagesAnnotation.State,
 ): Promise<{
@@ -68,22 +70,21 @@ export async function validateImages(
     temperature: 0,
   });
 
-  let imagesWithoutSupabase = imageOptions;
-  if (process.env.SUPABASE_URL) {
-    // Do not include the supabase screenshot in the image list to validate.
-    imagesWithoutSupabase = imageOptions.filter(
-      (fileUri) => !fileUri.startsWith(process.env.SUPABASE_URL as string),
-    );
-  }
+  const imagesWithoutProtected = imageOptions.filter(
+    (fileUri) =>
+      (!process.env.SUPABASE_URL ||
+        !fileUri.startsWith(process.env.SUPABASE_URL)) &&
+      !fileUri.startsWith(YOUTUBE_THUMBNAIL_URL),
+  );
 
-  if (imagesWithoutSupabase.length === 0) {
+  if (imagesWithoutProtected.length === 0) {
     return {
       imageOptions,
     };
   }
 
   // Split images into chunks of 10
-  const imageChunks = chunkArray(imagesWithoutSupabase, 10);
+  const imageChunks = chunkArray(imagesWithoutProtected, 10);
   let allIrrelevantIndices: number[] = [];
   let baseIndex = 0;
 
@@ -99,34 +100,54 @@ export async function validateImages(
     if (!imageMessages.length) {
       continue;
     }
-    const response = await model.invoke([
-      {
-        role: "system",
-        content: formattedSystemPrompt,
-      },
-      {
-        role: "user",
-        content: imageMessages,
-      },
-    ]);
 
-    const chunkAnalysis = parseResult(response.content as string);
-    // Convert chunk indices to global indices and add to our list of relevant indices
-    const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
-    allIrrelevantIndices = [...allIrrelevantIndices, ...globalIndices];
+    try {
+      const response = await model.invoke([
+        {
+          role: "system",
+          content: formattedSystemPrompt,
+        },
+        {
+          role: "user",
+          content: imageMessages,
+        },
+      ]);
+
+      const chunkAnalysis = parseResult(response.content as string);
+      // Convert chunk indices to global indices and add to our list of relevant indices
+      const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
+      allIrrelevantIndices = [...allIrrelevantIndices, ...globalIndices];
+    } catch (error) {
+      console.error(
+        `Failed to validate images.\nImage URLs: ${imageMessages
+          .filter((m) => m.fileUri)
+          .map((m) => m.fileUri)
+          .join(", ")}\n\nError:`,
+        error,
+      );
+      // Add all indices from the failed chunk to allIrrelevantIndices
+      const failedChunkIndices = Array.from(
+        { length: imageChunk.length },
+        (_, i) => i + baseIndex,
+      );
+      allIrrelevantIndices = [...allIrrelevantIndices, ...failedChunkIndices];
+    }
 
     baseIndex += imageChunk.length;
   }
 
-  const supabaseUrl = imageOptions.find((fileUri) =>
-    fileUri.startsWith(process.env.SUPABASE_URL as string),
+  const protectedUrls = imageOptions.filter(
+    (fileUri) =>
+      (process.env.SUPABASE_URL &&
+        fileUri.startsWith(process.env.SUPABASE_URL)) ||
+      fileUri.startsWith(YOUTUBE_THUMBNAIL_URL),
   );
 
   // Keep only the relevant images (those whose indices are in allIrrelevantIndices)
   return {
     imageOptions: [
-      ...(supabaseUrl ? [supabaseUrl] : []),
-      ...imagesWithoutSupabase.filter((_, index) =>
+      ...protectedUrls,
+      ...imagesWithoutProtected.filter((_, index) =>
         allIrrelevantIndices.includes(index),
       ),
     ],

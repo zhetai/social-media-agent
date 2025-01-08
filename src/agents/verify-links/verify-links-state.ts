@@ -32,4 +32,11 @@ export const VerifyLinksGraphAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+  /**
+   * Image options to provide to the user.
+   */
+  imageOptions: Annotation<string[]>({
+    reducer: (_state, update) => update,
+    default: () => [],
+  }),
 });

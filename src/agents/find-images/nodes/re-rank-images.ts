@@ -58,9 +58,10 @@ export function parseResult(result: string): number[] {
 }
 
 export async function reRankImages(state: typeof FindImagesAnnotation.State) {
-  if (state.imageOptions.length === 0) {
+  // No need to re-rank if less than 2 images
+  if (state.imageOptions.length < 2) {
     return {
-      imageOptions: [],
+      imageOptions: state.imageOptions,
     };
   }
 
@@ -86,21 +87,38 @@ export async function reRankImages(state: typeof FindImagesAnnotation.State) {
     if (!imageMessages.length) {
       continue;
     }
-    const response = await model.invoke([
-      {
-        role: "system",
-        content: formattedSystemPrompt,
-      },
-      {
-        role: "user",
-        content: imageMessages,
-      },
-    ]);
 
-    const chunkAnalysis = parseResult(response.content as string);
-    // Convert chunk indices to global indices and add to our list of re-ranked indices
-    const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
-    reRankedIndices = [...reRankedIndices, ...globalIndices];
+    try {
+      const response = await model.invoke([
+        {
+          role: "system",
+          content: formattedSystemPrompt,
+        },
+        {
+          role: "user",
+          content: imageMessages,
+        },
+      ]);
+
+      const chunkAnalysis = parseResult(response.content as string);
+      // Convert chunk indices to global indices and add to our list of re-ranked indices
+      const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
+      reRankedIndices = [...reRankedIndices, ...globalIndices];
+    } catch (error) {
+      console.error(
+        `Failed to re-rank images.\nImage URLs: ${imageMessages
+          .filter((m) => m.fileUri)
+          .map((m) => m.fileUri)
+          .join(", ")}\n\nError:`,
+        error,
+      );
+      // Add all indices from the failed chunk to allIrrelevantIndices
+      const failedChunkIndices = Array.from(
+        { length: imageChunk.length },
+        (_, i) => i + baseIndex,
+      );
+      reRankedIndices = [...reRankedIndices, ...failedChunkIndices];
+    }
 
     baseIndex += imageChunk.length;
   }

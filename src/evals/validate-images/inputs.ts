@@ -165,18 +165,18 @@ const OUTPUTS = [
 export const TEST_EACH_INPUTS_OUTPUTS = [
   {
     inputs: INPUTS[0],
-    outputs: OUTPUTS[0],
+    expected: OUTPUTS[0],
   },
   {
     inputs: INPUTS[1],
-    outputs: OUTPUTS[1],
+    expected: OUTPUTS[1],
   },
   {
     inputs: INPUTS[2],
-    outputs: OUTPUTS[2],
+    expected: OUTPUTS[2],
   },
   {
     inputs: INPUTS[3],
-    outputs: OUTPUTS[3],
+    expected: OUTPUTS[3],
   },
 ];
