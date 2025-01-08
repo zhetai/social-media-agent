@@ -146,7 +146,7 @@ export async function verifyYouTubeContent(
     return {
       relevantLinks: [state.link],
       pageContents: [videoSummary as string],
-      ...(videoThumbnail ? { imageUrls: [videoThumbnail] } : {}),
+      ...(videoThumbnail ? { imageOptions: [videoThumbnail] } : {}),
     };
   }
 

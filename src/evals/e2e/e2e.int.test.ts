@@ -1,19 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
 import * as ls from "langsmith/jest";
-import { beforeAll } from "@jest/globals";
 import { type SimpleEvaluator } from "langsmith/jest";
 import { INPUTS } from "./inputs.js";
 import { generatePostGraph } from "../../agents/generate-post/generate-post-graph.js";
 import { InMemoryStore, MemorySaver } from "@langchain/langgraph";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../../agents/generate-post/constants.js";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "../../agents/generate-post/constants.js";
 import { removeUrls } from "../../agents/utils.js";
 import { GeneratePostAnnotation } from "../../agents/generate-post/generate-post-state.js";
 import { HumanInterrupt } from "../../agents/types.js";
 
-const checkGeneratePostResult: SimpleEvaluator = ({
-  expected: _expected,
-  actual,
-}) => {
+const checkGeneratePostResult: SimpleEvaluator = ({ expected, actual }) => {
   // Check the following:
   // 1(a). A post was generated
   // 1(b). Check post length is less than or equal to 280 after removing URL.
@@ -52,9 +51,9 @@ const checkGeneratePostResult: SimpleEvaluator = ({
   }
 
   if (state.imageOptions.length > 0) {
-    // TODO: Update expected images dataset and check the image length is expected.
-    // TODO: Ensure supabase image is included
-    imagesScore = 1;
+    if (state.imageOptions.length === expected.imageOptions.length) {
+      imagesScore = 1;
+    }
   }
 
   if (interrupt) {
@@ -83,19 +82,17 @@ const checkGeneratePostResult: SimpleEvaluator = ({
 
 const BASE_CONFIG = {
   [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
+  [TEXT_ONLY_MODE]: false,
 };
 
 ls.describe("SMA - E2E", () => {
-  const graph = generatePostGraph;
-
-  beforeAll(async () => {
-    graph.checkpointer = new MemorySaver();
-    graph.store = new InMemoryStore();
-  });
-
   ls.test.each(INPUTS)(
     "Should validate the end to end flow of the generate post agent",
     async ({ inputs }) => {
+      const graph = generatePostGraph;
+      graph.checkpointer = new MemorySaver();
+      graph.store = new InMemoryStore();
+
       const threadId = uuidv4();
       const config = {
         configurable: {
@@ -104,12 +101,13 @@ ls.describe("SMA - E2E", () => {
         },
       };
 
-      expect(await generatePostGraph.invoke(inputs, config)).not.toThrow();
+      await generatePostGraph.invoke(inputs, config);
       const graphState = await generatePostGraph.getState(config);
       const state = graphState.values;
       const interruptValue = graphState.tasks[0]?.interrupts?.[0]?.value;
-      console.log("\nState\n", state);
-      console.log("\nInterrupt Value\n", interruptValue);
+      // console.log("\nState\n", state);
+      // console.log("\nInterrupt Value\n", interruptValue);
+      console.log("Finished invoking graph with URL", inputs.links[0]);
       await ls
         .expect({
           state,

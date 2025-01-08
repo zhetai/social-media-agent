@@ -14,9 +14,12 @@ export async function findImages(state: typeof FindImagesAnnotation.State) {
   const link = relevantLinks[0];
   const imageUrls = new Set<string>();
 
-  const screenshotUrl = await takeScreenshotAndUpload(link);
-  if (screenshotUrl) {
-    imageUrls.add(screenshotUrl);
+  let screenshotUrl: string | undefined;
+  if (getUrlType(link) !== "youtube") {
+    screenshotUrl = await takeScreenshotAndUpload(link);
+    if (screenshotUrl) {
+      imageUrls.add(screenshotUrl);
+    }
   }
 
   if (imageOptions.length) {
@@ -41,7 +44,8 @@ export async function findImages(state: typeof FindImagesAnnotation.State) {
             if (
               !urlOrPathname?.startsWith(
                 "https://github.com/user-attachments/assets",
-              )
+              ) &&
+              !urlOrPathname?.includes("githubusercontent.com/")
             ) {
               console.warn(
                 "Could not extract file path from URL",

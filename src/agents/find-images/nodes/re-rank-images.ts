@@ -86,21 +86,32 @@ export async function reRankImages(state: typeof FindImagesAnnotation.State) {
     if (!imageMessages.length) {
       continue;
     }
-    const response = await model.invoke([
-      {
-        role: "system",
-        content: formattedSystemPrompt,
-      },
-      {
-        role: "user",
-        content: imageMessages,
-      },
-    ]);
 
-    const chunkAnalysis = parseResult(response.content as string);
-    // Convert chunk indices to global indices and add to our list of re-ranked indices
-    const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
-    reRankedIndices = [...reRankedIndices, ...globalIndices];
+    try {
+      const response = await model.invoke([
+        {
+          role: "system",
+          content: formattedSystemPrompt,
+        },
+        {
+          role: "user",
+          content: imageMessages,
+        },
+      ]);
+
+      const chunkAnalysis = parseResult(response.content as string);
+      // Convert chunk indices to global indices and add to our list of re-ranked indices
+      const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
+      reRankedIndices = [...reRankedIndices, ...globalIndices];
+    } catch (error) {
+      console.error(
+        `Failed to re-rank images.\nImage URLs: ${imageMessages
+          .filter((m) => m.fileUri)
+          .map((m) => m.fileUri)
+          .join(", ")}\n\nError:`,
+        error,
+      );
+    }
 
     baseIndex += imageChunk.length;
   }

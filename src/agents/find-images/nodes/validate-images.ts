@@ -99,21 +99,32 @@ export async function validateImages(
     if (!imageMessages.length) {
       continue;
     }
-    const response = await model.invoke([
-      {
-        role: "system",
-        content: formattedSystemPrompt,
-      },
-      {
-        role: "user",
-        content: imageMessages,
-      },
-    ]);
 
-    const chunkAnalysis = parseResult(response.content as string);
-    // Convert chunk indices to global indices and add to our list of relevant indices
-    const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
-    allIrrelevantIndices = [...allIrrelevantIndices, ...globalIndices];
+    try {
+      const response = await model.invoke([
+        {
+          role: "system",
+          content: formattedSystemPrompt,
+        },
+        {
+          role: "user",
+          content: imageMessages,
+        },
+      ]);
+
+      const chunkAnalysis = parseResult(response.content as string);
+      // Convert chunk indices to global indices and add to our list of relevant indices
+      const globalIndices = chunkAnalysis.map((index) => index + baseIndex);
+      allIrrelevantIndices = [...allIrrelevantIndices, ...globalIndices];
+    } catch (error) {
+      console.error(
+        `Failed to validate images.\nImage URLs: ${imageMessages
+          .filter((m) => m.fileUri)
+          .map((m) => m.fileUri)
+          .join(", ")}\n\nError:`,
+        error,
+      );
+    }
 
     baseIndex += imageChunk.length;
   }
