@@ -58,9 +58,10 @@ export function parseResult(result: string): number[] {
 }
 
 export async function reRankImages(state: typeof FindImagesAnnotation.State) {
-  if (state.imageOptions.length === 0) {
+  // No need to re-rank if less than 2 images
+  if (state.imageOptions.length < 2) {
     return {
-      imageOptions: [],
+      imageOptions: state.imageOptions,
     };
   }
 

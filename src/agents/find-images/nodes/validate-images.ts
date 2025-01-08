@@ -68,22 +68,21 @@ export async function validateImages(
     temperature: 0,
   });
 
-  let imagesWithoutSupabase = imageOptions;
-  if (process.env.SUPABASE_URL) {
-    // Do not include the supabase screenshot in the image list to validate.
-    imagesWithoutSupabase = imageOptions.filter(
-      (fileUri) => !fileUri.startsWith(process.env.SUPABASE_URL as string),
-    );
-  }
+  const imagesWithoutProtected = imageOptions.filter(
+    (fileUri) =>
+      (!process.env.SUPABASE_URL ||
+        !fileUri.startsWith(process.env.SUPABASE_URL)) &&
+      !fileUri.startsWith("https://i.ytimg.com/"),
+  );
 
-  if (imagesWithoutSupabase.length === 0) {
+  if (imagesWithoutProtected.length === 0) {
     return {
       imageOptions,
     };
   }
 
   // Split images into chunks of 10
-  const imageChunks = chunkArray(imagesWithoutSupabase, 10);
+  const imageChunks = chunkArray(imagesWithoutProtected, 10);
   let allIrrelevantIndices: number[] = [];
   let baseIndex = 0;
 
@@ -129,15 +128,18 @@ export async function validateImages(
     baseIndex += imageChunk.length;
   }
 
-  const supabaseUrl = imageOptions.find((fileUri) =>
-    fileUri.startsWith(process.env.SUPABASE_URL as string),
+  const protectedUrls = imageOptions.filter(
+    (fileUri) =>
+      (process.env.SUPABASE_URL &&
+        fileUri.startsWith(process.env.SUPABASE_URL)) ||
+      fileUri.startsWith("https://i.ytimg.com/"),
   );
 
   // Keep only the relevant images (those whose indices are in allIrrelevantIndices)
   return {
     imageOptions: [
-      ...(supabaseUrl ? [supabaseUrl] : []),
-      ...imagesWithoutSupabase.filter((_, index) =>
+      ...protectedUrls,
+      ...imagesWithoutProtected.filter((_, index) =>
         allIrrelevantIndices.includes(index),
       ),
     ],
