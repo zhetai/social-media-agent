@@ -112,6 +112,12 @@ export async function reRankImages(state: typeof FindImagesAnnotation.State) {
           .join(", ")}\n\nError:`,
         error,
       );
+      // Add all indices from the failed chunk to allIrrelevantIndices
+      const failedChunkIndices = Array.from(
+        { length: imageChunk.length },
+        (_, i) => i + baseIndex
+      );
+      reRankedIndices = [...reRankedIndices, ...failedChunkIndices];
     }
 
     baseIndex += imageChunk.length;

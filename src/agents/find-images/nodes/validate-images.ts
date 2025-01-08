@@ -125,6 +125,12 @@ export async function validateImages(
           .join(", ")}\n\nError:`,
         error,
       );
+      // Add all indices from the failed chunk to allIrrelevantIndices
+      const failedChunkIndices = Array.from(
+        { length: imageChunk.length },
+        (_, i) => i + baseIndex
+      );
+      allIrrelevantIndices = [...allIrrelevantIndices, ...failedChunkIndices];
     }
 
     baseIndex += imageChunk.length;
