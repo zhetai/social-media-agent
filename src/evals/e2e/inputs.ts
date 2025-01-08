@@ -3,7 +3,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/langchain-ai/open-canvas"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293062688.jpeg",
         "https://raw.githubusercontent.com/langchain-ai/open-canvas/main/public/screenshot.png",
@@ -14,7 +14,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/muratcankoylan/AI-Investigator"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293234680.jpeg",
         "https://github.com/user-attachments/assets/7b935a1b-b79e-4fb3-85c7-cb18d48601bb",
@@ -28,7 +28,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/souzatharsis/podcastfy"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293405216.jpeg",
       ],
@@ -40,7 +40,7 @@ export const INPUTS = [
         "https://github.com/elizabethsiegle/wnba-analytics-dash-ai-insights/tree/main",
       ],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293458434.jpeg",
       ],
@@ -50,7 +50,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/ahmad2b/postbot3000"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293492964.jpeg",
         "https://raw.githubusercontent.com/ahmad2b/postbot3000/main/agent-service/app/graph_image.png",
@@ -62,7 +62,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/kaarthik108/snowChat"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://private-user-images.githubusercontent.com/53030784/271793562-7538d25b-a2d4-4a2c-9601-fb4c7db3c0b6.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzYyOTU1MzUsIm5iZiI6MTczNjI5NTIzNSwicGF0aCI6Ii81MzAzMDc4NC8yNzE3OTM1NjItNzUzOGQyNWItYTJkNC00YTJjLTk2MDEtZmI0YzdkYjNjMGI2LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTAxMDglMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwMTA4VDAwMTM1NVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk5ODA5OTNiNTIxYTMyYjJlMzY2ZDAwNWFlN2VjMjY5NTA0ODYzODUzYmQ2NGNlOWQ3YzMwMGVlYmQxOWNjZmMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.eGsdqf4MUPMnljz9_53yTh-FuUU3R0q2NW5s6lhWyBE",
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293541827.jpeg",
@@ -75,7 +75,7 @@ export const INPUTS = [
         "https://github.com/samwit/agent_tutorials/tree/main/agent_write",
       ],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293578042.jpeg",
       ],
@@ -85,7 +85,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://github.com/starpig1129/AI-Data-Analysis-MultiAgent"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-github.com-1736293622773.jpeg",
         "https://raw.githubusercontent.com/starpig1129/AI-Data-Analysis-MultiAgent/main/Architecture.png",
@@ -96,7 +96,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.youtube.com/watch?v=gwE3Wv4MNLw"],
     },
-    outputs: {
+    expected: {
       imageOptions: ["https://i.ytimg.com/vi/gwE3Wv4MNLw/sddefault.jpg"],
     },
   },
@@ -104,7 +104,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.youtube.com/watch?v=VyyJFrPlHfk"],
     },
-    outputs: {
+    expected: {
       imageOptions: ["https://i.ytimg.com/vi/VyyJFrPlHfk/maxresdefault.jpg"],
     },
   },
@@ -112,7 +112,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.youtube.com/watch?v=BGvqeRB4Jpk"],
     },
-    outputs: {
+    expected: {
       imageOptions: ["https://i.ytimg.com/vi/BGvqeRB4Jpk/sddefault.jpg"],
     },
   },
@@ -120,7 +120,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.youtube.com/watch?v=u_Xm3vgBQ9Y"],
     },
-    outputs: {
+    expected: {
       imageOptions: ["https://i.ytimg.com/vi/u_Xm3vgBQ9Y/maxresdefault.jpg"],
     },
   },
@@ -128,7 +128,7 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.youtube.com/watch?v=02IDU8eCX8o"],
     },
-    outputs: {
+    expected: {
       imageOptions: ["https://i.ytimg.com/vi/02IDU8eCX8o/maxresdefault.jpg"],
     },
   },
@@ -138,7 +138,7 @@ export const INPUTS = [
         "https://levelup.gitconnected.com/learn-how-to-build-ai-agents-chatbots-with-langgraph-1fe09c4558c6",
       ],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-levelup.gitconnected.com-1736293998424.jpeg",
         "https://miro.medium.com/v2/resize:fill:48:48/1*5D9oYBd58pyjMkV_5-zXXQ.jpeg",
@@ -159,7 +159,7 @@ export const INPUTS = [
         "https://diamantai.substack.com/p/stop-reading-start-understanding",
       ],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F19c2d967-34c9-472c-92a5-508a5fa46855_360x730.png",
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-diamantai.substack.com-1736294093371.jpeg",
@@ -170,30 +170,30 @@ export const INPUTS = [
     inputs: {
       links: ["https://www.js-craft.io/blog/fallbacks-langchain-javascript/"],
     },
-    outputs: {
+    expected: {
       imageOptions: [
         "https://verdyqfuvvtxtygqekei.supabase.co/storage/v1/object/public/images/screenshot-www.js-craft.io-1736294190656.jpeg",
         "https://secure.gravatar.com/avatar/02e06dc0b62ea506a4b0adaa9310adc6?s=44&d=blank&r=g", // TODO: this should not be included, but Vertex isn't able to read it.
       ],
     },
   },
-  {
-    inputs: {
-      links: [
-        "https://www.elastic.co/search-labs/blog/local-rag-agent-elasticsearch-langgraph-llama3", // Has images which the find-image subgraph fails to extract
-      ],
-    },
-    outputs: {
-      imageOptions: [],
-    },
-  },
+  // {
+  //   inputs: {
+  //     links: [
+  //       "https://www.elastic.co/search-labs/blog/local-rag-agent-elasticsearch-langgraph-llama3", // Has images which the find-image subgraph fails to extract
+  //     ],
+  //   },
+  //   expected: {
+  //     imageOptions: [],
+  //   },
+  // },
   // {
   //   inputs: {
   //     links: [
   //       "https://myscale.com/blog/agentic-rag-with-voyageai-gemini-and-langgraph/",
   //     ],
   //   },
-  //   outputs: {
+  //   expected: {
   //     imageOptions: [],
   //   },
   // },

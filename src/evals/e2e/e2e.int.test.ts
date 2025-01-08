@@ -34,6 +34,25 @@ const checkGeneratePostResult: SimpleEvaluator = ({ expected, actual }) => {
     interrupt: HumanInterrupt | undefined;
   };
 
+  if (
+    !state.pageContents?.length &&
+    !state.relevantLinks.length &&
+    !state.imageOptions.length
+  ) {
+    // Likely did not pass the validation step. Fail.
+    return {
+      key: "correct_post_generation",
+      score: 0,
+      evaluatorInfo: {
+        postScore: 0,
+        pageContentsScore: 0,
+        reportScore: 0,
+        imagesScore: 0,
+        interruptScore: 0,
+      },
+    };
+  }
+
   if (state.post) {
     const cleanedPost = removeUrls(state.post || "");
     if (cleanedPost.length <= 280 && cleanedPost.length > 0) {

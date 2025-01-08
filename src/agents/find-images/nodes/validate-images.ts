@@ -128,7 +128,7 @@ export async function validateImages(
       // Add all indices from the failed chunk to allIrrelevantIndices
       const failedChunkIndices = Array.from(
         { length: imageChunk.length },
-        (_, i) => i + baseIndex
+        (_, i) => i + baseIndex,
       );
       allIrrelevantIndices = [...allIrrelevantIndices, ...failedChunkIndices];
     }

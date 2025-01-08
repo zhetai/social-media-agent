@@ -4012,10 +4012,10 @@ kleur@^3.0.3:
     zod "^3.22.4"
     zod-to-json-schema "^3.22.3"
 
-langsmith@0.2.15-rc.2:
-  version "0.2.15-rc.2"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.2.15-rc.2.tgz#e884ad0b019a04268d607937f3322027786784ca"
-  integrity sha512-kUYGDflIOUB8w++XhWcqTDNvQlZlSEDfyJvGDJxpEJDX/7u5EtgstTZe0foxW/RT91XM0+60Ty5Oda63GYkfMQ==
+langsmith@0.2.15-rc.6:
+  version "0.2.15-rc.6"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.2.15-rc.6.tgz#605138bbd6d90250f3510539293476960e2fa439"
+  integrity sha512-fYTk8MfmjiTScIsb8VGXVp6UbPnPF4XX5hPZz/IKc/zyBcAwNEOmtAhJkPOFZMaQZFL/pkqrhyk6r8BQkiy9fQ==
   dependencies:
     "@types/uuid" "^10.0.0"
     commander "^10.0.1"
