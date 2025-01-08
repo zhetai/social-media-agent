@@ -56,6 +56,8 @@ export function parseResult(result: string): number[] {
     .filter((n) => !isNaN(n));
 }
 
+const YOUTUBE_THUMBNAIL_URL = "https://i.ytimg.com/";
+
 export async function validateImages(
   state: typeof FindImagesAnnotation.State,
 ): Promise<{
@@ -72,7 +74,7 @@ export async function validateImages(
     (fileUri) =>
       (!process.env.SUPABASE_URL ||
         !fileUri.startsWith(process.env.SUPABASE_URL)) &&
-      !fileUri.startsWith("https://i.ytimg.com/"),
+      !fileUri.startsWith(YOUTUBE_THUMBNAIL_URL),
   );
 
   if (imagesWithoutProtected.length === 0) {
@@ -132,7 +134,7 @@ export async function validateImages(
     (fileUri) =>
       (process.env.SUPABASE_URL &&
         fileUri.startsWith(process.env.SUPABASE_URL)) ||
-      fileUri.startsWith("https://i.ytimg.com/"),
+      fileUri.startsWith(YOUTUBE_THUMBNAIL_URL),
   );
 
   // Keep only the relevant images (those whose indices are in allIrrelevantIndices)
