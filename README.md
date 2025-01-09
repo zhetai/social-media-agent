@@ -236,3 +236,5 @@ This agent is setup to generate posts for LangChain, using LangChain products as
 - `TWEET_EXAMPLES` ([`prompts/examples.ts`](./src/agents/generate-post/prompts/examples.ts)) - A list of examples of posts you'd like the agent to use as a guide when generating the final post.
 - `POST_STRUCTURE_INSTRUCTIONS` - A set of structure instructions for the agent to follow when generating the final post.
 - `POST_CONTENT_RULES` - A set of general writing style/content guidelines for the agent to follow when generating a post.
+
+The prompt for the marketing report is located in the [`generate-post/nodes/generate-report/prompts.ts`](./src/agents/generate-post/nodes/generate-report/prompts.ts) file. You likely don't need to update this, as it's already structured to be general.
