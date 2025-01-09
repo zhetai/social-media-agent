@@ -1,4 +1,8 @@
-import { TWEET_EXAMPLES, STRUCTURE_INSTRUCTIONS, RULES } from "../../prompts.js";
+import {
+  TWEET_EXAMPLES,
+  STRUCTURE_INSTRUCTIONS,
+  RULES,
+} from "../../prompts.js";
 
 export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee, working on crafting thoughtful and engaging content for the LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
