@@ -227,3 +227,10 @@ Then click `Add Inbox` and add the following fields:
 - Name: (optional) `Generate Post (local)`
 
 Once submitted you should see a single interrupt event! Follow the instructions in the description to authorize your Twitter/LinkedIn account(s), then accept to continue the graph and have a post draft generated!
+
+## Prompts
+
+- `business_context` - Context to be used when checking whether or not content is relevant to your business/use case.
+- `few_shot_examples` - A list of examples of posts you'd like the agent to use as a guide when generating the final post.
+- `post_structure_instructions` - A set of structure instructions for the agent to follow when generating the final post.
+- `post_rules` - A set of general writing style/content guidelines for the agent to follow when generating a post.

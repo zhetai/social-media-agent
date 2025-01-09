@@ -4,7 +4,7 @@ import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import {
   getVideoThumbnailUrl,
@@ -19,24 +19,22 @@ type VerifyYouTubeContentReturn = {
 const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee at a large software company.
 You have been assigned the provided YouTube video, and you need to generate a summary report of the content in the video.
 Specifically, you should be focusing on the technical details, why people should care about it, and any problems it solves.
-You should also focus on the LangChain products the video might talk about (although not all videos will have LangChain content).
+You should also focus on the products the video might talk about (although not all videos will have your company content).
 
-For context, LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
 Given this context, examine the YouTube videos contents closely, and generate a report on the video.
-For context, this report will be used to generate a Tweet and LinkedIn post promoting the video and the LangChain products it uses, if any.
-Ensure to include in your report if this video is relevant to LangChain's products, and if so, include content in your report on what the video covered in relation to LangChain's products.`;
+For context, this report will be used to generate a Tweet and LinkedIn post promoting the video and the company products it uses, if any.
+Ensure to include in your report if this video is relevant to your company's products, and if so, include content in your report on what the video covered in relation to your company's products.`;
 
-const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You're given a summary/report on some content a third party submitted to you in hopes of having it promoted by LangChain.
-You need to verify if the content is relevant to LangChain's products before approving or denying the request.
+const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee.
+You're given a summary/report on some content a third party submitted to you in hopes of having it promoted by you.
+You need to verify if the content is relevant to your company's products before approving or denying the request.
 
-For context, LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
-Given this context, examine the summary/report closely, and determine if the content is relevant to LangChain's products.
-You should provide reasoning as to why or why not the content is relevant to LangChain's products, then a simple true or false for whether or not it's relevant.
+Given this context, examine the summary/report closely, and determine if the content is relevant to your company's products.
+You should provide reasoning as to why or why not the content is relevant to your company's products, then a simple true or false for whether or not it's relevant.
 `;
 
 const RELEVANCY_SCHEMA = z
@@ -44,15 +42,15 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the content is or isn't relevant to LangChain's products.",
+        "Reasoning for why the content is or isn't relevant to your company's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the content is relevant to LangChain's products.",
+        "Whether or not the content is relevant to your company's products.",
       ),
   })
-  .describe("The relevancy of the content to LangChain's products.");
+  .describe("The relevancy of the content to your company's products.");
 
 export async function generateVideoSummary(url: string): Promise<string> {
   const model = new ChatVertexAI({
@@ -105,7 +103,7 @@ export async function verifyYouTubeContentIsRelevant(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT,
+        content: VERIFY_RELEVANT_CONTENT_PROMPT,
       },
       {
         role: "user",
@@ -116,7 +114,7 @@ export async function verifyYouTubeContentIsRelevant(
 }
 
 /**
- * Verifies the content provided is relevant to LangChain products.
+ * Verifies the content provided is relevant to your company's products.
  */
 export async function verifyYouTubeContent(
   state: typeof VerifyContentAnnotation.State,

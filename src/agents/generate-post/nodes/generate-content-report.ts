@@ -1,16 +1,13 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../prompts.js";
+import { BUSINESS_CONTEXT } from "../prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
-const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You have been tasked with writing a marketing report on content submitted to you from a third party which uses LangChain's products.
-This marketing report will then be used to craft Tweets and LinkedIn posts promoting the content and LangChain products.
+const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee.
+You have been tasked with writing a marketing report on content submitted to you from a third party which uses your products.
+This marketing report will then be used to craft Tweets and LinkedIn posts promoting the content and your products.
 
-Here is some context about the different LangChain products and services:
-<langchain-context>
-${LANGCHAIN_PRODUCTS_CONTEXT}
-</langchain-context>
+${BUSINESS_CONTEXT}
 
 The marketing report should follow the following structure guidelines. It will be made up of three main sections outlined below:
 <structure guidelines>
@@ -23,8 +20,8 @@ This is the introduction and summary of the content. This must include key detai
 </part>
 
 <part key="2">
-This section should focus on how the content implements LangChain's products/services. It should include:
-- the LangChain product(s) used in the content.
+This section should focus on how the content implements any of the business context outlined above. It should include:
+- the product(s) or service(s) used in the content.
 - how these products are used in the content.
 - why these products are important to the application.
 </part>
@@ -39,7 +36,7 @@ This section should cover any additional details about the content that the firs
 
 Follow these rules and guidelines when generating the report:
 <rules>
-- Focus on subject of the content, and why/how LangChain's product(s) enhance it.
+- Focus on subject of the content, and why/how any of the business context outlined above enhance it.
 - The final Tweet/LinkedIn post will be developer focused, so ensure the report is technical and detailed.
 - Include any relevant links found in the content in the report.
 - Include details about what the product does/what problem it solves.

@@ -80,11 +80,11 @@ export const RULES = `- Focus your post on what the content covers, aims to achi
 - ALWAYS use present tense to make announcements feel immediate (e.g., "Microsoft just launched..." instead of "Microsoft launches...").
 - ALWAYS include the link to the content being promoted in the call to action section of the post.`;
 
-export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
+export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee, working on crafting thoughtful and engaging content for the LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
 Your coworker has already taken the time to write a detailed marketing report on this content for you, so please take your time and read it carefully.
 
-The following are examples of LinkedIn/Twitter posts on third-party LangChain content that have done well, and you should use them as style inspiration for your post:
+The following are examples of LinkedIn/Twitter posts on third-party content that have done well, and you should use them as style inspiration for your post:
 <examples>
 ${TWEET_EXAMPLES}
 </examples>

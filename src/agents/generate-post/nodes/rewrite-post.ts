@@ -8,8 +8,8 @@ import {
   RULESET_KEY,
 } from "../../../utils/reflections.js";
 
-const REWRITE_POST_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
-You wrote a post for the LangChain LinkedIn and Twitter pages, however your boss has asked for some changes to be made before it can be published.
+const REWRITE_POST_PROMPT = `You're a highly regarded marketing employee, working on crafting thoughtful and engaging content for the LinkedIn and Twitter pages.
+You wrote a post for the LinkedIn and Twitter pages, however your boss has asked for some changes to be made before it can be published.
 
 The original post you wrote is as follows:
 <original-post>

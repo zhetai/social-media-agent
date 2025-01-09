@@ -1,6 +1,6 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { z } from "zod";
 import { VerifyRedditPostAnnotation } from "../verify-reddit-post-state.js";
@@ -64,19 +64,19 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the content from the GitHub repository is or isn't relevant to LangChain's products.",
+        "Reasoning for why the content from the GitHub repository is or isn't relevant to your company's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the content from the GitHub repository is relevant to LangChain's products.",
+        "Whether or not the content from the GitHub repository is relevant to your company's products.",
       ),
   })
-  .describe("The relevancy of the content to LangChain's products.");
+  .describe("The relevancy of the content to your company's products.");
 
-const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You've been sent a Reddit post by a third party claiming it's relevant and implements LangChain's products.
-Your task is to determine whether or not the content actually implements and is relevant to LangChain's products.
+const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee.
+You've been sent a Reddit post by a third party claiming it's relevant and implements your company's products.
+Your task is to determine whether or not the content actually implements and is relevant to your company's products.
 
 You're provided the following context:
 - The post title and body
@@ -84,13 +84,12 @@ You're provided the following context:
 - The content of any links in the main post
 - Any screenshots/images in the main post.
 
-You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
+You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
 
-LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
-Given this, examine the Reddit post and associated content closely, and determine if it is relevant to LangChain's products.
-You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
+Given this, examine the Reddit post and associated content closely, and determine if it is relevant to your company's products.
+You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;
 
 export async function getRedditPostContent(
   state: typeof VerifyRedditPostAnnotation.State,
@@ -124,7 +123,7 @@ export async function getRedditPostContent(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT,
+        content: VERIFY_RELEVANT_CONTENT_PROMPT,
       },
       {
         role: "user",
