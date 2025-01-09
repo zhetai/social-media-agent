@@ -1,6 +1,6 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
-import { BUSINESS_CONTEXT } from "../prompts.js";
+import { BUSINESS_CONTEXT } from "../prompts/index.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
 const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee.

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
 import { VerifyTweetAnnotation } from "../verify-tweet-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 

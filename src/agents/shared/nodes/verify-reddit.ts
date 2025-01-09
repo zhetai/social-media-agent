@@ -1,7 +1,7 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { z } from "zod";
 

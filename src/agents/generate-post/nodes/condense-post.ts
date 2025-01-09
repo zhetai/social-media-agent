@@ -8,7 +8,10 @@ import {
   REFLECTIONS_PROMPT,
 } from "../../../utils/reflections.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { STRUCTURE_INSTRUCTIONS, RULES } from "../prompts.js";
+import {
+  POST_STRUCTURE_INSTRUCTIONS,
+  POST_CONTENT_RULES,
+} from "../prompts/index.js";
 
 const CONDENSE_POST_PROMPT = `You're a highly skilled marketer at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You wrote a post for the LangChain LinkedIn and Twitter pages, however it's a bit too long for Twitter, and thus needs to be condensed.
@@ -29,11 +32,11 @@ Here are the rules and structure you used to write the original post, which you 
 <rules-and-structure>
 
 <structure-instructions>
-${STRUCTURE_INSTRUCTIONS}
+${POST_STRUCTURE_INSTRUCTIONS}
 </structure-instructions>
 
 <rules>
-${RULES}
+${POST_CONTENT_RULES}
 </rules>
 
 {reflectionsPrompt}
