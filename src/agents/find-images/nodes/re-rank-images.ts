@@ -3,7 +3,7 @@ import { FindImagesAnnotation } from "../find-images-graph.js";
 import { chunkArray } from "../../utils.js";
 import { getImageMessageContents } from "../utils.js";
 
-const RE_RANK_IMAGES_PROMPT = `You're a highly regarded marketing employee at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
+const RE_RANK_IMAGES_PROMPT = `You're a highly regarded marketing employee, working on crafting thoughtful and engaging content for your company's LinkedIn and Twitter pages.
 
 You're writing a post, and in doing so you've found a series of images that you think will help make the post more engaging.
 

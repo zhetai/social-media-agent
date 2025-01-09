@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { RunnableConfig } from "@langchain/core/runnables";
@@ -20,32 +20,31 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the content from the GitHub repository is or isn't relevant to LangChain's products.",
+        "Reasoning for why the content from the GitHub repository is or isn't relevant to your company's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the content from the GitHub repository is relevant to LangChain's products.",
+        "Whether or not the content from the GitHub repository is relevant to your company's products.",
       ),
   })
-  .describe("The relevancy of the content to LangChain's products.");
+  .describe("The relevancy of the content to your company's products.");
 
-const REPO_DEPENDENCY_PROMPT = `Here are the dependencies of the repository. Inspect this file contents to determine if the repository implements LangChain's products.
+const REPO_DEPENDENCY_PROMPT = `Here are the dependencies of the repository. Inspect this file contents to determine if the repository implements your company's products.
 <repository-dependencies file-name="{dependenciesFileName}">
 {repositoryDependencies}
 </repository-dependencies>`;
 
 const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You're given a {file_type} from a GitHub repository and need to verify the repository implements LangChain's products.
+You're given a {file_type} from a GitHub repository and need to verify the repository implements your company's products.
 You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
 
-For context, LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
 {repoDependenciesPrompt}
 
-Given this context, examine the  {file_type} closely, and determine if the repository implements LangChain's products.
-You should provide reasoning as to why or why not the repository implements LangChain's products, then a simple true or false for whether or not it implements some.`;
+Given this context, examine the  {file_type} closely, and determine if the repository implements your company's products.
+You should provide reasoning as to why or why not the repository implements your company's products, then a simple true or false for whether or not it implements some.`;
 
 const getDependencies = async (
   githubUrl: string,

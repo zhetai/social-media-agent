@@ -227,3 +227,12 @@ Then click `Add Inbox` and add the following fields:
 - Name: (optional) `Generate Post (local)`
 
 Once submitted you should see a single interrupt event! Follow the instructions in the description to authorize your Twitter/LinkedIn account(s), then accept to continue the graph and have a post draft generated!
+
+## Prompts
+
+This agent is setup to generate posts for LangChain, using LangChain products as context. To use the agent for your own use case, you should update the following prompts/prompt sections inside the [`prompts.ts`](./src/agents/generate-post/prompts.ts) file:
+
+- `BUSINESS_CONTEXT` - Context to be used when checking whether or not content is relevant to your business/use case.
+- `TWEET_EXAMPLES` - A list of examples of posts you'd like the agent to use as a guide when generating the final post.
+- `STRUCTURE_INSTRUCTIONS` - A set of structure instructions for the agent to follow when generating the final post.
+- `RULES` - A set of general writing style/content guidelines for the agent to follow when generating a post.

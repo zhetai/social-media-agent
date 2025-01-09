@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyTweetAnnotation } from "../verify-tweet-state.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 
@@ -8,26 +8,25 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the webpage is or isn't relevant to LangChain's products.",
+        "Reasoning for why the webpage is or isn't relevant to your company's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the webpage is relevant to LangChain's products.",
+        "Whether or not the webpage is relevant to your company's products.",
       ),
   })
-  .describe("The relevancy of the content to LangChain's products.");
+  .describe("The relevancy of the content to your company's products.");
 
-const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You're provided with a Tweet, and the page content of links in the Tweet. This Tweet was sent to you by a third party claiming it's relevant and implements LangChain's products.
-Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to LangChain's products.
-You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
+const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee.
+You're provided with a Tweet, and the page content of links in the Tweet. This Tweet was sent to you by a third party claiming it's relevant and implements your company's products.
+Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to your company's products.
+You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
 
-For context, LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
-Given this context, examine the entire Tweet plus webpage content closely, and determine if the content implements LangChain's products.
-You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
+Given this context, examine the entire Tweet plus webpage content closely, and determine if the content implements your company's products.
+You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;
 
 async function verifyGeneralContentIsRelevant(
   content: string,
@@ -46,7 +45,7 @@ async function verifyGeneralContentIsRelevant(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT,
+        content: VERIFY_RELEVANT_CONTENT_PROMPT,
       },
       {
         role: "user",
@@ -77,7 +76,7 @@ ${pageContents.map((content, index) => `<webpage-content key="${index}">\n${cont
 }
 
 /**
- * Verifies the Tweet & webpage contents provided is relevant to LangChain products.
+ * Verifies the Tweet & webpage contents provided is relevant to your company's products.
  */
 export async function validateTweetContent(
   state: typeof VerifyTweetAnnotation.State,

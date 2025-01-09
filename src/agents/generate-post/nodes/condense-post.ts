@@ -1,6 +1,5 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
-import { STRUCTURE_INSTRUCTIONS, RULES } from "./geterate-post/prompts.js";
 import { parseGeneration } from "./geterate-post/utils.js";
 import { removeUrls } from "../../utils.js";
 import {
@@ -9,6 +8,7 @@ import {
   REFLECTIONS_PROMPT,
 } from "../../../utils/reflections.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
+import { STRUCTURE_INSTRUCTIONS, RULES } from "../prompts.js";
 
 const CONDENSE_POST_PROMPT = `You're a highly skilled marketer at LangChain, working on crafting thoughtful and engaging content for LangChain's LinkedIn and Twitter pages.
 You wrote a post for the LangChain LinkedIn and Twitter pages, however it's a bit too long for Twitter, and thus needs to be condensed.

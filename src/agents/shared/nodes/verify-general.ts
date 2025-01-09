@@ -3,7 +3,7 @@ import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
-import { LANGCHAIN_PRODUCTS_CONTEXT } from "../../generate-post/prompts.js";
+import { BUSINESS_CONTEXT } from "../../generate-post/prompts.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { RunnableLambda } from "@langchain/core/runnables";
 import { getPageText } from "../../utils.js";
@@ -19,26 +19,25 @@ const RELEVANCY_SCHEMA = z
     reasoning: z
       .string()
       .describe(
-        "Reasoning for why the webpage is or isn't relevant to LangChain's products.",
+        "Reasoning for why the webpage is or isn't relevant to your company's products.",
       ),
     relevant: z
       .boolean()
       .describe(
-        "Whether or not the webpage is relevant to LangChain's products.",
+        "Whether or not the webpage is relevant to your company's products.",
       ),
   })
-  .describe("The relevancy of the content to LangChain's products.");
+  .describe("The relevancy of the content to your company's products.");
 
-const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee at LangChain.
-You're provided with a webpage containing content a third party submitted to LangChain claiming it's relevant and implements LangChain's products.
-Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to LangChain's products.
-You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
+const VERIFY_COMPANY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing employee.
+You're provided with a webpage containing content a third party submitted to you claiming it's relevant and implements your company's products.
+Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to your company's products.
+You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
 
-For context, LangChain has three main products you should be looking out for:
-${LANGCHAIN_PRODUCTS_CONTEXT}
+${BUSINESS_CONTEXT}
 
-Given this context, examine the webpage content closely, and determine if the content implements LangChain's products.
-You should provide reasoning as to why or why not the content implements LangChain's products, then a simple true or false for whether or not it implements some.`;
+Given this context, examine the webpage content closely, and determine if the content implements your company's products.
+You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;
 
 const getImagesFromFireCrawlMetadata = (
   metadata: any,
@@ -102,7 +101,7 @@ export async function verifyGeneralContentIsRelevant(
     .invoke([
       {
         role: "system",
-        content: VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT,
+        content: VERIFY_COMPANY_RELEVANT_CONTENT_PROMPT,
       },
       {
         role: "user",
@@ -113,10 +112,10 @@ export async function verifyGeneralContentIsRelevant(
 }
 
 /**
- * Verifies the content provided is relevant to LangChain products.
+ * Verifies the content provided is relevant to your company's products.
  */
 /**
- * Verifies if the general content from a provided URL is relevant to LangChain products.
+ * Verifies if the general content from a provided URL is relevant to your company's products.
  *
  * @param state - The current state containing the link to verify.
  * @param _config - Configuration for the LangGraph runtime (unused in this function).
