@@ -1,5 +1,12 @@
 import * as cheerio from "cheerio";
 
+export const BLACKLISTED_MIME_TYPES = [
+  "image/svg+xml",
+  "image/x-icon",
+  "image/bmp",
+  "text/",
+];
+
 /**
  * Extracts URLs from Slack-style message text containing links in the format:
  * <display_text|https://example.com> or <https://example.com>
@@ -376,13 +383,6 @@ export function getUrlType(url: string): UrlType {
 
   return "general";
 }
-
-export const BLACKLISTED_MIME_TYPES = [
-  "image/svg+xml",
-  "image/x-icon",
-  "image/bmp",
-  "text/",
-];
 
 /**
  * Extracts the MIME type from a URL based on its file extension or path
