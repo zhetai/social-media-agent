@@ -277,6 +277,11 @@ export async function processImageInput(
 
   if (isValidUrl(imageInput)) {
     const { contentType } = await imageUrlToBuffer(imageInput);
+
+    if (BLACKLISTED_MIME_TYPES.find((mt) => contentType.startsWith(mt))) {
+      return undefined;
+    }
+
     return {
       imageUrl: imageInput,
       mimeType: contentType,
@@ -376,6 +381,7 @@ export const BLACKLISTED_MIME_TYPES = [
   "image/svg+xml",
   "image/x-icon",
   "image/bmp",
+  "text/",
 ];
 
 /**

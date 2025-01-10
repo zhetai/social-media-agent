@@ -9,6 +9,58 @@ import { getScheduledDateSeconds } from "./find-date.js";
 import { SlackClient } from "../../../../clients/slack.js";
 import { getFutureDate } from "./get-future-date.js";
 
+interface SendSlackMessageArgs {
+  isTextOnlyMode: boolean;
+  afterSeconds: number;
+  threadId: string;
+  runId: string;
+  postContent: string;
+  image?: {
+    imageUrl: string;
+    mimeType: string;
+  };
+}
+
+async function sendSlackMessage({
+  isTextOnlyMode,
+  afterSeconds,
+  threadId,
+  runId,
+  postContent,
+  image,
+}: SendSlackMessageArgs) {
+  if (!process.env.SLACK_CHANNEL_ID) {
+    console.warn(
+      "No SLACK_CHANNEL_ID found in environment variables. Can not send error message to Slack.",
+    );
+    return;
+  }
+
+  const slackClient = new SlackClient({
+    channelId: process.env.SLACK_CHANNEL_ID,
+  });
+
+  const imageString = image?.imageUrl
+    ? `Image:
+${image?.imageUrl}`
+    : "No image provided";
+
+  const messageString = `*New Post Scheduled*
+    
+Scheduled post for: *${getFutureDate(afterSeconds)}*
+Run ID: *${runId}*
+Thread ID: *${threadId}*
+
+Post:
+\`\`\`
+${postContent}
+\`\`\`
+
+${!isTextOnlyMode ? imageString : "Text only mode enabled. Image support has been disabled."}`;
+
+  await slackClient.sendMessage(messageString);
+}
+
 export async function schedulePost(
   state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
@@ -52,27 +104,14 @@ export async function schedulePost(
   });
 
   try {
-    const slackClient = new SlackClient({
-      channelId: process.env.SLACK_CHANNEL_ID,
+    await sendSlackMessage({
+      isTextOnlyMode,
+      afterSeconds,
+      threadId: thread.thread_id,
+      runId: run.run_id,
+      postContent: state.post,
+      image: state.image,
     });
-
-    const imageString = state.image?.imageUrl
-      ? `Image:
-${state.image?.imageUrl}`
-      : "No image provided";
-
-    await slackClient.sendMessage(`**New Post Scheduled**
-      
-Scheduled post for: **${getFutureDate(afterSeconds)}**
-Run ID: **${run.run_id}**
-Thread ID: **${thread.thread_id}**
-
-Post:
-\`\`\`
-${state.post}
-\`\`\`
-
-${!isTextOnlyMode ? imageString : "Text only mode enabled. Image support has been disabled."}`);
   } catch (e) {
     console.error("Failed to schedule post", e);
   }
