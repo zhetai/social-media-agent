@@ -4,8 +4,9 @@ import { toZonedTime } from "date-fns-tz";
 
 import {
   getScheduledDateSeconds,
+  isDateTaken,
   validateAfterSeconds,
-} from "../agents/generate-post/nodes/schedule-post/find-date.js";
+} from "../find-date.js";
 
 // Define MOCK_CURRENT_DATE in UTC or as per the mocked timezone
 const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
@@ -377,6 +378,21 @@ describe("Schedule Date Tests", () => {
       await expect(
         getScheduledDateSeconds("p4" as any, mockConfig, MOCK_CURRENT_DATE),
       ).rejects.toThrow("Invalid priority level");
+    });
+  });
+
+  describe("isDateTaken", () => {
+    it("Can properly check if a date is taken", () => {
+      const priority = "p1";
+      const takenDates = {
+        p1: [new Date("2025-01-11T16:00:44.927Z")],
+        p2: [],
+        p3: [],
+      };
+      const dateToCheck = new Date("2025-01-11T16:00:35.394Z");
+
+      const isTaken = isDateTaken(dateToCheck, takenDates, priority);
+      expect(isTaken).toBe(true);
     });
   });
 });
