@@ -13,6 +13,155 @@ import {
 import { DateType } from "../../../types.js";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
+export const ALLOWED_P1_DAY_AND_TIMES_IN_UTC = [
+  // Sunday 8AM PST
+  {
+    day: 0, // Sunday
+    hour: 16, // 8AM PST
+  },
+  // Sunday 9AM PST
+  {
+    day: 0, // Sunday
+    hour: 17, // 9AM PST
+  },
+  // Sunday 10AM PST
+  {
+    day: 0, // Sunday
+    hour: 18, // 10AM PST
+  },
+  // Saturday 8AM PST
+  {
+    day: 6, // Saturday
+    hour: 16, // 8AM PST
+  },
+  // Saturday 9AM PST
+  {
+    day: 6, // Saturday
+    hour: 17, // 9AM PST
+  },
+  // Saturday 10AM PST
+  {
+    day: 6, // Saturday
+    hour: 18, // 10AM PST
+  },
+];
+
+export const ALLOWED_P2_DAY_AND_TIMES_IN_UTC = [
+  // Monday 8AM PST
+  {
+    day: 0, // Monday
+    hour: 16, // 8AM PST
+  },
+  // Monday 9AM PST
+  {
+    day: 0, // Monday
+    hour: 17, // 9AM PST
+  },
+  // Monday 10AM PST
+  {
+    day: 0, // Monday
+    hour: 18, // 10AM PST
+  },
+  // Friday 8AM PST
+  {
+    day: 5, // Friday
+    hour: 16, // 8AM PST
+  },
+  // Friday 9AM PST
+  {
+    day: 5, // Friday
+    hour: 17, // 9AM PST
+  },
+  // Friday 10AM PST
+  {
+    day: 5, // Friday
+    hour: 18, // 10AM PST
+  },
+  // Sunday 11AM PST
+  {
+    day: 0, // Sunday
+    hour: 19, // 11AM PST
+  },
+  // Sunday 12PM PST
+  {
+    day: 0, // Sunday
+    hour: 20, // 12PM PST
+  },
+  // Sunday 1PM PST
+  {
+    day: 0, // Sunday
+    hour: 21, // 1PM PST
+  },
+  // Saturday 11AM PST
+  {
+    day: 6, // Saturday
+    hour: 19, // 11AM PST
+  },
+  // Saturday 12PM PST
+  {
+    day: 6, // Saturday
+    hour: 20, // 12PM PST
+  },
+  
+  {
+    day: 6, // Saturday
+    hour: 21, // 1PM PST
+  },
+];
+
+export const ALLOWED_P3_DAY_AND_TIMES_IN_UTC = [
+  // Sunday 1PM PST
+  {
+    day: 0, // Sunday
+    hour: 21, // 1PM PST
+  },
+  // Sunday 2PM PST
+  {
+    day: 0, // Sunday
+    hour: 22, // 2PM PST
+  },
+  // Sunday 3PM PST
+  {
+    day: 0, // Sunday
+    hour: 23, // 3PM PST
+  },
+  // Sunday 4PM PST
+  {
+    day: 0, // Sunday
+    hour: 24, // 4PM PST
+  },
+  // Sunday 5PM PST
+  {
+    day: 1, // Sunday (Monday in UTC)
+    hour: 1, // 5PM PST
+  },
+  // Saturday 1PM PST
+  {
+    day: 6, // Saturday
+    hour: 21, // 1PM PST
+  },
+  // Saturday 2PM PST
+  {
+    day: 6, // Saturday
+    hour: 22, // 2PM PST
+  },
+  // Saturday 3PM PST
+  {
+    day: 6, // Saturday
+    hour: 23, // 3PM PST
+  },
+  // Saturday 4PM PST
+  {
+    day: 6, // Saturday
+    hour: 24, // 4PM PST
+  },
+  // Saturday 5PM PST
+  {
+    day: 7, // Saturday (Sunday in UCT)
+    hour: 1, // 5PM PST
+  },
+];
+
 export function validateAfterSeconds(afterSeconds: number) {
   // If after seconds is negative, throw an error
   if (afterSeconds < 0) {
@@ -43,7 +192,7 @@ const TAKEN_DATES_KEY = "taken_dates";
  * @param config
  * @returns {Promise<TakenScheduleDates>} The taken schedule dates, or DEFAULT_TAKEN_DATES if no dates are taken
  */
-async function getTakenScheduleDates(
+export async function getTakenScheduleDates(
   config: LangGraphRunnableConfig,
 ): Promise<TakenScheduleDates> {
   const { store } = config;
@@ -69,7 +218,7 @@ async function getTakenScheduleDates(
  * @param {LangGraphRunnableConfig} config
  * @returns {Promise<void>}
  */
-async function putTakenScheduleDates(
+export async function putTakenScheduleDates(
   takenDates: TakenScheduleDates,
   config: LangGraphRunnableConfig,
 ): Promise<void> {
@@ -92,27 +241,25 @@ function getAfterSeconds(date: Date, baseDate: Date = new Date()): number {
   return Math.floor((date.getTime() - baseDate.getTime()) / 1000);
 }
 
-function isDateTaken(
+export function isDateTaken(
   date: Date,
   takenDates: TakenScheduleDates | undefined,
   priority: "p1" | "p2" | "p3",
 ): boolean {
   if (!takenDates) return false;
-  const pstDate = toZonedTime(date, "America/Los_Angeles");
-  const pstHour = pstDate.getHours();
-  const pstDay = pstDate.getDate();
-  const pstMonth = pstDate.getMonth();
-  const pstYear = pstDate.getFullYear();
+  const hour = date.getHours();
+  const day = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
 
   // Only check dates within the same priority level
   const priorityDates = takenDates[priority];
   return priorityDates.some((takenDate) => {
-    const takenPstDate = toZonedTime(takenDate, "America/Los_Angeles");
     return (
-      pstHour === takenPstDate.getHours() &&
-      pstDay === takenPstDate.getDate() &&
-      pstMonth === takenPstDate.getMonth() &&
-      pstYear === takenPstDate.getFullYear()
+      hour === takenDate.getHours() &&
+      day === takenDate.getDate() &&
+      month === takenDate.getMonth() &&
+      year === takenDate.getFullYear()
     );
   });
 }

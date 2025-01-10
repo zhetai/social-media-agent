@@ -1,14 +1,18 @@
 import { jest } from "@jest/globals";
-import { LangGraphRunnableConfig } from "@langchain/langgraph";
+import { InMemoryStore, LangGraphRunnableConfig } from "@langchain/langgraph";
 import { toZonedTime } from "date-fns-tz";
 
 import {
   getScheduledDateSeconds,
+  getTakenScheduleDates,
+  isDateTaken,
+  putTakenScheduleDates,
   validateAfterSeconds,
-} from "../agents/generate-post/nodes/schedule-post/find-date.js";
+} from "../find-date.js";
 
 // Define MOCK_CURRENT_DATE in UTC or as per the mocked timezone
-const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
+// const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
+const MOCK_CURRENT_DATE = new Date("2025-01-10T21:52:34.074Z");
 
 jest.useFakeTimers();
 jest.setSystemTime(MOCK_CURRENT_DATE);
@@ -379,4 +383,48 @@ describe("Schedule Date Tests", () => {
       ).rejects.toThrow("Invalid priority level");
     });
   });
+
+  describe.only("getScheduledDateSeconds2", () => {
+    it("Can actually get the right time", async () => {
+      const store = new InMemoryStore();
+      const config = {
+        store,
+      } as any;
+      const TAKEN_DATES = {
+        "p1": [
+          new Date("2025-01-11T16:00:44.927Z"),
+        ],
+        "p2": [
+          new Date("2025-01-06T16:00:49.421Z"),
+          new Date("2025-01-10T16:00:32.265Z"),
+          new Date("2025-01-10T16:00:06.203Z"),
+          new Date("2025-01-10T16:00:52.327Z"),
+          new Date("2025-01-13T16:00:39.616Z"),
+        ],
+        "p3": [],
+      };
+      await putTakenScheduleDates(TAKEN_DATES, config);
+      const seconds = await getScheduledDateSeconds("p1", config);
+      console.log(seconds);
+      const newTakenDates = await getTakenScheduleDates(config);
+      console.dir(newTakenDates, { depth: null });
+    });
+  });
+
+  describe("isDateTaken", () => {
+    it("Can properly check if a date is taken", () => {
+      const priority = "p1";
+      const takenDates = {
+        "p1": [
+          new Date("2025-01-11T16:00:44.927Z"),
+        ],
+        "p2": [],
+        "p3": []
+      }
+      const dateToCheck = new Date("2025-01-11T16:00:35.394Z");
+
+      const isTaken = isDateTaken(dateToCheck, takenDates, priority);
+      expect(isTaken).toBe(true);
+    })
+  })
 });
