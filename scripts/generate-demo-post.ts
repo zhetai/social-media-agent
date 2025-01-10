@@ -3,12 +3,12 @@ import { Client } from "@langchain/langgraph-sdk";
 import { TEXT_ONLY_MODE } from "../src/agents/generate-post/constants.js";
 
 /**
- * Generate a post based on the Open Canvas project.
- * Meant to be used as a demo, showing off how the
+ * Generate a post based on a LangChain blog post.
+ * This is intended to be used as a demo, showing off how the
  * Social Media Agent works.
  */
 async function invokeGraph() {
-  const link = "https://github.com/langchain-ai/open-canvas";
+  const link = "https://blog.langchain.dev/customers-appfolio/";
 
   const client = new Client({
     apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
@@ -24,6 +24,9 @@ async function invokeGraph() {
         // By default, the graph will read these values from the environment
         // [TWITTER_USER_ID]: process.env.TWITTER_USER_ID,
         // [LINKEDIN_USER_ID]: process.env.LINKEDIN_USER_ID,
+
+        // This ensures the graph runs in a basic text only mode.
+        // If you followed the full setup instructions, you may remove this line.
         [TEXT_ONLY_MODE]: true,
       },
     },

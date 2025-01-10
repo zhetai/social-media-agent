@@ -4,52 +4,32 @@ This repository contains an 'agent' which can take in a URL, and generate a Twit
 
 ![Screenshot of the social media agent graph](./static/graph_screenshot.png)
 
-## Setup
+# Quickstart
 
 > [!NOTE]
 > 🎥 For a visual guide, check out our [step-by-step video tutorial](ADD_URL_HERE) that walks you through the account setup process and project configuration.
 
-### Prerequisites
-
-#### Basic Setup
-
-To use the Social Media Agent with a basic setup, you'll need the following:
-
-- [Anthropic API](https://console.anthropic.com/) - General LLM
-- [LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) - Running the LangGraph server locally
-- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping
-- [Arcade](https://www.arcade-ai.com/) - Social media authentication
-- [GitHub API](https://github.com/settings/personal-access-tokens) - Reading GitHub content (optional, if you do not plan on giving it any GitHub URLs)
-- [LinkedIn Developer Account](https://developer.linkedin.com/) - Posting to LinkedIn (optional)
-
-Running in basic setup mode will lack the following features:
-
-- Image selection & uploads
-- Posting to LinkedIn
-- Ingesting data from a Slack channel
-- Validating & generating content from YouTube videos
-
-#### Full Setup
+This quickstart covers how to setup the Social Media Agent in a basic setup mode. This is the quickest way to get up and running, however it will lack some of the features of the full setup mode. See [here](#advanced-setup) for the full setup guide.
 
 <details>
-<summary>To use all of the features of the Social Media Agent, you'll need the following:</summary>
+<summary>Running in basic setup mode will lack the following features:</summary>
 
-- [Anthropic API](https://console.anthropic.com/) - General LLM
-- [Google Vertex AI](https://cloud.google.com/vertex-ai) - For dealing with YouTube video content
-- [LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) - Running the LangGraph server locally
-- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping
-- [Arcade](https://www.arcade-ai.com/) - Social media authentication
-- [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard) - For uploading media to Twitter
-- [LinkedIn Developer Account](https://developer.linkedin.com/) - Posting to LinkedIn
-- [GitHub API](https://github.com/settings/personal-access-tokens) - Reading GitHub content
-- [Supabase](https://supabase.com/) - Storing images
-- [Slack Developer Account](https://api.slack.com/apps) (optional) - ingesting data from a Slack channel
+- Posting to Twitter & LinkedIn _(it will still generate the posts, however you will need to manually post them)_
+- Ingesting content from GitHub, Twitter or YouTube URLs
+- Ingesting data from a Slack channel
+- Image selection & uploads
 
 </details>
 
-### Setup Instructions
+To get started, you'll need the following API keys/software:
 
-#### Clone the repository:
+- [Anthropic API](https://console.anthropic.com/) - General LLM
+- [LangSmith](https://smith.langchain.com/) - LangSmith API key required to run the LangGraph server locally (free)
+- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping. New users get 500 credits for free
+
+## Setup Instructions
+
+### Clone the repository:
 
 ```bash
 git clone https://github.com/langchain-ai/social-media-agent.git
@@ -59,48 +39,179 @@ git clone https://github.com/langchain-ai/social-media-agent.git
 cd social-media-agent
 ```
 
-#### Install dependencies:
+### Install dependencies:
 
 ```bash
 yarn install
 ```
 
-#### Set environment variables.
+### Set environment variables.
 
-Copy the values of `.env.example` to `.env`, then update the values as needed.
+Copy the values of the quickstart `.env.quickstart.example` to `.env`, then add the values:
 
 ```bash
-cp .env.example .env
+cp .env.quickstart.example .env
 ```
 
-#### Setup Arcade authentication for Twitter:
+Once done, you should have the following environment variables set:
 
-- [Twitter Arcade auth docs](https://docs.arcade-ai.com/integrations/auth/x)
+```bash
+# For LangSmith tracing (optional)
+LANGCHAIN_API_KEY=
+LANGCHAIN_TRACING_V2=true
 
-Once done, ensure you've added the following environment variables to your `.env` file:
+# For LLM generations
+ANTHROPIC_API_KEY=
 
-- `ARCADE_API_KEY`
+# For web scraping
+FIRECRAWL_API_KEY=
+```
 
-##### Full Setup Instructions
+### Install LangGraph CLI
 
-<details>
-<summary>Full Twitter Setup Instructions</summary>
+```bash
+pip install langgraph-cli
+```
 
-Arcade does not yet support Twitter (X) API v1, which is required for uploading media to Twitter. To configure the Twitter API v1, you'll need to follow a few extra steps:
+Then run the following command to check the CLI is installed:
 
-1. Create an app in the Twitter Developer Portal, or use the default app (you should already have one after setting up Arcade above).
-2. Enter app settings, and find the `User authentication settings` section. Start this setup.
-3. Set `App permissions` to `Read and write`. Set `Type of app` to `Web app`. Set the `Callback URI / Redirect URL` to `http://localhost:3000/callback`. Save.
-4. Navigate to the `Keys and tokens` tab in the app settings, and copy the `API key` and `API key secret`. Set these values as `TWITTER_API_KEY` and `TWITTER_API_KEY_SECRET` in your `.env` file (skip if already set when setting up Arcade above).
-5. Run the `yarn start:auth` command to run the Twitter OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with Twitter`.
-6. After logging in, copy the user token, and user token secret that was logged to the terminal. Set these values as `TWITTER_USER_TOKEN` and `TWITTER_USER_TOKEN_SECRET` in your `.env` file.
+```bash
+langgraph --version
+```
 
-</details>
+Click [here](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) to read the full download instructions for the LangGraph CLI.
 
-#### Setup LinkedIn authentication:
+### Start the LangGraph server:
 
-<details>
-<summary>To authorize posting on LinkedIn, you'll need to:</summary>
+First, make sure you have Docker installed and running. You can check this by running the following command:
+
+```bash
+docker ps
+```
+
+Then, run the following command to start the LangGraph server: (ensure you either have the `LANGGRAPH_API_KEY` exposed in your path, or include it inline when you run the command)
+
+```bash
+yarn langgraph:up
+```
+
+or
+
+```bash
+LANGCHAIN_API_KEY="lsv2_pt_..." yarn langgraph:up
+```
+
+The first time you run this command, it will take a few minutes to start up. Once it's ready, you can execute the following command to generate a demo post:
+
+```bash
+yarn generate_post
+```
+
+This will kick off a new run to generate a post on a [LangChain blog post](https://blog.langchain.dev/customers-appfolio/).
+
+To view the output, either inspect it in LangSmith, or use Agent Inbox.
+
+To add your graph to Agent Inbox:
+
+- Visit the deployed site here: [https://agent-inbox-nu.vercel.app](https://agent-inbox-nu.vercel.app)
+- Click the Settings button, then the `Add Inbox` button
+- Enter the following values:
+  - Graph ID: `generate_post`
+  - Graph API URL: `http://localhost:54367`
+  - Name: (optional) `Generate Post (local)`
+- Submit
+- This should then trigger a refresh, and you should see your first interrupted event! (if it does not show up even after refreshing, please make sure you've waited at least 1-2 minutes for the graph execution to finish)
+
+# Advanced Setup
+
+To use all of the features of the Social Media Agent, you'll need the following:
+
+- [Anthropic API](https://console.anthropic.com/) - General LLM
+- [Google Vertex AI](https://cloud.google.com/vertex-ai) - For dealing with YouTube video content
+- [LangSmith](https://smith.langchain.com/) - LangSmith API key required to run the LangGraph server locally (free)
+- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping
+- [Arcade](https://www.arcade-ai.com/) - Social media authentication
+- [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard) - For uploading media to Twitter
+- [LinkedIn Developer Account](https://developer.linkedin.com/) - Posting to LinkedIn
+- [GitHub API](https://github.com/settings/personal-access-tokens) - Reading GitHub content
+- [Supabase](https://supabase.com/) - Storing images
+- [Slack Developer Account](https://api.slack.com/apps) (optional) - ingesting data from a Slack channel
+
+## Setup Instructions
+
+### Clone the repository:
+
+```bash
+git clone https://github.com/langchain-ai/social-media-agent.git
+```
+
+```bash
+cd social-media-agent
+```
+
+### Install dependencies:
+
+```bash
+yarn install
+```
+
+### Set environment variables.
+
+Copy the values of the full env example file `.env.full.example` to `.env`, then update the values as needed.
+
+```bash
+cp .env.full.example .env
+```
+
+### Install LangGraph CLI
+
+```bash
+pip install langgraph-cli
+```
+
+Then run the following command to check the CLI is installed:
+
+```bash
+langgraph --version
+```
+
+Click [here](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) to read the full download instructions for the LangGraph CLI.
+
+### Setup Twitter
+
+Setting up Twitter requires a Twitter developer account for uploading media to Twitter, and an Arcade account if you plan on using it for posting to Twitter. This however is optional, as you can use your own Twitter developer account for all reading & writing.
+
+### Arcade Setup Instructions
+
+Create an Arcade account [here](https://www.arcade-ai.com/). Once done, setting up the account, ensure you have an Arcade API key. Set this value as `ARCADE_API_KEY` in your `.env` file.
+
+Make sure you have the `USE_ARCADE_AUTH` environment variable set to `true` to have the graph use Arcade authentication.
+
+### Twitter Developer Setup Instructions
+
+You'll need to follow these instructions if you plan on uploading media to Twitter, and/or want to use your own Twitter developer account for all reading & writing.
+
+- Create a Twitter developer account
+- Create a new app and give it a name.
+- Copy the `API Key`, `API Key Secret` and `Bearer Token` and set them as `TWITTER_API_KEY`, `TWITTER_API_KEY_SECRET`, and `TWITTER_BEARER_TOKEN` in your `.env` file.
+- After saving, visit the App Dashboard. Find the `User authentication settings` section, and click the `Set up` button. This is how you will authorize users to use the Twitter API on their behalf.
+- Set the following fields:
+  - `App permissions`: `Read and write`
+  - `Type of App`: `Web App, Automated App or Bot`
+  - `App info`:
+    - `Callback URI/Redirect URL`: `http://localhost:3000/auth/twitter/callback`
+    - `Website URL`: Your website URL
+- Save. You'll then be given a `Client ID` and `Client Secret`. Set these as `TWITTER_CLIENT_ID` and `TWITTER_CLIENT_SECRET` in your `.env` file.
+
+Once done, run the `yarn start:auth` command to run the Twitter OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with Twitter`.
+
+After authorizing your account with the app, navigate to your terminal where you'll see a JSON object logged. Copy the `token` and `tokenSecret` values and set them as `TWITTER_USER_TOKEN` and `TWITTER_USER_TOKEN_SECRET` in your `.env` file.
+
+After setting up Twitter/Arcade, set the `TWITTER_USER_ID` environment variable to the user ID of the account that you want to use to post to Twitter. (e.g `TWITTER_USER_ID="LangChainAI"`)
+
+### Setup LinkedIn authentication:
+
+To authorize posting on LinkedIn, you'll need to:
 
 1. Create a new LinkedIn developer account, and app [here](https://developer.linkedin.com/)
 2. After creating your app, navigate to the `Auth` tab, and add a new authorized redirect URL for OAuth 2.0. Set it to `http://localhost:3000/auth/linkedin/callback`
@@ -138,97 +249,77 @@ Arcade does not yet support Twitter (X) API v1, which is required for uploading 
 
 </details>
 
-#### Setup Supabase
+After setting up LinkedIn, set the `LINKEDIN_USER_ID` environment variable to the user ID of the account that you want to use to post to LinkedIn. (e.g `LINKEDIN_USER_ID="your_linkedin_email_address@example.com"`)
+
+### Setup Supabase
 
 Supabase is required for storing images found/generated by the agent. This step is not required for running the agent in basic setup mode.
 
-<details>
-<summary>To setup Supabase</summary>
-
-Create an account and a new project.
+To setup Supabase, create an account and a new project.
 
 Set the `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables to the values provided by Supabase.
 
 Create a new storage bucket called `images`. Make sure the bucket is set to public to the image URLs are accessible. Also ensure the max upload size is set to at least 5MB inside the global project settings, and the bucket specific settings.
 
-</details>
-
-#### Setup Slack
+### Setup Slack
 
 Slack integration is optional, but recommended if you intend on using the `ingest_data` agent. This agent can be used in a cron job to fetch messages from a Slack channel, and call the `generate_post` graph for each message. We use this flow internally to have a single place for submitting relevant URLs to the agent, which are then turned into posts once daily.
 
-<details>
-<summary>To configure the Slack integration</summary>
-
-Create a new Slack app and install it into your desired Slack workspace.
+To configure the Slack integration, create a new Slack app and install it into your desired Slack workspace.
 
 Once installed, ensure it has access to the channel you want to ingest messages from.
 
 Finally, make sure the `SLACK_BOT_TOKEN` environment variable is set in your `.env` file.
 
-</details>
-
-#### Setup GitHub
+### Setup GitHub
 
 The GitHub API token is required to fetch details about GitHub repository URLs submitted to the agent. This is not required if you do not plan on sending GitHub URLs to the agent.
-
-<details>
-<summary>To configure the GitHub integration</summary>
 
 To get a GitHub API token, create a new fine grained token with the `Public Repositories (read-only)` scope at a minimum. If you intend on using this agent for private GitHub repositories, you'll need to give the token access to those repositories as well.
 
 Ensure this is set as `GITHUB_TOKEN` in your `.env` file.
 
-</details>
+## Usage
 
-#### Setup LangGraph CLI
-
-The LangGraph CLI is required for running the LangGraph server locally (optionally you may use the LangGraph Studio application if you're running on Mac. See [these docs](https://github.com/langchain-ai/langgraph-studio) for a setup guide).
-
-[Follow these instructions to download the LangGraph CLI](https://langchain-ai.github.io/langgraph/cloud/reference/cli/).
-
-Once the CLI is installed, you can run the following command to start the local LangGraph server:
+Once this is done, start your graph server by running: (ensure you either have the `LANGGRAPH_API_KEY` exposed in your path, or include it inline when you run the command)
 
 ```bash
 yarn langgraph:up
 ```
 
-This executes the following command:
+or
 
 ```bash
-langgraph up --watch --port 54367
+LANGCHAIN_API_KEY="lsv2_pt_..." yarn langgraph:up
 ```
 
-> [!NOTE]
-> You must either have your `LANGSMITH_API_KEY` set as an environment variable (e.g., via `export LANGSMITH_API_KEY="..."` in your shell config like `.zshrc` or `.bashrc`), or include it inline when running the command
+The first time you run this command, it will take a few minutes to start up. Once it's ready, you can execute the following command to generate a demo post:
 
-## Basic Usage
+After the graph is ready, you can run the following command to generate a demo post:
+(before doing this, you should edit the file so that the text only mode is set to false: `[TEXT_ONLY_MODE]: false`)
 
-Once all the required environment variables are set, you can try out the agent by running the `yarn generate_post` command.
+```bash
+yarn generate_post
+```
 
-Before running, ensure you have the following environment variables set:
+This will kick off a new run to generate a post on a [LangChain blog post](https://blog.langchain.dev/customers-appfolio/).
 
-- `TWITTER_USER_ID` & `LINKEDIN_USER_ID` - The email address/username of the Twitter & LinkedIn account you'd like to have the agent use. (only one of these must be set). Optionally, you can pass these as configurable fields by editing the [`generate-demo-post.ts`](./scripts/generate-demo-post.ts) script.
-- `LANGGRAPH_API_URL` - The URL of the local LangGraph server. **not** required if you passed `--port 54367` when running `langgraph up`.
-- `USE_ARCADE_AUTH` - This should be enabled if you're running the agent in basic setup mode, or if running in full setup mode and want to use Arcade for reading Tweets (it'll still use your own Twitter API for uploading media).
+To view the output, either inspect it in LangSmith, or use Agent Inbox.
 
-If you do not want to run the agent in basic setup mode, make sure you update the script to pass `false` for the text only mode configurable field.
+To add your graph to Agent Inbox:
 
-This will run the [`generate-demo-post.ts`](./scripts/generate-demo-post.ts) script, which generates a demo post on the [Open Canvas](https://github.com/langchain-ai/open-canvas) project.
+- Visit the deployed site here: [https://agent-inbox-nu.vercel.app](https://agent-inbox-nu.vercel.app)
+- Click the Settings button, then the `Add Inbox` button
+- Enter the following values:
+  - Graph ID: `generate_post`
+  - Graph API URL: `http://localhost:54367`
+  - Name: (optional) `Generate Post (local)`
+- Submit
+- This should then trigger a refresh, and you should see your first interrupted event! (if it does not show up even after refreshing, please make sure you've waited at least 1-2 minutes for the graph execution to finish)
 
-After invoking, visit the [Agent Inbox](https://agent-inbox-nu.vercel.app) and add the Generate Post inbox in settings, passing in the following fields:
+If the interrupt event does not contain a social media post, this is likely because you have not authenticated your social media account with Arcade (or you're missing the proper environment variables if not using Arcade). Open this interrupt event and follow the instructions outlined in the description.
 
-- Your LangSmith API key
-
-Then click `Add Inbox` and add the following fields:
-
-- Graph ID: `generate_post`
-- Graph API URL: `http://localhost:54367` (or whatever port you set for your LangGraph server)
-- Name: (optional) `Generate Post (local)`
-
-Once submitted you should see a single interrupt event! Follow the instructions in the description to authorize your Twitter/LinkedIn account(s), then accept to continue the graph and have a post draft generated!
-
-## Prompts
+# Prompts
 
 This agent is setup to generate posts for LangChain, using LangChain products as context. To use the agent for your own use case, you should update the following prompts/prompt sections inside the [`prompts`](./src/agents/generate-post/prompts/index.ts) folder:
 
