@@ -102,7 +102,7 @@ export const ALLOWED_P2_DAY_AND_TIMES_IN_UTC = [
     day: 6, // Saturday
     hour: 20, // 12PM PST
   },
-  
+
   {
     day: 6, // Saturday
     hour: 21, // 1PM PST
@@ -371,6 +371,10 @@ export async function getScheduledDateSeconds(
   config: LangGraphRunnableConfig,
   baseDate: Date = new Date(),
 ): Promise<number> {
+  console.log("ATTEMPTING TO FIND A SCHEDULE DATE", {
+    scheduleDate,
+    baseDate,
+  });
   if (isValid(scheduleDate)) {
     const afterSeconds = getAfterSeconds(scheduleDate as Date, baseDate);
     validateAfterSeconds(afterSeconds);
@@ -397,6 +401,10 @@ export async function getScheduledDateSeconds(
       let currentTime = start;
       while (currentTime <= end) {
         if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
+          console.log("FOUND A SCHEDULE DATE", {
+            priority,
+            currentTime,
+          });
           // Convert to UTC before storing
           const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
           validateScheduleDate(utcDate, baseDate);

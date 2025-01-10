@@ -1,12 +1,10 @@
 import { jest } from "@jest/globals";
-import { InMemoryStore, LangGraphRunnableConfig } from "@langchain/langgraph";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { toZonedTime } from "date-fns-tz";
 
 import {
   getScheduledDateSeconds,
-  getTakenScheduleDates,
   isDateTaken,
-  putTakenScheduleDates,
   validateAfterSeconds,
 } from "../find-date.js";
 
@@ -384,47 +382,18 @@ describe("Schedule Date Tests", () => {
     });
   });
 
-  describe.only("getScheduledDateSeconds2", () => {
-    it("Can actually get the right time", async () => {
-      const store = new InMemoryStore();
-      const config = {
-        store,
-      } as any;
-      const TAKEN_DATES = {
-        "p1": [
-          new Date("2025-01-11T16:00:44.927Z"),
-        ],
-        "p2": [
-          new Date("2025-01-06T16:00:49.421Z"),
-          new Date("2025-01-10T16:00:32.265Z"),
-          new Date("2025-01-10T16:00:06.203Z"),
-          new Date("2025-01-10T16:00:52.327Z"),
-          new Date("2025-01-13T16:00:39.616Z"),
-        ],
-        "p3": [],
-      };
-      await putTakenScheduleDates(TAKEN_DATES, config);
-      const seconds = await getScheduledDateSeconds("p1", config);
-      console.log(seconds);
-      const newTakenDates = await getTakenScheduleDates(config);
-      console.dir(newTakenDates, { depth: null });
-    });
-  });
-
   describe("isDateTaken", () => {
     it("Can properly check if a date is taken", () => {
       const priority = "p1";
       const takenDates = {
-        "p1": [
-          new Date("2025-01-11T16:00:44.927Z"),
-        ],
-        "p2": [],
-        "p3": []
-      }
+        p1: [new Date("2025-01-11T16:00:44.927Z")],
+        p2: [],
+        p3: [],
+      };
       const dateToCheck = new Date("2025-01-11T16:00:35.394Z");
 
       const isTaken = isDateTaken(dateToCheck, takenDates, priority);
       expect(isTaken).toBe(true);
-    })
-  })
+    });
+  });
 });
