@@ -1,12 +1,9 @@
 import { interrupt, LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../generate-post-state.js";
-import Arcade from "@arcadeai/arcadejs";
 import { getLinkedInAuthOrInterrupt } from "../../shared/auth/linkedin.js";
-import {
-  getArcadeTwitterAuthOrInterrupt,
-  getBasicTwitterAuthOrInterrupt,
-} from "../../shared/auth/twitter.js";
+import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
+import { POST_TO_LINKEDIN_ORGANIZATION } from "../constants.js";
 
 export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
@@ -15,30 +12,26 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
-    linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt(
+    const postToOrgConfig =
+      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
+    const postToOrg =
+      postToOrgConfig != null
+        ? postToOrgConfig
+        : process.env.POST_TO_LINKEDIN_ORGANIZATION;
+    linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
       linkedInUserId,
-      config,
-      { returnInterrupt: true },
-    );
+      returnInterrupt: true,
+      postToOrg,
+    });
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId = process.env.TWITTER_USER_ID;
   if (twitterUserId) {
-    const useArcadeAuth = process.env.USE_ARCADE_AUTH;
-    if (useArcadeAuth === "true") {
-      const arcade = new Arcade({
-        apiKey: process.env.ARCADE_API_KEY,
-      });
-
-      twitterHumanInterrupt = await getArcadeTwitterAuthOrInterrupt(
-        twitterUserId,
-        arcade,
-        { returnInterrupt: true },
-      );
-    } else {
-      twitterHumanInterrupt = await getBasicTwitterAuthOrInterrupt();
-    }
+    twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
+      twitterUserId,
+      returnInterrupt: true,
+    });
   }
 
   if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {
@@ -57,7 +50,8 @@ Please visit the following URL(s) to authorize your social media accounts:
 
 ${combinedArgs.authorizeTwitterPostingURL ? `Twitter Posting: ${combinedArgs.authorizeTwitterPostingURL}` : ""}
 ${combinedArgs.authorizeTwitterReadingURL ? `Twitter Reading: ${combinedArgs.authorizeTwitterReadingURL}` : ""}
-${combinedArgs.authorizeLinkedInPostingURL ? `LinkedIn Posting: ${combinedArgs.authorizeLinkedInPostingURL}` : ""}
+${combinedArgs.authorizeLinkedInURL ? `LinkedIn: ${combinedArgs.authorizeLinkedInURL}` : ""}
+${combinedArgs.authorizationDocs ? `LinkedIn Authorization Docs: ${combinedArgs.authorizationDocs}` : ""}
 
 Once done, please 'accept' this interrupt event.`;
 
