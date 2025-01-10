@@ -95,15 +95,26 @@ function getAfterSeconds(date: Date, baseDate: Date = new Date()): number {
 function isDateTaken(
   date: Date,
   takenDates: TakenScheduleDates | undefined,
+  priority: "p1" | "p2" | "p3",
 ): boolean {
   if (!takenDates) return false;
-  const dateTime = date.getTime();
-  return Object.values(takenDates).some((dates) =>
-    dates.some((takenDate) => {
-      const takenDateTime = takenDate.getTime();
-      return Math.abs(takenDateTime - dateTime) < 1000; // Allow 1 second difference
-    }),
-  );
+  const pstDate = toZonedTime(date, "America/Los_Angeles");
+  const pstHour = pstDate.getHours();
+  const pstDay = pstDate.getDate();
+  const pstMonth = pstDate.getMonth();
+  const pstYear = pstDate.getFullYear();
+
+  // Only check dates within the same priority level
+  const priorityDates = takenDates[priority];
+  return priorityDates.some((takenDate) => {
+    const takenPstDate = toZonedTime(takenDate, "America/Los_Angeles");
+    return (
+      pstHour === takenPstDate.getHours() &&
+      pstDay === takenPstDate.getDate() &&
+      pstMonth === takenPstDate.getMonth() &&
+      pstYear === takenPstDate.getFullYear()
+    );
+  });
 }
 
 function getNextValidDay(
@@ -238,7 +249,7 @@ export async function getScheduledDateSeconds(
 
       let currentTime = start;
       while (currentTime <= end) {
-        if (!isDateTaken(currentTime, takenScheduleDates)) {
+        if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
           // Convert to UTC before storing
           const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
           validateScheduleDate(utcDate, baseDate);
@@ -256,7 +267,7 @@ export async function getScheduledDateSeconds(
 
         let currentTime = start;
         while (currentTime <= end) {
-          if (!isDateTaken(currentTime, takenScheduleDates)) {
+          if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
             // Convert to UTC before storing
             const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
             validateScheduleDate(utcDate, baseDate);
@@ -282,7 +293,7 @@ export async function getScheduledDateSeconds(
 
     let currentTime = start;
     while (currentTime <= end) {
-      if (!isDateTaken(currentTime, takenScheduleDates)) {
+      if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
         // Convert to UTC before storing
         const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
         validateScheduleDate(utcDate, baseDate);
