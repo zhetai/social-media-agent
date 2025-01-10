@@ -9,8 +9,7 @@ import {
 } from "../find-date.js";
 
 // Define MOCK_CURRENT_DATE in UTC or as per the mocked timezone
-// const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
-const MOCK_CURRENT_DATE = new Date("2025-01-10T21:52:34.074Z");
+const MOCK_CURRENT_DATE = new Date("2025-01-03T12:00:00-08:00"); // This aligns with 'America/Los_Angeles'
 
 jest.useFakeTimers();
 jest.setSystemTime(MOCK_CURRENT_DATE);
