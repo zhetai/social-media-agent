@@ -52,7 +52,7 @@ export class TwitterClient {
     const textOnlyMode =
       args.textOnlyMode != null
         ? args.textOnlyMode
-        : process.env.TEXT_ONLY_MODE;
+        : process.env.TEXT_ONLY_MODE === "true";
 
     // If we want to use Arcade, we need to set the token and token secret for uploading media.
     // However, this should only be done if text only mode is false.
