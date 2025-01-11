@@ -14,7 +14,7 @@ import {
   POST_TO_LINKEDIN_ORGANIZATION,
   TEXT_ONLY_MODE,
 } from "../generate-post/constants.js";
-import { getUrlType } from "../utils.js";
+import { getUrlType, isTextOnly, shouldPostToLinkedInOrg } from "../utils.js";
 
 /**
  * Calculates delay times for processing a list of URLs to prevent rate limiting.
@@ -57,14 +57,11 @@ async function generatePostFromMessages(
   });
 
   const linkAndDelay = getAfterSecondsFromLinks(state.links);
+  const isTextOnlyMode = isTextOnly(config);
+  const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
   for await (const { link, afterSeconds } of linkAndDelay) {
     const thread = await client.threads.create();
-    const postToLinkedInOrg =
-      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
-        ? config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION]
-        : process.env.POST_TO_LINKEDIN_ORGANIZATION;
-
     await client.runs.create(thread.thread_id, "generate_post", {
       input: {
         links: [link],
@@ -72,7 +69,7 @@ async function generatePostFromMessages(
       config: {
         configurable: {
           [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
-          [TEXT_ONLY_MODE]: config.configurable?.[TEXT_ONLY_MODE],
+          [TEXT_ONLY_MODE]: isTextOnlyMode,
         },
       },
       afterSeconds,

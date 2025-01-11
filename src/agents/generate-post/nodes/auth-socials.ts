@@ -3,7 +3,7 @@ import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { getLinkedInAuthOrInterrupt } from "../../shared/auth/linkedin.js";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../constants.js";
+import { shouldPostToLinkedInOrg } from "../../utils.js";
 
 export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
@@ -12,17 +12,11 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
-    console.log("Checking linkedin auth");
-    const postToOrgConfig =
-      config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
-    const postToOrg =
-      postToOrgConfig != null
-        ? postToOrgConfig
-        : process.env.POST_TO_LINKEDIN_ORGANIZATION;
+    const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
       linkedInUserId,
       returnInterrupt: true,
-      postToOrg,
+      postToOrg: postToLinkedInOrg,
     });
   }
 

@@ -1,4 +1,9 @@
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import * as cheerio from "cheerio";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "./generate-post/constants.js";
 
 export const BLACKLISTED_MIME_TYPES = [
   "image/svg+xml",
@@ -454,4 +459,24 @@ export function chunkArray<T>(arr: T[], size: number): T[][] {
   return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
     arr.slice(i * size, i * size + size),
   );
+}
+
+export function isTextOnly(config: LangGraphRunnableConfig): boolean {
+  const textOnlyModeConfig = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode =
+    textOnlyModeConfig != null
+      ? textOnlyModeConfig
+      : process.env.TEXT_ONLY_MODE === "true";
+  return isTextOnlyMode;
+}
+
+export function shouldPostToLinkedInOrg(
+  config: LangGraphRunnableConfig,
+): boolean {
+  const postToOrgConfig = config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
+  const postToOrg =
+    postToOrgConfig != null
+      ? postToOrgConfig
+      : process.env.POST_TO_LINKEDIN_ORGANIZATION === "true";
+  return postToOrg;
 }

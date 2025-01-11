@@ -2,13 +2,12 @@ import { END, LangGraphRunnableConfig, interrupt } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { formatInTimeZone } from "date-fns-tz";
 import { HumanInterrupt, HumanResponse } from "../../../types.js";
-import { processImageInput } from "../../../utils.js";
+import { isTextOnly, processImageInput } from "../../../utils.js";
 import {
   getNextSaturdayDate,
   parseDateResponse,
 } from "../../../../utils/date.js";
 import { routeResponse } from "./route-response.js";
-import { TEXT_ONLY_MODE } from "../../constants.js";
 
 interface ConstructDescriptionArgs {
   unknownResponseDescription: string;
@@ -116,7 +115,7 @@ export async function humanNode(
   if (!state.post) {
     throw new Error("No post found");
   }
-  const isTextOnlyMode = !!config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode = isTextOnly(config);
 
   const unknownResponseDescription = getUnknownResponseDescription(state);
   const defaultDate = state.scheduleDate || getNextSaturdayDate();

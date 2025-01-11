@@ -6,7 +6,11 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { TwitterClient } from "../../clients/twitter/client.js";
-import { imageUrlToBuffer } from "../utils.js";
+import {
+  imageUrlToBuffer,
+  isTextOnly,
+  shouldPostToLinkedInOrg,
+} from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
 import { LinkedInClient } from "../../clients/linkedin.js";
 import {
@@ -108,7 +112,8 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
-  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode = isTextOnly(config);
+  const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
@@ -182,15 +187,8 @@ export async function uploadPost(
 
       const useArcadeAuth = process.env.USE_ARCADE_AUTH;
       if (useArcadeAuth === "true") {
-        const postToOrgConfig =
-          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
-        const postToOrg =
-          postToOrgConfig != null
-            ? postToOrgConfig
-            : process.env.POST_TO_LINKEDIN_ORGANIZATION;
-
         linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
-          postToOrganization: postToOrg,
+          postToOrganization: postToLinkedInOrg,
         });
       } else {
         linkedInClient = new LinkedInClient({
@@ -200,11 +198,6 @@ export async function uploadPost(
         });
       }
 
-      const postToOrg =
-        config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
-          ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
-          : false;
-
       if (!isTextOnlyMode && state.image) {
         await linkedInClient.createImagePost(
           {
@@ -212,12 +205,12 @@ export async function uploadPost(
             imageUrl: state.image.imageUrl,
           },
           {
-            postToOrganization: postToOrg,
+            postToOrganization: postToLinkedInOrg,
           },
         );
       } else {
         await linkedInClient.createTextPost(state.post, {
-          postToOrganization: postToOrg,
+          postToOrganization: postToLinkedInOrg,
         });
       }
 

@@ -8,6 +8,7 @@ import {
 import { getScheduledDateSeconds } from "./find-date.js";
 import { SlackClient } from "../../../../clients/slack.js";
 import { getFutureDate } from "./get-future-date.js";
+import { isTextOnly, shouldPostToLinkedInOrg } from "../../../utils.js";
 
 interface SendSlackMessageArgs {
   isTextOnlyMode: boolean;
@@ -68,7 +69,8 @@ export async function schedulePost(
   if (!state.post || !state.scheduleDate) {
     throw new Error("No post or schedule date found");
   }
-  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode = isTextOnly(config);
+  const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
@@ -94,9 +96,7 @@ export async function schedulePost(
     },
     config: {
       configurable: {
-        [POST_TO_LINKEDIN_ORGANIZATION]:
-          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] ||
-          process.env.POST_TO_LINKEDIN_ORGANIZATION,
+        [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
         [TEXT_ONLY_MODE]: isTextOnlyMode,
       },
     },
