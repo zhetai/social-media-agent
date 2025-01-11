@@ -123,7 +123,7 @@ export async function uploadPost(
 
       const useArcadeAuth = process.env.USE_ARCADE_AUTH;
       if (useArcadeAuth === "true") {
-        const twitterToken = process.env.TWITTER_TOKEN;
+        const twitterToken = process.env.TWITTER_USER_TOKEN;
         const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
         if (!twitterToken || !twitterTokenSecret) {
           throw new Error(
@@ -172,11 +172,29 @@ export async function uploadPost(
 
   try {
     if (linkedInUserId) {
-      const linkedInClient = new LinkedInClient({
-        accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
-        personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
-        organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
-      });
+      let linkedInClient: LinkedInClient;
+
+      const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+      if (useArcadeAuth === "true") {
+        const postToOrgConfig =
+          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
+        const postToOrg =
+          postToOrgConfig != null
+            ? postToOrgConfig
+            : process.env.POST_TO_LINKEDIN_ORGANIZATION;
+
+          linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
+            postToOrganization: postToOrg,
+          });
+      } else {
+        linkedInClient = new LinkedInClient({
+          accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+          personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
+          organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+        });
+      }
+
+      
 
       const postToOrg =
         config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null

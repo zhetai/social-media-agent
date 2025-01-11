@@ -1,6 +1,5 @@
 import Arcade from "@arcadeai/arcadejs";
 import {
-  AuthorizeUserResponse,
   CreateTweetRequest,
   TwitterClientArgs,
 } from "./types.js";
@@ -10,6 +9,7 @@ import {
   TwitterApi,
   TwitterApiReadWrite,
 } from "twitter-api-v2";
+import { AuthorizeUserResponse } from "../types.js";
 
 type MediaIdStringArray =
   | [string]

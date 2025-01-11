@@ -100,6 +100,7 @@ async function getArcadeLinkedInAuthOrInterrupt(
   const scopes = fields?.postToOrg
     ? ["w_member_social", "w_organization_social"]
     : ["w_member_social"];
+  console.log("scopes", scopes);
   const authResponse = await arcade.auth.authorize({
     user_id: linkedInUserId,
     auth_requirement: {
@@ -109,7 +110,7 @@ async function getArcadeLinkedInAuthOrInterrupt(
       },
     },
   });
-
+  console.log("authResponse", authResponse);
   const authUrl = authResponse.authorization_url;
 
   if (authUrl) {
@@ -140,6 +141,7 @@ If you have already authorized reading/posting on Twitter, please accept this in
     };
 
     if (fields?.returnInterrupt) {
+      console.log("returnInterrupt");
       return authInterrupt;
     }
 
@@ -157,7 +159,7 @@ If you have already authorized reading/posting on Twitter, please accept this in
       throw new Error("Authorization denied by user.");
     }
   }
-
+  console.log("leaving getLinkedInAuthOrInterrupt");
   return undefined;
 }
 
@@ -169,6 +171,7 @@ export async function getLinkedInAuthOrInterrupt(fields?: {
   const useArcadeAuth = process.env.USE_ARCADE_AUTH;
   const linkedInUserId = fields?.linkedInUserId || process.env.LINKEDIN_USER_ID;
   if (useArcadeAuth === "true") {
+    console.log("Using Arcade auth.");
     if (!fields?.linkedInUserId) {
       throw new Error("Must provide LinkedIn User ID when using Arcade auth.");
     }

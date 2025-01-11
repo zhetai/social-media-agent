@@ -1,3 +1,6 @@
+import Arcade from "@arcadeai/arcadejs";
+import { AuthorizeUserResponse } from "./types.js";
+
 interface LinkedInPost {
   author: string;
   lifecycleState: string;
@@ -259,6 +262,90 @@ export class LinkedInClient {
     return this.makeRequest(endpoint, {
       method: "POST",
       body: JSON.stringify(postData),
+    });
+  }
+
+  static getScopes(postToOrg?: boolean): string[] {
+    return postToOrg
+      ? ["w_member_social", "w_organization_social"]
+      : ["w_member_social"];
+  }
+
+  /**
+   * Authorizes a user through Arcade's OAuth flow for LinkedIn access.
+   * This method is used exclusively in Arcade authentication mode.
+   *
+   * @param {string} id - The user's unique identifier in your system
+   * @param {Arcade} client - An initialized Arcade client instance
+   * @returns {Promise<AuthorizeUserResponse>} Object containing either an authorization URL or token
+   * @throws {Error} If authorization fails or required tokens are missing
+   */
+  static async authorizeUser(
+    id: string,
+    client: Arcade,
+    fields?: {
+      postToOrganization?: boolean;
+    }
+  ): Promise<AuthorizeUserResponse> {
+    const scopes = LinkedInClient.getScopes(fields?.postToOrganization);
+    const authRes = await client.auth.authorize({
+      user_id: id,
+      auth_requirement: {
+        provider_id: "linkedin",
+        oauth2: {
+          scopes,
+        },
+      },
+    });
+
+    if (authRes.status === "completed") {
+      if (!authRes.context?.token) {
+        throw new Error(
+          "Authorization status is completed, but token not found",
+        );
+      }
+      return { token: authRes.context.token };
+    }
+
+    if (authRes.authorization_url) {
+      return { authorizationUrl: authRes.authorization_url };
+    }
+
+    throw new Error(
+      `Authorization failed for user ID: ${id}\nStatus: '${authRes.status}'`,
+    );
+  }
+
+  static async fromArcade(
+    linkedInUserId: string,
+    fields?: {
+      postToOrganization?: boolean;
+    },
+  ): Promise<LinkedInClient> {
+    const arcade = new Arcade({
+      apiKey: process.env.ARCADE_API_KEY,
+    });
+    const scopes = LinkedInClient.getScopes(fields?.postToOrganization);
+    const authRes = await arcade.auth.authorize({
+      user_id: linkedInUserId,
+      auth_requirement: {
+        provider_id: "linkedin",
+        oauth2: {
+          scopes,
+        },
+      },
+    });
+
+    if (!authRes.context?.token || !authRes.context?.user_info?.sub) {
+      throw new Error(
+        "Authorization not completed for user ID: " + linkedInUserId,
+      );
+    }
+
+    return new LinkedInClient({
+      accessToken: authRes.context.token,
+      personUrn: authRes.context.user_info.sub as string,
+      organizationId: undefined,
     });
   }
 }

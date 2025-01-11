@@ -12,6 +12,7 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
+    console.log("Checking linkedin auth")
     const postToOrgConfig =
       config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
     const postToOrg =
@@ -48,8 +49,7 @@ export async function authSocialsPassthrough(
 
 Please visit the following URL(s) to authorize your social media accounts:
 
-${combinedArgs.authorizeTwitterPostingURL ? `Twitter Posting: ${combinedArgs.authorizeTwitterPostingURL}` : ""}
-${combinedArgs.authorizeTwitterReadingURL ? `Twitter Reading: ${combinedArgs.authorizeTwitterReadingURL}` : ""}
+${combinedArgs.authorizeTwitterURL ? `Twitter: ${combinedArgs.authorizeTwitterURL}` : ""}
 ${combinedArgs.authorizeLinkedInURL ? `LinkedIn: ${combinedArgs.authorizeLinkedInURL}` : ""}
 ${combinedArgs.authorizationDocs ? `LinkedIn Authorization Docs: ${combinedArgs.authorizationDocs}` : ""}
 

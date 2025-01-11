@@ -27,26 +27,19 @@ export async function getArcadeTwitterAuthOrInterrupt(
     returnInterrupt?: boolean;
   },
 ) {
-  const authResponseLookup = await arcade.tools.authorize({
-    tool_name: "X.LookupTweetById",
-    user_id: twitterUserId,
-  });
-  const authResponsePost = await arcade.tools.authorize({
-    tool_name: "X.PostTweet",
-    user_id: twitterUserId,
-  });
+  const authResponse = await TwitterClient.authorizeUser(
+    twitterUserId,
+    arcade,
+  );
 
-  const authUrlLookup = authResponseLookup.authorization_url;
-  const authUrlPost = authResponsePost.authorization_url;
+  const authUrl = authResponse.authorizationUrl;
 
-  if (authUrlLookup || authUrlPost) {
+  if (authUrl) {
     const description = `# Authorization Required
   
-Please visit the following URL(s) to authorize reading & posting Tweets.
+Please visit the following URL to authorize reading & posting Tweets.
 
-Read: ${authUrlLookup}
-
-Post: ${authUrlPost}
+${authUrl}
 
 ----
 
@@ -56,8 +49,7 @@ If you have already authorized reading/posting on Twitter, please accept this in
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: Twitter",
         args: {
-          ...(authUrlPost && { authorizeTwitterPostingURL: authUrlPost }),
-          ...(authUrlLookup && { authorizeTwitterReadingURL: authUrlLookup }),
+          authorizeTwitterURL: authUrl
         },
       },
       config: {
