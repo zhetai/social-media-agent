@@ -183,9 +183,9 @@ export async function uploadPost(
             ? postToOrgConfig
             : process.env.POST_TO_LINKEDIN_ORGANIZATION;
 
-          linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
-            postToOrganization: postToOrg,
-          });
+        linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
+          postToOrganization: postToOrg,
+        });
       } else {
         linkedInClient = new LinkedInClient({
           accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
@@ -193,8 +193,6 @@ export async function uploadPost(
           organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
         });
       }
-
-      
 
       const postToOrg =
         config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null

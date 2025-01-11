@@ -27,10 +27,7 @@ export async function getArcadeTwitterAuthOrInterrupt(
     returnInterrupt?: boolean;
   },
 ) {
-  const authResponse = await TwitterClient.authorizeUser(
-    twitterUserId,
-    arcade,
-  );
+  const authResponse = await TwitterClient.authorizeUser(twitterUserId, arcade);
 
   const authUrl = authResponse.authorizationUrl;
 
@@ -49,7 +46,7 @@ If you have already authorized reading/posting on Twitter, please accept this in
       action_request: {
         action: "[AUTHORIZATION REQUIRED]: Twitter",
         args: {
-          authorizeTwitterURL: authUrl
+          authorizeTwitterURL: authUrl,
         },
       },
       config: {

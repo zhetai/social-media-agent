@@ -22,4 +22,3 @@ export type AuthorizeUserResponse =
        */
       authorizationUrl: string;
     };
-    

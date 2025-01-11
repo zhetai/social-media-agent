@@ -1,8 +1,5 @@
 import Arcade from "@arcadeai/arcadejs";
-import {
-  CreateTweetRequest,
-  TwitterClientArgs,
-} from "./types.js";
+import { CreateTweetRequest, TwitterClientArgs } from "./types.js";
 import {
   Tweetv2FieldsParams,
   TweetV2SingleResult,

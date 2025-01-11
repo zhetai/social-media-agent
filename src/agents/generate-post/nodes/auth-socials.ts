@@ -12,7 +12,7 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
   if (linkedInUserId) {
-    console.log("Checking linkedin auth")
+    console.log("Checking linkedin auth");
     const postToOrgConfig =
       config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
     const postToOrg =

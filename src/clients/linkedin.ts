@@ -285,7 +285,7 @@ export class LinkedInClient {
     client: Arcade,
     fields?: {
       postToOrganization?: boolean;
-    }
+    },
   ): Promise<AuthorizeUserResponse> {
     const scopes = LinkedInClient.getScopes(fields?.postToOrganization);
     const authRes = await client.auth.authorize({
