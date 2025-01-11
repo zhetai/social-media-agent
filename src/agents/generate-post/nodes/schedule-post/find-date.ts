@@ -2,8 +2,6 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import {
   isValid,
   addDays,
-  setHours,
-  setMinutes,
   isSaturday,
   isSunday,
   isFriday,
@@ -11,7 +9,6 @@ import {
   addMinutes,
 } from "date-fns";
 import { DateType } from "../../../types.js";
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export function validateAfterSeconds(afterSeconds: number) {
   // If after seconds is negative, throw an error
@@ -21,6 +18,155 @@ export function validateAfterSeconds(afterSeconds: number) {
     );
   }
 }
+
+export const ALLOWED_P1_DAY_AND_TIMES_IN_UTC = [
+  // Sunday 16:00 UTC (8AM PST)
+  {
+    day: 0,
+    hour: 16,
+  },
+  // Sunday 17:00 UTC (9AM PST)
+  {
+    day: 0,
+    hour: 17,
+  },
+  // Sunday 18:00 UTC (10AM PST)
+  {
+    day: 0,
+    hour: 18,
+  },
+  // Saturday 16:00 UTC (8AM PST)
+  {
+    day: 6,
+    hour: 16,
+  },
+  // Saturday 17:00 UTC (9AM PST)
+  {
+    day: 6,
+    hour: 17,
+  },
+  // Saturday 18:00 UTC (10AM PST)
+  {
+    day: 6,
+    hour: 18,
+  },
+];
+
+export const ALLOWED_P2_DAY_AND_TIMES_IN_UTC = [
+  // Monday 16:00 UTC (8AM PST)
+  {
+    day: 1,
+    hour: 16,
+  },
+  // Monday 17:00 UTC (9AM PST)
+  {
+    day: 1,
+    hour: 17,
+  },
+  // Monday 18:00 UTC (10AM PST)
+  {
+    day: 1,
+    hour: 18,
+  },
+  // Friday 16:00 UTC (8AM PST)
+  {
+    day: 5,
+    hour: 16,
+  },
+  // Friday 17:00 UTC (9AM PST)
+  {
+    day: 5,
+    hour: 17,
+  },
+  // Friday 18:00 UTC (10AM PST)
+  {
+    day: 5,
+    hour: 18,
+  },
+  // Sunday 19:00 UTC (11AM PST)
+  {
+    day: 0,
+    hour: 19,
+  },
+  // Sunday 20:00 UTC (12PM PST)
+  {
+    day: 0,
+    hour: 20,
+  },
+  // Sunday 21:00 UTC (1PM PST)
+  {
+    day: 0,
+    hour: 21,
+  },
+  // Saturday 19:00 UTC (11AM PST)
+  {
+    day: 6,
+    hour: 19,
+  },
+  // Saturday 20:00 UTC (12PM PST)
+  {
+    day: 6,
+    hour: 20,
+  },
+  // Saturday 21:00 UTC (1PM PST)
+  {
+    day: 6,
+    hour: 21,
+  },
+];
+
+export const ALLOWED_P3_DAY_AND_TIMES_IN_UTC = [
+  // Sunday 21:00 UTC (1PM PST)
+  {
+    day: 0,
+    hour: 21,
+  },
+  // Sunday 22:00 UTC (2PM PST)
+  {
+    day: 0,
+    hour: 22,
+  },
+  // Sunday 23:00 UTC (3PM PST)
+  {
+    day: 0,
+    hour: 23,
+  },
+  // Monday 00:00 UTC (4PM PST Sunday)
+  {
+    day: 1,
+    hour: 0,
+  },
+  // Monday 01:00 UTC (5PM PST Sunday)
+  {
+    day: 1,
+    hour: 1,
+  },
+  // Saturday 21:00 UTC (1PM PST)
+  {
+    day: 6,
+    hour: 21,
+  },
+  // Saturday 22:00 UTC (2PM PST)
+  {
+    day: 6,
+    hour: 22,
+  },
+  // Saturday 23:00 UTC (3PM PST)
+  {
+    day: 6,
+    hour: 23,
+  },
+  // Sunday 00:00 UTC (4PM PST Saturday)
+  {
+    day: 0,
+    hour: 0,
+  },
+  // Sunday 01:00 UTC (5PM PST Saturday)
+  {
+    day: 0,
+    hour: 1,
+  },
+];
 
 type TakenScheduleDates = {
   p1: Date[];
@@ -43,7 +189,7 @@ const TAKEN_DATES_KEY = "taken_dates";
  * @param config
  * @returns {Promise<TakenScheduleDates>} The taken schedule dates, or DEFAULT_TAKEN_DATES if no dates are taken
  */
-async function getTakenScheduleDates(
+export async function getTakenScheduleDates(
   config: LangGraphRunnableConfig,
 ): Promise<TakenScheduleDates> {
   const { store } = config;
@@ -69,7 +215,7 @@ async function getTakenScheduleDates(
  * @param {LangGraphRunnableConfig} config
  * @returns {Promise<void>}
  */
-async function putTakenScheduleDates(
+export async function putTakenScheduleDates(
   takenDates: TakenScheduleDates,
   config: LangGraphRunnableConfig,
 ): Promise<void> {
@@ -92,41 +238,50 @@ function getAfterSeconds(date: Date, baseDate: Date = new Date()): number {
   return Math.floor((date.getTime() - baseDate.getTime()) / 1000);
 }
 
-function isDateTaken(
+export function isDateTaken(
   date: Date,
   takenDates: TakenScheduleDates | undefined,
+  priority: "p1" | "p2" | "p3",
 ): boolean {
   if (!takenDates) return false;
-  const dateTime = date.getTime();
-  return Object.values(takenDates).some((dates) =>
-    dates.some((takenDate) => {
-      const takenDateTime = takenDate.getTime();
-      return Math.abs(takenDateTime - dateTime) < 1000; // Allow 1 second difference
-    }),
-  );
+  const hour = date.getUTCHours();
+  const day = date.getUTCDay();
+  const month = date.getUTCMonth();
+  const year = date.getUTCFullYear();
+
+  // Only check dates within the same priority level
+  const priorityDates = takenDates[priority];
+  return priorityDates.some((takenDate) => {
+    return (
+      hour === takenDate.getUTCHours() &&
+      day === takenDate.getUTCDay() &&
+      month === takenDate.getUTCMonth() &&
+      year === takenDate.getUTCFullYear()
+    );
+  });
 }
 
 function getNextValidDay(
   currentDate: Date,
   priority: "p1" | "p2" | "p3",
 ): Date {
-  const pstDate = toZonedTime(currentDate, "America/Los_Angeles");
-  const currentHour = pstDate.getHours();
-  const currentMinutes = pstDate.getMinutes();
+  const currentHour = currentDate.getUTCHours();
+  const currentMinutes = currentDate.getUTCMinutes();
 
   // For the current day, check if we've passed the time window
   const isPastTimeWindow = (day: Date): boolean => {
     const { end } = getTimeRangeForPriority(day, priority);
     return (
-      currentHour > end.getHours() ||
-      (currentHour === end.getHours() && currentMinutes >= end.getMinutes())
+      currentHour > end.getUTCHours() ||
+      (currentHour === end.getUTCHours() &&
+        currentMinutes >= end.getUTCMinutes())
     );
   };
 
   // For P2, first try to find a valid weekday (Friday or Monday)
   if (priority === "p2") {
     for (let i = 0; i < 7; i += 1) {
-      const candidateDate = addDays(pstDate, i);
+      const candidateDate = addDays(currentDate, i);
       if (isFriday(candidateDate) || isMonday(candidateDate)) {
         if (i === 0 && isPastTimeWindow(candidateDate)) {
           continue;
@@ -140,7 +295,7 @@ function getNextValidDay(
   const isWeekendPriority = priority === "p1" || priority === "p3";
   if (isWeekendPriority) {
     for (let i = 0; i < 7; i += 1) {
-      const candidateDate = addDays(pstDate, i);
+      const candidateDate = addDays(currentDate, i);
       if (isSaturday(candidateDate) || isSunday(candidateDate)) {
         if (i === 0 && isPastTimeWindow(candidateDate)) {
           continue;
@@ -152,7 +307,7 @@ function getNextValidDay(
 
   // For P2, if no weekday was found, try weekend
   for (let i = 0; i < 7; i += 1) {
-    const candidateDate = addDays(pstDate, i);
+    const candidateDate = addDays(currentDate, i);
     if (isSaturday(candidateDate) || isSunday(candidateDate)) {
       if (i === 0 && isPastTimeWindow(candidateDate)) {
         continue;
@@ -162,38 +317,53 @@ function getNextValidDay(
   }
 
   // If no valid day found in the next week, return the last checked date
-  return addDays(pstDate, 6);
+  return addDays(currentDate, 6);
 }
 
 function getTimeRangeForPriority(
   date: Date,
   priority: "p1" | "p2" | "p3",
 ): { start: Date; end: Date } {
-  const isWeekend = isSaturday(date) || isSunday(date);
+  const allowedTimes =
+    priority === "p1"
+      ? ALLOWED_P1_DAY_AND_TIMES_IN_UTC
+      : priority === "p2"
+        ? ALLOWED_P2_DAY_AND_TIMES_IN_UTC
+        : ALLOWED_P3_DAY_AND_TIMES_IN_UTC;
 
-  if (priority === "p1") {
-    return {
-      start: setMinutes(setHours(date, 8), 0),
-      end: setMinutes(setHours(date, 10), 0),
-    };
-  } else if (priority === "p2") {
-    if (isWeekend) {
-      return {
-        start: setMinutes(setHours(date, 11), 30),
-        end: setMinutes(setHours(date, 13), 0),
-      };
-    } else {
-      return {
-        start: setMinutes(setHours(date, 8), 0),
-        end: setMinutes(setHours(date, 10), 0),
-      };
-    }
-  } else {
-    return {
-      start: setMinutes(setHours(date, 13), 0),
-      end: setMinutes(setHours(date, 17), 0),
-    };
+  const dayTimes = allowedTimes.filter((time) => time.day === date.getUTCDay());
+
+  if (dayTimes.length === 0) {
+    throw new Error(
+      `No allowed times found for day ${date.getUTCDay()} and priority ${priority}`,
+    );
   }
+
+  const startHour = Math.min(...dayTimes.map((t) => t.hour));
+  const endHour = Math.max(...dayTimes.map((t) => t.hour));
+
+  return {
+    start: new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        startHour,
+        0,
+        0,
+      ),
+    ),
+    end: new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        endHour,
+        0,
+        0,
+      ),
+    ),
+  };
 }
 
 function validateScheduleDate(date: Date, baseDate: Date): void {
@@ -238,13 +408,11 @@ export async function getScheduledDateSeconds(
 
       let currentTime = start;
       while (currentTime <= end) {
-        if (!isDateTaken(currentTime, takenScheduleDates)) {
-          // Convert to UTC before storing
-          const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
-          validateScheduleDate(utcDate, baseDate);
-          takenScheduleDates[priority].push(utcDate);
+        if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
+          validateScheduleDate(currentTime, baseDate);
+          takenScheduleDates[priority].push(currentTime);
           await putTakenScheduleDates(takenScheduleDates, config);
-          return getAfterSeconds(utcDate, baseDate);
+          return getAfterSeconds(currentTime, baseDate);
         }
         currentTime = addMinutes(currentTime, 60);
       }
@@ -256,13 +424,11 @@ export async function getScheduledDateSeconds(
 
         let currentTime = start;
         while (currentTime <= end) {
-          if (!isDateTaken(currentTime, takenScheduleDates)) {
-            // Convert to UTC before storing
-            const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
-            validateScheduleDate(utcDate, baseDate);
-            takenScheduleDates[priority].push(utcDate);
+          if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
+            validateScheduleDate(currentTime, baseDate);
+            takenScheduleDates[priority].push(currentTime);
             await putTakenScheduleDates(takenScheduleDates, config);
-            return getAfterSeconds(utcDate, baseDate);
+            return getAfterSeconds(currentTime, baseDate);
           }
           currentTime = addMinutes(currentTime, 60);
         }
@@ -282,13 +448,11 @@ export async function getScheduledDateSeconds(
 
     let currentTime = start;
     while (currentTime <= end) {
-      if (!isDateTaken(currentTime, takenScheduleDates)) {
-        // Convert to UTC before storing
-        const utcDate = fromZonedTime(currentTime, "America/Los_Angeles");
-        validateScheduleDate(utcDate, baseDate);
-        takenScheduleDates[priority].push(utcDate);
+      if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
+        validateScheduleDate(currentTime, baseDate);
+        takenScheduleDates[priority].push(currentTime);
         await putTakenScheduleDates(takenScheduleDates, config);
-        return getAfterSeconds(utcDate, baseDate);
+        return getAfterSeconds(currentTime, baseDate);
       }
       currentTime = addMinutes(currentTime, 60);
     }

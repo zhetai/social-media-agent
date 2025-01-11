@@ -1,15 +1,12 @@
 import Arcade from "@arcadeai/arcadejs";
-import {
-  AuthorizeUserResponse,
-  CreateTweetRequest,
-  TwitterClientArgs,
-} from "./types.js";
+import { CreateTweetRequest, TwitterClientArgs } from "./types.js";
 import {
   Tweetv2FieldsParams,
   TweetV2SingleResult,
   TwitterApi,
   TwitterApiReadWrite,
 } from "twitter-api-v2";
+import { AuthorizeUserResponse } from "../types.js";
 
 type MediaIdStringArray =
   | [string]
@@ -52,9 +49,14 @@ export class TwitterClient {
    */
   constructor(args: TwitterClientArgs) {
     this.twitterClient = args.twitterClient;
+    const textOnlyMode =
+      args.textOnlyMode != null
+        ? args.textOnlyMode
+        : process.env.TEXT_ONLY_MODE === "true";
 
-    // If we want to use Arcade, we need to set the token and token secret.
-    if (args.useArcade) {
+    // If we want to use Arcade, we need to set the token and token secret for uploading media.
+    // However, this should only be done if text only mode is false.
+    if (args.useArcade && !textOnlyMode) {
       const { twitterToken, twitterTokenSecret } = {
         twitterToken: args.twitterToken || process.env.TWITTER_USER_TOKEN,
         twitterTokenSecret:
@@ -170,6 +172,9 @@ export class TwitterClient {
       twitterToken: string;
       twitterTokenSecret: string;
     },
+    options?: {
+      textOnlyMode?: boolean;
+    },
   ): Promise<TwitterClient> {
     const arcadeClient = new Arcade({ apiKey: process.env.ARCADE_API_KEY });
     const authResponse = await TwitterClient.authorizeUser(
@@ -188,7 +193,9 @@ export class TwitterClient {
     const twitterClient = new TwitterApi(tokenContext);
     return new TwitterClient({
       twitterClient,
+      useArcade: true,
       ...tokens,
+      ...options,
     });
   }
 

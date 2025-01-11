@@ -8,6 +8,59 @@ import {
 import { getScheduledDateSeconds } from "./find-date.js";
 import { SlackClient } from "../../../../clients/slack.js";
 import { getFutureDate } from "./get-future-date.js";
+import { isTextOnly, shouldPostToLinkedInOrg } from "../../../utils.js";
+
+interface SendSlackMessageArgs {
+  isTextOnlyMode: boolean;
+  afterSeconds: number;
+  threadId: string;
+  runId: string;
+  postContent: string;
+  image?: {
+    imageUrl: string;
+    mimeType: string;
+  };
+}
+
+async function sendSlackMessage({
+  isTextOnlyMode,
+  afterSeconds,
+  threadId,
+  runId,
+  postContent,
+  image,
+}: SendSlackMessageArgs) {
+  if (!process.env.SLACK_CHANNEL_ID) {
+    console.warn(
+      "No SLACK_CHANNEL_ID found in environment variables. Can not send error message to Slack.",
+    );
+    return;
+  }
+
+  const slackClient = new SlackClient({
+    channelId: process.env.SLACK_CHANNEL_ID,
+  });
+
+  const imageString = image?.imageUrl
+    ? `Image:
+${image?.imageUrl}`
+    : "No image provided";
+
+  const messageString = `*New Post Scheduled*
+    
+Scheduled post for: *${getFutureDate(afterSeconds)}*
+Run ID: *${runId}*
+Thread ID: *${threadId}*
+
+Post:
+\`\`\`
+${postContent}
+\`\`\`
+
+${!isTextOnlyMode ? imageString : "Text only mode enabled. Image support has been disabled."}`;
+
+  await slackClient.sendMessage(messageString);
+}
 
 export async function schedulePost(
   state: typeof GeneratePostAnnotation.State,
@@ -16,7 +69,8 @@ export async function schedulePost(
   if (!state.post || !state.scheduleDate) {
     throw new Error("No post or schedule date found");
   }
-  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode = isTextOnly(config);
+  const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
@@ -42,9 +96,7 @@ export async function schedulePost(
     },
     config: {
       configurable: {
-        [POST_TO_LINKEDIN_ORGANIZATION]:
-          config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] ||
-          process.env.POST_TO_LINKEDIN_ORGANIZATION,
+        [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
         [TEXT_ONLY_MODE]: isTextOnlyMode,
       },
     },
@@ -52,27 +104,14 @@ export async function schedulePost(
   });
 
   try {
-    const slackClient = new SlackClient({
-      channelId: process.env.SLACK_CHANNEL_ID,
+    await sendSlackMessage({
+      isTextOnlyMode,
+      afterSeconds,
+      threadId: thread.thread_id,
+      runId: run.run_id,
+      postContent: state.post,
+      image: state.image,
     });
-
-    const imageString = state.image?.imageUrl
-      ? `Image:
-${state.image?.imageUrl}`
-      : "No image provided";
-
-    await slackClient.sendMessage(`**New Post Scheduled**
-      
-Scheduled post for: **${getFutureDate(afterSeconds)}**
-Run ID: **${run.run_id}**
-Thread ID: **${thread.thread_id}**
-
-Post:
-\`\`\`
-${state.post}
-\`\`\`
-
-${!isTextOnlyMode ? imageString : "Text only mode enabled. Image support has been disabled."}`);
   } catch (e) {
     console.error("Failed to schedule post", e);
   }

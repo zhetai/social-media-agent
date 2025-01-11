@@ -1,4 +1,16 @@
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import * as cheerio from "cheerio";
+import {
+  POST_TO_LINKEDIN_ORGANIZATION,
+  TEXT_ONLY_MODE,
+} from "./generate-post/constants.js";
+
+export const BLACKLISTED_MIME_TYPES = [
+  "image/svg+xml",
+  "image/x-icon",
+  "image/bmp",
+  "text/",
+];
 
 /**
  * Extracts URLs from Slack-style message text containing links in the format:
@@ -277,6 +289,11 @@ export async function processImageInput(
 
   if (isValidUrl(imageInput)) {
     const { contentType } = await imageUrlToBuffer(imageInput);
+
+    if (BLACKLISTED_MIME_TYPES.find((mt) => contentType.startsWith(mt))) {
+      return undefined;
+    }
+
     return {
       imageUrl: imageInput,
       mimeType: contentType,
@@ -372,12 +389,6 @@ export function getUrlType(url: string): UrlType {
   return "general";
 }
 
-export const BLACKLISTED_MIME_TYPES = [
-  "image/svg+xml",
-  "image/x-icon",
-  "image/bmp",
-];
-
 /**
  * Extracts the MIME type from a URL based on its file extension or path
  * @param url The URL to extract MIME type from
@@ -448,4 +459,24 @@ export function chunkArray<T>(arr: T[], size: number): T[][] {
   return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
     arr.slice(i * size, i * size + size),
   );
+}
+
+export function isTextOnly(config: LangGraphRunnableConfig): boolean {
+  const textOnlyModeConfig = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode =
+    textOnlyModeConfig != null
+      ? textOnlyModeConfig
+      : process.env.TEXT_ONLY_MODE === "true";
+  return isTextOnlyMode;
+}
+
+export function shouldPostToLinkedInOrg(
+  config: LangGraphRunnableConfig,
+): boolean {
+  const postToOrgConfig = config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION];
+  const postToOrg =
+    postToOrgConfig != null
+      ? postToOrgConfig
+      : process.env.POST_TO_LINKEDIN_ORGANIZATION === "true";
+  return postToOrg;
 }

@@ -14,12 +14,11 @@ import { humanNode } from "./nodes/human-node/index.js";
 import { rewritePost } from "./nodes/rewrite-post.js";
 import { schedulePost } from "./nodes/schedule-post/index.js";
 import { condensePost } from "./nodes/condense-post.js";
-import { removeUrls } from "../utils.js";
+import { isTextOnly, removeUrls } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
 import { updateScheduledDate } from "./nodes/update-scheduled-date.js";
 import { findImagesGraph } from "../find-images/find-images-graph.js";
-import { TEXT_ONLY_MODE } from "./constants.js";
 
 function routeAfterGeneratingReport(
   state: typeof GeneratePostAnnotation.State,
@@ -56,7 +55,8 @@ function condenseOrHumanConditionalEdge(
   if (cleanedPost.length > 280 && state.condenseCount <= 3) {
     return "condensePost";
   }
-  if (config.configurable?.[TEXT_ONLY_MODE]) {
+  const isTextOnlyMode = isTextOnly(config);
+  if (isTextOnlyMode) {
     return "humanNode";
   }
   return "findImagesSubGraph";
