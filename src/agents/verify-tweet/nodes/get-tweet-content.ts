@@ -19,7 +19,7 @@ export async function getTweetContent(
   let twitterClient: TwitterClient;
   const useArcadeAuth = process.env.USE_ARCADE_AUTH;
   if (useArcadeAuth === "true") {
-    const twitterToken = process.env.TWITTER_TOKEN;
+    const twitterToken = process.env.TWITTER_USER_TOKEN;
     const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
     if (!twitterToken || !twitterTokenSecret) {
       throw new Error(

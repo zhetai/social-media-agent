@@ -1,16 +1,11 @@
 import {
   interrupt,
-  LangGraphRunnableConfig,
   // @ts-expect-error - The type is used in the JSDoc comment, but not defined in the code.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type NodeInterrupt,
 } from "@langchain/langgraph";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
-import {
-  LINKEDIN_ACCESS_TOKEN,
-  LINKEDIN_ORGANIZATION_ID,
-  LINKEDIN_PERSON_URN,
-} from "../../generate-post/constants.js";
+import Arcade from "@arcadeai/arcadejs";
 
 const LINKEDIN_AUTHORIZATION_DOCS_URL =
   "https://github.com/langchain-ai/social-media-agent?tab=readme-ov-file#setup";
@@ -34,29 +29,20 @@ const LINKEDIN_AUTHORIZATION_DOCS_URL =
  * await getLinkedInAuthOrInterrupt("user123", config);
  * ```
  */
-export async function getLinkedInAuthOrInterrupt(
-  linkedInUserId: string,
-  config: LangGraphRunnableConfig,
-  options?: {
-    returnInterrupt?: boolean;
-  },
-) {
+export async function getBasicLinkedInAuthOrInterrupt(fields?: {
+  linkedInUserId?: string;
+  returnInterrupt?: boolean;
+}) {
   const { accessToken, personUrn, organizationId } = {
-    accessToken:
-      process.env.LINKEDIN_ACCESS_TOKEN ||
-      config.configurable?.[LINKEDIN_ACCESS_TOKEN],
-    organizationId:
-      process.env.LINKEDIN_ORGANIZATION_ID ||
-      config.configurable?.[LINKEDIN_ORGANIZATION_ID],
-    personUrn:
-      process.env.LINKEDIN_PERSON_URN ||
-      config.configurable?.[LINKEDIN_PERSON_URN],
+    accessToken: process.env.LINKEDIN_ACCESS_TOKEN,
+    organizationId: process.env.LINKEDIN_ORGANIZATION_ID,
+    personUrn: process.env.LINKEDIN_PERSON_URN,
   };
 
   if (!accessToken || (!personUrn && !organizationId)) {
     const description = `# Authorization Required
     
-Missing LinkedIn authorization for user: ${linkedInUserId}.
+${fields?.linkedInUserId ? `Missing LinkedIn authorization for user: ${fields.linkedInUserId}` : ""}.
 
 Please follow the authorization instructions [here](${LINKEDIN_AUTHORIZATION_DOCS_URL}).
 
@@ -82,7 +68,7 @@ If you have already authorized and set the required configuration fields or envi
       description,
     };
 
-    if (options?.returnInterrupt) {
+    if (fields?.returnInterrupt) {
       return authInterrupt;
     }
 
@@ -101,4 +87,102 @@ If you have already authorized and set the required configuration fields or envi
   }
 
   return undefined;
+}
+
+async function getArcadeLinkedInAuthOrInterrupt(
+  linkedInUserId: string,
+  arcade: Arcade,
+  fields?: {
+    returnInterrupt?: boolean;
+    postToOrg?: boolean;
+  },
+) {
+  const scopes = fields?.postToOrg
+    ? ["w_member_social", "w_organization_social"]
+    : ["w_member_social"];
+  const authResponse = await arcade.auth.authorize({
+    user_id: linkedInUserId,
+    auth_requirement: {
+      provider_id: "linkedin",
+      oauth2: {
+        scopes,
+      },
+    },
+  });
+  const authUrl = authResponse.authorization_url;
+
+  if (authUrl) {
+    const description = `# Authorization Required
+  
+Please visit the following URL to authorize reading & posting to LinkedIn.
+
+${authUrl}
+
+----
+
+If you have already authorized reading/posting on Twitter, please accept this interrupt event.`;
+
+    const authInterrupt: HumanInterrupt = {
+      action_request: {
+        action: "[AUTHORIZATION REQUIRED]: LinkedIn",
+        args: {
+          authorizeLinkedInURL: authUrl,
+        },
+      },
+      config: {
+        allow_ignore: true,
+        allow_accept: true,
+        allow_edit: false,
+        allow_respond: false,
+      },
+      description,
+    };
+
+    if (fields?.returnInterrupt) {
+      return authInterrupt;
+    }
+
+    const res = interrupt<HumanInterrupt[], HumanResponse[]>([
+      authInterrupt,
+    ])[0];
+    if (res.type === "accept") {
+      // This means that the user has accepted, however the
+      // authorization is still needed. Throw an error.
+      throw new Error(
+        "User accepted authorization, but authorization is still needed.",
+      );
+    } else if (res.type === "ignore") {
+      // Throw an error to end the graph.
+      throw new Error("Authorization denied by user.");
+    }
+  }
+  return undefined;
+}
+
+export async function getLinkedInAuthOrInterrupt(fields?: {
+  linkedInUserId?: string;
+  returnInterrupt?: boolean;
+  postToOrg?: boolean;
+}) {
+  const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+  const linkedInUserId = fields?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+  if (useArcadeAuth === "true") {
+    if (!fields?.linkedInUserId) {
+      throw new Error("Must provide LinkedIn User ID when using Arcade auth.");
+    }
+
+    return getArcadeLinkedInAuthOrInterrupt(
+      fields.linkedInUserId,
+      new Arcade({ apiKey: process.env.ARCADE_API_KEY }),
+      {
+        returnInterrupt: fields?.returnInterrupt,
+        postToOrg: fields?.postToOrg,
+      },
+    );
+  }
+
+  return getBasicLinkedInAuthOrInterrupt({
+    linkedInUserId,
+    returnInterrupt: fields?.returnInterrupt,
+  });
 }

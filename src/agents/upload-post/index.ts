@@ -6,7 +6,11 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { TwitterClient } from "../../clients/twitter/client.js";
-import { imageUrlToBuffer } from "../utils.js";
+import {
+  imageUrlToBuffer,
+  isTextOnly,
+  shouldPostToLinkedInOrg,
+} from "../utils.js";
 import { CreateMediaRequest } from "../../clients/twitter/types.js";
 import { LinkedInClient } from "../../clients/linkedin.js";
 import {
@@ -108,7 +112,8 @@ export async function uploadPost(
   if (!state.post) {
     throw new Error("No post text found");
   }
-  const isTextOnlyMode = config.configurable?.[TEXT_ONLY_MODE];
+  const isTextOnlyMode = isTextOnly(config);
+  const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
   const twitterUserId = process.env.TWITTER_USER_ID;
   const linkedInUserId = process.env.LINKEDIN_USER_ID;
@@ -123,7 +128,7 @@ export async function uploadPost(
 
       const useArcadeAuth = process.env.USE_ARCADE_AUTH;
       if (useArcadeAuth === "true") {
-        const twitterToken = process.env.TWITTER_TOKEN;
+        const twitterToken = process.env.TWITTER_USER_TOKEN;
         const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
         if (!twitterToken || !twitterTokenSecret) {
           throw new Error(
@@ -131,10 +136,16 @@ export async function uploadPost(
           );
         }
 
-        twitterClient = await TwitterClient.fromArcade(twitterUserId, {
-          twitterToken,
-          twitterTokenSecret,
-        });
+        twitterClient = await TwitterClient.fromArcade(
+          twitterUserId,
+          {
+            twitterToken,
+            twitterTokenSecret,
+          },
+          {
+            textOnlyMode: isTextOnlyMode,
+          },
+        );
       } else {
         twitterClient = TwitterClient.fromBasicTwitterAuth();
       }
@@ -172,16 +183,20 @@ export async function uploadPost(
 
   try {
     if (linkedInUserId) {
-      const linkedInClient = new LinkedInClient({
-        accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
-        personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
-        organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
-      });
+      let linkedInClient: LinkedInClient;
 
-      const postToOrg =
-        config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION] != null
-          ? JSON.parse(config.configurable?.[POST_TO_LINKEDIN_ORGANIZATION])
-          : false;
+      const useArcadeAuth = process.env.USE_ARCADE_AUTH;
+      if (useArcadeAuth === "true") {
+        linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
+          postToOrganization: postToLinkedInOrg,
+        });
+      } else {
+        linkedInClient = new LinkedInClient({
+          accessToken: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+          personUrn: config.configurable?.[LINKEDIN_PERSON_URN],
+          organizationId: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
+        });
+      }
 
       if (!isTextOnlyMode && state.image) {
         await linkedInClient.createImagePost(
@@ -190,12 +205,12 @@ export async function uploadPost(
             imageUrl: state.image.imageUrl,
           },
           {
-            postToOrganization: postToOrg,
+            postToOrganization: postToLinkedInOrg,
           },
         );
       } else {
         await linkedInClient.createTextPost(state.post, {
-          postToOrganization: postToOrg,
+          postToOrganization: postToLinkedInOrg,
         });
       }
 

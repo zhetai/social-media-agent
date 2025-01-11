@@ -383,10 +383,6 @@ export async function getScheduledDateSeconds(
   config: LangGraphRunnableConfig,
   baseDate: Date = new Date(),
 ): Promise<number> {
-  console.log("ATTEMPTING TO FIND A SCHEDULE DATE", {
-    scheduleDate,
-    baseDate: baseDate.toISOString(),
-  });
   if (isValid(scheduleDate)) {
     const afterSeconds = getAfterSeconds(scheduleDate as Date, baseDate);
     validateAfterSeconds(afterSeconds);
@@ -413,10 +409,6 @@ export async function getScheduledDateSeconds(
       let currentTime = start;
       while (currentTime <= end) {
         if (!isDateTaken(currentTime, takenScheduleDates, priority)) {
-          console.log("FOUND A SCHEDULE DATE", {
-            priority,
-            currentTime: currentTime.toISOString(),
-          });
           validateScheduleDate(currentTime, baseDate);
           takenScheduleDates[priority].push(currentTime);
           await putTakenScheduleDates(takenScheduleDates, config);
