@@ -208,8 +208,6 @@ export class LinkedInClient {
       throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
     }
 
-    console.time("Image uploaded to LinkedIn");
-
     return registerResponse.value.asset;
   }
 
