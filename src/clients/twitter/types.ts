@@ -44,4 +44,5 @@ export interface TwitterClientArgs {
   twitterToken?: string;
   twitterTokenSecret?: string;
   useArcade?: boolean;
+  textOnlyMode?: boolean;
 }

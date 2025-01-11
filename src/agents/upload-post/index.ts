@@ -131,10 +131,16 @@ export async function uploadPost(
           );
         }
 
-        twitterClient = await TwitterClient.fromArcade(twitterUserId, {
-          twitterToken,
-          twitterTokenSecret,
-        });
+        twitterClient = await TwitterClient.fromArcade(
+          twitterUserId,
+          {
+            twitterToken,
+            twitterTokenSecret,
+          },
+          {
+            textOnlyMode: isTextOnlyMode,
+          },
+        );
       } else {
         twitterClient = TwitterClient.fromBasicTwitterAuth();
       }
