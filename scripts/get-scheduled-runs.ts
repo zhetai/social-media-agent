@@ -25,8 +25,8 @@ async function sendPendingRunsToSlack(messageString: string) {
 
 async function getScheduledRuns() {
   const client = new Client({
-    // apiUrl: process.env.LANGGRAPH_API_URL,
-    apiUrl: "http://localhost:54367",
+    apiUrl: process.env.LANGGRAPH_API_URL,
+    // apiUrl: "http://localhost:54367",
   });
   const threads = await client.threads.search({
     metadata: {
@@ -83,7 +83,9 @@ Scheduled posts:
 ${pendingRunsString.join("\n\n")}`;
 
   if (process.env.SLACK_CHANNEL_ID && process.env.SLACK_CHANNEL_ID) {
-    await sendPendingRunsToSlack(slackMessageContent);
+    // await sendPendingRunsToSlack(slackMessageContent);
+    console.log(slackMessageContent);
+
   } else {
     console.log(slackMessageContent);
   }

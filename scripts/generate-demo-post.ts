@@ -8,7 +8,7 @@ import { TEXT_ONLY_MODE } from "../src/agents/generate-post/constants.js";
  * Social Media Agent works.
  */
 async function invokeGraph() {
-  const link = "https://blog.langchain.dev/customers-appfolio/";
+  const link = "https://open.substack.com/pub/diamantai/p/nexus-ai-the-revolutionary-research";
 
   const client = new Client({
     apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
@@ -27,7 +27,7 @@ async function invokeGraph() {
 
         // This ensures the graph runs in a basic text only mode.
         // If you followed the full setup instructions, you may remove this line.
-        [TEXT_ONLY_MODE]: true,
+        // [TEXT_ONLY_MODE]: true,
       },
     },
   });
