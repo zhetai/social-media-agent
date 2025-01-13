@@ -20,7 +20,7 @@ import { Client } from "@langchain/langgraph-sdk";
  * yarn cron:backfill
  * ```
  */
-async function backfill() {
+export async function backfill() {
   const client = new Client({
     apiUrl: process.env.LANGGRAPH_API_URL,
   });
@@ -39,4 +39,31 @@ async function backfill() {
   console.log(res);
 }
 
-backfill().catch(console.error);
+// backfill().catch(console.error);
+
+/**
+ * Backfill with links instead of ingesting from Slack.
+ */
+export async function backfillWithLinks() {
+  const client = new Client({
+    apiUrl: process.env.LANGGRAPH_API_URL,
+  });
+
+  const newLinksArr: string[] = [
+    // Add your new links here
+  ];
+
+  const { thread_id } = await client.threads.create();
+  await client.runs.create(thread_id, "ingest_data", {
+    input: {
+      links: newLinksArr,
+    },
+    config: {
+      configurable: {
+        skipIngest: true,
+      },
+    },
+  });
+}
+
+// backfillWithLinks().catch(console.error);
