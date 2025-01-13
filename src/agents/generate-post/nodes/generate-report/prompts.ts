@@ -1,4 +1,4 @@
-import { BUSINESS_CONTEXT } from "../../prompts/index.js";
+import { BUSINESS_CONTEXT } from "../../prompts/prompts.langchain.js";
 
 const STRUCTURE_GUIDELINES = `<part key="1">
 This is the introduction and summary of the content. This must include key details such as:
