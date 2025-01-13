@@ -26,6 +26,7 @@ To get started, you'll need the following API keys/software:
 - [Anthropic API](https://console.anthropic.com/) - General LLM
 - [LangSmith](https://smith.langchain.com/) - LangSmith API key required to run the LangGraph server locally (free)
 - [FireCrawl API](https://www.firecrawl.dev/) - Web scraping. New users get 500 credits for free
+- [Arcade](https://www.arcade-ai.com/) - Social media authentication for reading & writing
 
 ## Setup Instructions
 
@@ -53,7 +54,7 @@ Copy the values of the quickstart `.env.quickstart.example` to `.env`, then add 
 cp .env.quickstart.example .env
 ```
 
-Once done, you should have the following environment variables set:
+Once done, ensure you have the following environment variables set:
 
 ```bash
 # For LangSmith tracing (optional)
@@ -65,6 +66,9 @@ ANTHROPIC_API_KEY=
 
 # For web scraping
 FIRECRAWL_API_KEY=
+
+# Arcade API key - used for fetching Tweets, and scheduling LinkedIn/Twitter posts
+ARCADE_API_KEY=
 ```
 
 ### Install LangGraph CLI
@@ -113,7 +117,7 @@ To view the output, either inspect it in LangSmith, or use Agent Inbox.
 
 To add your graph to Agent Inbox:
 
-- Visit the deployed site here: [https://agent-inbox-nu.vercel.app](https://agent-inbox-nu.vercel.app)
+- Visit the deployed site here: [https://dev.agentinbox.ai](https://dev.agentinbox.ai)
 - Click the Settings button, then the `Add Inbox` button
 - Enter the following values:
   - Graph ID: `generate_post`
