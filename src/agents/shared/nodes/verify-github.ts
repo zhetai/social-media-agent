@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
+import { getPrompts } from "../../generate-post/prompts/index.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
 import { RunnableConfig } from "@langchain/core/runnables";
@@ -39,7 +39,7 @@ const VERIFY_LANGCHAIN_RELEVANT_CONTENT_PROMPT = `You are a highly regarded mark
 You're given a {file_type} from a GitHub repository and need to verify the repository implements your company's products.
 You're doing this to ensure the content is relevant to LangChain, and it can be used as marketing material to promote LangChain.
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 {repoDependenciesPrompt}
 

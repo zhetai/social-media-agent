@@ -4,7 +4,7 @@ import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.
 import { ChatVertexAI } from "@langchain/google-vertexai-web";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage } from "@langchain/core/messages";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
+import { getPrompts } from "../../generate-post/prompts/index.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import {
   getVideoThumbnailUrl,
@@ -21,7 +21,7 @@ You have been assigned the provided YouTube video, and you need to generate a su
 Specifically, you should be focusing on the technical details, why people should care about it, and any problems it solves.
 You should also focus on the products the video might talk about (although not all videos will have your company content).
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 Given this context, examine the YouTube videos contents closely, and generate a report on the video.
 For context, this report will be used to generate a Tweet and LinkedIn post promoting the video and the company products it uses, if any.
@@ -31,7 +31,7 @@ const VERIFY_RELEVANT_CONTENT_PROMPT = `You are a highly regarded marketing empl
 You're given a summary/report on some content a third party submitted to you in hopes of having it promoted by you.
 You need to verify if the content is relevant to your company's products before approving or denying the request.
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 Given this context, examine the summary/report closely, and determine if the content is relevant to your company's products.
 You should provide reasoning as to why or why not the content is relevant to your company's products, then a simple true or false for whether or not it's relevant.

@@ -3,7 +3,7 @@ import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.
 import { z } from "zod";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
+import { getPrompts } from "../../generate-post/prompts/index.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { RunnableLambda } from "@langchain/core/runnables";
 import { getPageText } from "../../utils.js";
@@ -34,7 +34,7 @@ You're provided with a webpage containing content a third party submitted to you
 Your task is to carefully read over the entire page, and determine whether or not the content actually implements and is relevant to your company's products.
 You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 Given this context, examine the webpage content closely, and determine if the content implements your company's products.
 You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;

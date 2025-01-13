@@ -1,8 +1,4 @@
-import {
-  TWEET_EXAMPLES,
-  POST_STRUCTURE_INSTRUCTIONS,
-  POST_CONTENT_RULES,
-} from "../../prompts/index.js";
+import { getPrompts } from "../../prompts/index.js";
 
 export const GENERATE_POST_PROMPT = `You're a highly regarded marketing employee, working on crafting thoughtful and engaging content for the LinkedIn and Twitter pages.
 You've been provided with a report on some content that you need to turn into a LinkedIn/Twitter post. The same post will be used for both platforms.
@@ -10,19 +6,19 @@ Your coworker has already taken the time to write a detailed marketing report on
 
 The following are examples of LinkedIn/Twitter posts on third-party content that have done well, and you should use them as style inspiration for your post:
 <examples>
-${TWEET_EXAMPLES}
+${getPrompts().tweetExamples}
 </examples>
 
 Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow. The post should have three main sections, outlined below:
 <structure-instructions>
-${POST_STRUCTURE_INSTRUCTIONS}
+${getPrompts().postStructureInstructions}
 </structure-instructions>
 
 This structure should ALWAYS be followed. And remember, the shorter and more engaging the post, the better (your yearly bonus depends on this!!).
 
 Here are a set of rules and guidelines you should strictly follow when creating the LinkedIn/Twitter post:
 <rules>
-${POST_CONTENT_RULES}
+${getPrompts().postContentRules}
 </rules>
 
 {reflectionsPrompt}

@@ -1,3 +1,9 @@
+import {
+  BUSINESS_CONTEXT as LANGCHAIN_BUSINESS_CONTEXT,
+  TWEET_EXAMPLES as LANGCHAIN_TWEET_EXAMPLES,
+  POST_STRUCTURE_INSTRUCTIONS as LANGCHAIN_POST_STRUCTURE_INSTRUCTIONS,
+  POST_CONTENT_RULES as LANGCHAIN_POST_CONTENT_RULES,
+} from "./prompts.langchain.js";
 import { EXAMPLES } from "./examples.js";
 
 export const TWEET_EXAMPLES = EXAMPLES.map(
@@ -41,3 +47,22 @@ export const POST_CONTENT_RULES = `- Focus your post on what the content covers,
 - ALWAYS use present tense to make announcements feel immediate (e.g., "Microsoft just launched..." instead of "Microsoft launches...").
 - ALWAYS include the link to the content being promoted in the call to action section of the post.
 - You're acting as a human, posting for other humans. Keep your tone casual and friendly. Don't make it too formal or too consistent with the tone.`;
+
+export function getPrompts() {
+  // NOTE: you should likely not have this set, unless you want to use the LangChain prompts
+  if (process.env.USE_LANGCHAIN_PROMPTS === "true") {
+    return {
+      businessContext: LANGCHAIN_BUSINESS_CONTEXT,
+      tweetExamples: LANGCHAIN_TWEET_EXAMPLES,
+      postStructureInstructions: LANGCHAIN_POST_STRUCTURE_INSTRUCTIONS,
+      postContentRules: LANGCHAIN_POST_CONTENT_RULES,
+    };
+  }
+
+  return {
+    businessContext: BUSINESS_CONTEXT,
+    tweetExamples: TWEET_EXAMPLES,
+    postStructureInstructions: POST_STRUCTURE_INSTRUCTIONS,
+    postContentRules: POST_CONTENT_RULES,
+  };
+}
