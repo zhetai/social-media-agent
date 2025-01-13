@@ -56,6 +56,7 @@ export function getPrompts() {
       tweetExamples: LANGCHAIN_TWEET_EXAMPLES,
       postStructureInstructions: LANGCHAIN_POST_STRUCTURE_INSTRUCTIONS,
       postContentRules: LANGCHAIN_POST_CONTENT_RULES,
+      structureGuidelines: true,
     };
   }
 
@@ -64,5 +65,6 @@ export function getPrompts() {
     tweetExamples: TWEET_EXAMPLES,
     postStructureInstructions: POST_STRUCTURE_INSTRUCTIONS,
     postContentRules: POST_CONTENT_RULES,
+    structureGuidelines: false,
   };
 }

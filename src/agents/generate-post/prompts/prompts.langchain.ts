@@ -66,7 +66,10 @@ Features
 https://github.com/nirbar1985/ai-travel-agent
 </example>`;
 
-export const POST_STRUCTURE_INSTRUCTIONS = `<section key="1">
+export const POST_STRUCTURE_INSTRUCTIONS = `The post should have three main sections, outlined below:
+<structure-instructions>
+
+<section key="1">
 The first part of the post is the header. This should be very short, no more than 5 words, and should include one to two emojis, and the name of the content provided. If the marketing report does not specify a name, you should get creative and come up with a catchy title for it.
 </section>
 
@@ -79,7 +82,9 @@ You should NOT make the main focus of this on LangChain, but instead on the cont
 
 <section key="3">
 The final section of the post should contain a call to action. This should be a short sentence that encourages the reader to click the link to the content being promoted. Optionally, you can include an emoji here.
-</section>`;
+</section>
+
+</structure-instructions>`;
 
 export const POST_CONTENT_RULES = `- Focus your post on what the content covers, aims to achieve, and how it uses LangChain's product(s) to do that. This should be concise and high level.
 - Do not make the post over technical as some of our audience may not be advanced developers, but ensure it is technical enough to engage developers.

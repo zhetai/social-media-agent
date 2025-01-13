@@ -28,9 +28,7 @@ You should not be worried by the length of the link, as that will be shortened b
 Here are the rules and structure you used to write the original post, which you should use when condensing the post now:
 <rules-and-structure>
 
-<structure-instructions>
 ${getPrompts().postStructureInstructions}
-</structure-instructions>
 
 <rules>
 ${getPrompts().postContentRules}

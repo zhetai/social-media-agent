@@ -9,10 +9,8 @@ The following are examples of LinkedIn/Twitter posts on third-party content that
 ${getPrompts().tweetExamples}
 </examples>
 
-Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow. The post should have three main sections, outlined below:
-<structure-instructions>
+Now that you've seen some examples, lets's cover the structure of the LinkedIn/Twitter post you should follow.
 ${getPrompts().postStructureInstructions}
-</structure-instructions>
 
 This structure should ALWAYS be followed. And remember, the shorter and more engaging the post, the better (your yearly bonus depends on this!!).
 
