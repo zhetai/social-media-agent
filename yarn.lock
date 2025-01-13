@@ -23,10 +23,10 @@
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
 
-"@arcadeai/arcadejs@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@arcadeai/arcadejs/-/arcadejs-0.1.2.tgz#df8d0bc8a2fe299229cfd85fa273321dd34c8a4e"
-  integrity sha512-C+kCQ3cRHHyeBAsi8I0koO0d/VY/Jo/UroBY4IR0050UVwtGPXD9a0xZuiL48U2uLasK2xUkOMI7/eExByVc6A==
+"@arcadeai/arcadejs@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@arcadeai/arcadejs/-/arcadejs-0.2.2.tgz#199308081b58b127215058e4b191150d0afeeb05"
+  integrity sha512-23ILY/atW1m+AukIE/hJP/y8buFypkWGqjgGKHDXSKrhPME0fiNNXzzL8q4RxCbgFegcJafz7xNkZ6XNtMz5dQ==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
