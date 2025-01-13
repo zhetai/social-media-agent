@@ -1,6 +1,19 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { isValid, addDays, isSunday, isFriday, isMonday, isSaturday } from "date-fns";
-import { getNextFriday, getNextMonday, getNextSaturday, isMondayOrFriday, isWeekend } from "./utils.js";
+import {
+  isValid,
+  addDays,
+  isSunday,
+  isFriday,
+  isMonday,
+  isSaturday,
+} from "date-fns";
+import {
+  getNextFriday,
+  getNextMonday,
+  getNextSaturday,
+  isMondayOrFriday,
+  isWeekend,
+} from "./utils.js";
 import { DateType } from "../../../types.js";
 
 export function validateAfterSeconds(afterSeconds: number) {
@@ -117,62 +130,25 @@ const FIRST_ALLOWED_P2_HOUR_WEEKEND = 19;
 const LAST_ALLOWED_P2_HOUR_WEEKEND = 21;
 
 export const ALLOWED_P3_DAY_AND_TIMES_IN_UTC = [
-  // Sunday 21:00 UTC (1PM PST)
-  {
-    day: 0,
-    hour: 21,
-  },
-  // Sunday 22:00 UTC (2PM PST)
-  {
-    day: 0,
-    hour: 22,
-  },
-  // Sunday 23:00 UTC (3PM PST)
-  {
-    day: 0,
-    hour: 23,
-  },
-  // Monday 00:00 UTC (4PM PST Sunday)
-  {
-    day: 1,
-    hour: 0,
-  },
-  // Monday 01:00 UTC (5PM PST Sunday)
-  {
-    day: 1,
-    hour: 1,
-  },
-  // Saturday 21:00 UTC (1PM PST)
-  {
-    day: 6,
-    hour: 21,
-  },
-  // Saturday 22:00 UTC (2PM PST)
-  {
-    day: 6,
-    hour: 22,
-  },
-  // Saturday 23:00 UTC (3PM PST)
-  {
-    day: 6,
-    hour: 23,
-  },
-  // Sunday 00:00 UTC (4PM PST Saturday)
-  {
-    day: 0,
-    hour: 0,
-  },
-  // Sunday 01:00 UTC (5PM PST Saturday)
-  {
-    day: 0,
-    hour: 1,
-  },
+  // Saturday: 21, 22, 23
+  { day: 6, hour: 21 },
+  { day: 6, hour: 22 },
+  { day: 6, hour: 23 },
+  // Sunday: 0, 1, 21, 22, 23
+  { day: 0, hour: 0 },
+  { day: 0, hour: 1 },
+  { day: 0, hour: 21 },
+  { day: 0, hour: 22 },
+  { day: 0, hour: 23 },
+  // Monday: 0, 1
+  { day: 1, hour: 0 },
+  { day: 1, hour: 1 },
 ];
 
 // const FIRST_ALLOWED_P3_HOUR_WEEKEND = 21;
-const LAST_ALLOWED_P3_HOUR_WEEKEND = 23;
-const FIRST_ALLOWED_P3_HOUR_MONDAY = 0;
-const LAST_ALLOWED_P3_HOUR_MONDAY = 1;
+// const LAST_ALLOWED_P3_HOUR_WEEKEND = 23;
+// const FIRST_ALLOWED_P3_HOUR_MONDAY = 0;
+// const LAST_ALLOWED_P3_HOUR_MONDAY = 1;
 
 type TakenScheduleDates = {
   p1: Date[];
@@ -455,7 +431,6 @@ function getNextAvailableDate(
           );
         }
       }
-
     } else {
       // It's not a Monday, Friday, or Weekend, so it must be a weekday. Get the next friday and return the first allowed hour for p2
       const nextFriday = getNextFriday(lastTakenDate);
@@ -474,44 +449,72 @@ function getNextAvailableDate(
   }
 
   if (priority === "p3") {
-    if (isWeekend(lastTakenDate)) {
-      if (lastTakenHour < LAST_ALLOWED_P3_HOUR_WEEKEND) {
-        // Add one hour to the last taken date
+    const lastDay = lastTakenDate.getUTCDay();
+    const lastHour = lastTakenDate.getUTCHours();
+
+    // Try next slot in the same day
+    const sameDaySlots = ALLOWED_P3_DAY_AND_TIMES_IN_UTC.filter(
+      (slot) => slot.day === lastDay && slot.hour > lastHour,
+    ).sort((a, b) => a.hour - b.hour);
+
+    if (sameDaySlots.length) {
+      // Pick the earliest hour that’s > lastHour
+      const nextHour = sameDaySlots[0].hour;
+      return new Date(
+        Date.UTC(
+          lastTakenDate.getUTCFullYear(),
+          lastTakenDate.getUTCMonth(),
+          lastTakenDate.getUTCDate(),
+          nextHour,
+          0,
+          0,
+          0,
+        ),
+      );
+    }
+
+    // Else, no more slots in this day. Move forward day-by-day until you find a valid day.
+    let candidate = new Date(
+      Date.UTC(
+        lastTakenDate.getUTCFullYear(),
+        lastTakenDate.getUTCMonth(),
+        lastTakenDate.getUTCDate(),
+        0,
+        0,
+        0,
+        0,
+      ),
+    );
+    candidate = addDays(candidate, 1); // move to next day, 00:00
+
+    for (let i = 0; i < 14; i++) {
+      const candidateDay = candidate.getUTCDay();
+      // All valid hours for that day
+      const validSlots = ALLOWED_P3_DAY_AND_TIMES_IN_UTC.filter(
+        (slot) => slot.day === candidateDay,
+      ).sort((a, b) => a.hour - b.hour);
+
+      if (validSlots.length) {
+        // pick earliest hour for this new day
+        const nextHour = validSlots[0].hour;
         return new Date(
           Date.UTC(
-            lastTakenDate.getUTCFullYear(),
-            lastTakenDate.getUTCMonth(),
-            lastTakenDate.getUTCDate(),
-            lastTakenHour + 1,
+            candidate.getUTCFullYear(),
+            candidate.getUTCMonth(),
+            candidate.getUTCDate(),
+            nextHour,
             0,
             0,
             0,
           ),
         );
-      } else {
-        if (isSunday(lastTakenDate)) {
-          if (lastTakenHour === LAST_ALLOWED_P3_HOUR_WEEKEND) {
-            // If the last taken hour is the last allowed hour (23) in this case,
-            // it and it's a Sunday, we can get the first hour on Monday
-            const nextMonday = getNextMonday(lastTakenDate);
-            return new Date(
-              Date.UTC(
-                nextMonday.getUTCFullYear(),
-                nextMonday.getUTCMonth(),
-                nextMonday.getUTCDate(),
-                FIRST_ALLOWED_P3_HOUR_MONDAY,
-                0,
-                0,
-                0,
-              ),
-            );
-          } else {
-            // otherwise, get the first hour on the
-          }
-        }
-        
       }
+
+      // otherwise, keep searching
+      candidate = addDays(candidate, 1);
     }
+
+    throw new Error("Couldn't find a valid p3 slot within 2 weeks!");
   }
 
   throw new Error("Unreachable code");
@@ -607,59 +610,53 @@ export async function getScheduledDateSeconds(
   }
 
   if (priority === "p3") {
-    // For reference:
-    // const FIRST_ALLOWED_P3_HOUR_WEEKEND = 21;  // Saturday/Sunday start
-    // const LAST_ALLOWED_P3_HOUR_WEEKEND = 23;   // Saturday/Sunday end
-    // const FIRST_ALLOWED_P3_HOUR_MONDAY = 0;    // Monday start
-    // const LAST_ALLOWED_P3_HOUR_MONDAY = 1;     // Monday end
-  
+    const hour = baseDate.getUTCHours();
+
     if (isSaturday(baseDate)) {
-      // If it's Saturday (day=6) and hour >= 23 (the last allowed hour),
-      // we need to move to the next day (Sunday).
-      if (currentDayUTCHours >= LAST_ALLOWED_P3_HOUR_WEEKEND) {
-        currentTime = addDays(baseDate, 1);
-        currentTime = new Date(currentTime.setUTCHours(0, 0, 0, 0));
-        // After moving to the next day, if it's not Sunday,
-        // then jump to the next Saturday at midnight.
-        if (!isSunday(currentTime)) {
-          currentTime = getNextSaturday(currentTime);
+      if (hour >= 23) {
+        // Next day @ midnight
+        let tmp = addDays(baseDate, 1);
+        tmp = new Date(tmp.setUTCHours(0, 0, 0, 0));
+        if (!isSunday(tmp) && !isMonday(tmp)) {
+          tmp = getNextSaturday(tmp);
         }
-      } else {
-        // If hour < 23 on a Saturday, "do nothing" so that
-        // getNextAvailableDate() can pick the next valid slot on Saturday.
+        currentTime = tmp;
       }
+      // else do nothing, we’re still on Saturday < 23
     } else if (isSunday(baseDate)) {
-      // Sunday can have hours 0,1 (right after midnight), and 21,22,23 (late evening).
-      // If the hour is >= 23, we need to move to the next day (Monday).
-      if (currentDayUTCHours >= LAST_ALLOWED_P3_HOUR_WEEKEND) {
-        currentTime = addDays(baseDate, 1);
-        currentTime = new Date(currentTime.setUTCHours(0, 0, 0, 0));
-        // After moving to the next day, if it's not Monday,
-        // then jump to next Saturday at midnight.
-        if (!isMonday(currentTime)) {
-          currentTime = getNextSaturday(currentTime);
+      if (hour >= 23) {
+        let tmp = addDays(baseDate, 1);
+        tmp = new Date(tmp.setUTCHours(0, 0, 0, 0));
+        if (!isMonday(tmp)) {
+          tmp = getNextSaturday(tmp);
         }
-      } else {
-        // If hour < 23 on a Sunday, "do nothing" so that
-        // getNextAvailableDate() can pick the next valid slot on Sunday.
+        currentTime = tmp;
       }
     } else if (isMonday(baseDate)) {
-      // Monday allows hours 0,1. If hour >= 1, move to the next day (Tuesday).
-      // Then from Tuesday, skip ahead to next Saturday (since Tue, Wed, Thu, Fri aren't valid for p3).
-      if (currentDayUTCHours >= LAST_ALLOWED_P3_HOUR_MONDAY) {
-        currentTime = addDays(baseDate, 1); // Tuesday
-        currentTime = new Date(currentTime.setUTCHours(0, 0, 0, 0));
-        currentTime = getNextSaturday(currentTime);
-      } else {
-        // If hour < 1 on a Monday, do nothing so
-        // getNextAvailableDate() can pick hour=0 or hour=1.
+      // Monday is valid only at hour=0 in your updated config
+      if (hour >= 0) {
+        // If it’s already Monday 0:00 or later, you might allow that single slot,
+        // but if your code sees hour=0 as "already used up," it can jump to Tuesday:
+        //     let tmp = addDays(baseDate, 1);
+        //     tmp = new Date(tmp.setUTCHours(0, 0, 0, 0));
+        //     tmp = getNextSaturday(tmp);
+        //     currentTime = tmp;
+        //
+        // BUT probably you do "do nothing" if hour=0,
+        // else jump to next Saturday if hour>0
+        if (hour > 1) {
+          // Jump to next Saturday
+          let tmp = addDays(baseDate, 1); // Tuesday
+          tmp = new Date(tmp.setUTCHours(0, 0, 0, 0));
+          tmp = getNextSaturday(tmp);
+          currentTime = tmp;
+        }
       }
     } else {
-      // If it's not Sat, Sun, or Mon, jump to the next Saturday at midnight.
-      currentTime = getNextSaturday(currentTime);
+      // If not Sat/Sun/Mon, jump to next Saturday @ 00:00
+      currentTime = getNextSaturday(baseDate);
     }
   }
-
 
   const nextAvailDate = getNextAvailableDate(
     currentTime,
