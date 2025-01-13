@@ -8,8 +8,7 @@ import { TEXT_ONLY_MODE } from "../src/agents/generate-post/constants.js";
  * Social Media Agent works.
  */
 async function invokeGraph() {
-  const link =
-    "https://open.substack.com/pub/diamantai/p/nexus-ai-the-revolutionary-research";
+  const link = "https://blog.langchain.dev/customers-appfolio/";
 
   const client = new Client({
     apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
