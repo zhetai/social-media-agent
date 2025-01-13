@@ -27,7 +27,7 @@ async function invokeGraph() {
         // [LINKEDIN_USER_ID]: process.env.LINKEDIN_USER_ID,
         // This ensures the graph runs in a basic text only mode.
         // If you followed the full setup instructions, you may remove this line.
-        // [TEXT_ONLY_MODE]: true,
+        [TEXT_ONLY_MODE]: true,
       },
     },
   });

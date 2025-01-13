@@ -83,8 +83,7 @@ Scheduled posts:
 ${pendingRunsString.join("\n\n")}`;
 
   if (process.env.SLACK_CHANNEL_ID && process.env.SLACK_CHANNEL_ID) {
-    // await sendPendingRunsToSlack(slackMessageContent);
-    console.log(slackMessageContent);
+    await sendPendingRunsToSlack(slackMessageContent);
   } else {
     console.log(slackMessageContent);
   }
