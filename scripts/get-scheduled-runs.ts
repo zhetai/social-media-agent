@@ -15,19 +15,12 @@ type PendingRun = {
   scheduleDate: string;
 };
 
-async function sendPendingRunsToSlack(messageString: string) {
-  const slackClient = new SlackClient({
-    channelId: process.env.SLACK_CHANNEL_ID,
-  });
-
-  await slackClient.sendMessage(messageString);
-}
-
 async function getScheduledRuns() {
   const client = new Client({
     apiUrl: process.env.LANGGRAPH_API_URL,
     // apiUrl: "http://localhost:54367",
   });
+
   const threads = await client.threads.search({
     metadata: {
       graph_id: "upload_post",
@@ -35,6 +28,7 @@ async function getScheduledRuns() {
     status: "busy",
   });
   let pendingRuns: PendingRun[] = [];
+
   for await (const thread of threads) {
     const runs = await client.runs.list(thread.thread_id);
     const run = runs[0] as Run & {
@@ -83,7 +77,11 @@ Scheduled posts:
 ${pendingRunsString.join("\n\n")}`;
 
   if (process.env.SLACK_CHANNEL_ID && process.env.SLACK_CHANNEL_ID) {
-    await sendPendingRunsToSlack(slackMessageContent);
+    const slackClient = new SlackClient({
+      channelId: process.env.SLACK_CHANNEL_ID,
+    });
+
+    await slackClient.sendMessage(slackMessageContent);
   } else {
     console.log(slackMessageContent);
   }
