@@ -2,7 +2,7 @@
 
 This repository contains an 'agent' which can take in a URL, and generate a Twitter & LinkedIn post based on the content of the URL. It uses a human-in-the-loop (HITL) flow to handle authentication with different social media platforms, and to allow the user to make changes, or accept/reject the generated post.
 
-![Screenshot of the social media agent graph](./static/graph_screenshot.png)
+![Screenshot of the social media agent flow](./static/agent_flow.png)
 
 # Quickstart
 
@@ -123,6 +123,8 @@ To add your graph to Agent Inbox:
 - This should then trigger a refresh, and you should see your first interrupted event! (if it does not show up even after refreshing, please make sure you've waited at least 1-2 minutes for the graph execution to finish)
 
 # Advanced Setup
+
+![Screenshot of the social media agent graph](./static/graph_screenshot.png)
 
 To use all of the features of the Social Media Agent, you'll need the following:
 
