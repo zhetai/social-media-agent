@@ -1,8 +1,8 @@
 import * as fs from "fs/promises";
 import { describe, it, expect } from "@jest/globals";
 import Arcade from "@arcadeai/arcadejs";
-import { TwitterClient } from "../../clients/twitter/client.js";
-import { extractMimeTypeFromBase64 } from "../../agents/utils.js";
+import { TwitterClient } from "../client.js";
+import { extractMimeTypeFromBase64 } from "../../../agents/utils.js";
 
 const tweetId = "1864386797788385455";
 const userId = "braceasproul@gmail.com";

@@ -1,9 +1,11 @@
 import * as fs from "fs/promises";
 import { describe, it, expect } from "@jest/globals";
-import { TwitterClient } from "../../clients/twitter/client.js";
+import { TwitterClient } from "../client.js";
+import { imageUrlToBuffer } from "../../../agents/utils.js";
 
 const tweetId = "1864386797788385455";
-const tweetWithMediaId = "1846215982765035677";
+// const tweetWithMediaId = "1846215982765035677";
+const tweetWithMediaId = "1874884500062122296";
 
 describe("Basic Twitter Auth", () => {
   const client = TwitterClient.fromBasicTwitterAuth();
@@ -22,10 +24,11 @@ describe("Basic Twitter Auth", () => {
     console.dir(tweet, { depth: null });
   });
 
-  it("Can read a tweet from ID and get media", async () => {
+  it.only("Can read a tweet from ID and get media", async () => {
     const tweet = await client.getTweet(tweetWithMediaId, {
       includeMedia: true,
     });
+    console.dir(tweet, { depth: null });
     expect(tweet).toBeDefined();
     // Check the full length Tweet is returned
     expect(tweet.data.note_tweet?.text).toBeDefined();
@@ -34,6 +37,10 @@ describe("Basic Twitter Auth", () => {
     expect(tweet.includes?.media?.[0]).toBeDefined();
     expect(tweet.includes?.media?.[0].url).toBeDefined();
     expect(tweet.includes?.media?.[0].type).toBe("photo");
+    const mediaUrl = tweet.includes?.media?.[0].url || "";
+    const mediaData = await imageUrlToBuffer(mediaUrl);
+    expect(mediaData.buffer).toBeDefined();
+    expect(mediaData.contentType).toBeDefined();
   });
 
   it("Can post a text only tweet", async () => {
