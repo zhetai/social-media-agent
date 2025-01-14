@@ -67,5 +67,4 @@ jobs:
       - uses: codespell-project/actions-codespell@v2
         with:
           ignore_words_file: .codespellignore
-          skip: src/agents/verify-reddit-post/nodes/tests/data/*
           path: src
