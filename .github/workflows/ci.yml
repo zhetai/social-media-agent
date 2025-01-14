@@ -68,3 +68,4 @@ jobs:
         with:
           ignore_words_file: .codespellignore
           path: src/
+          skip: src/agents/verify-reddit-post/nodes/tests/data/*

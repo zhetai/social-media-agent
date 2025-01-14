@@ -51,7 +51,7 @@ function formatReplies(comments: RedditPostChildren[]): string[] {
 
   function processComment(
     comment: RedditPostChildren,
-    parentString: string = "",
+    parentString = "",
   ): void {
     const commentData = comment.data;
 
