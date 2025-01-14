@@ -1,6 +1,6 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post/generate-post-state.js";
-import { BUSINESS_CONTEXT } from "../../generate-post/prompts/index.js";
+import { getPrompts } from "../../generate-post/prompts/index.js";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { z } from "zod";
 import { VerifyRedditPostAnnotation } from "../verify-reddit-post-state.js";
@@ -86,7 +86,7 @@ You're provided the following context:
 
 You're doing this to ensure the content is relevant to your company, and it can be used as marketing material to promote your company.
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 Given this, examine the Reddit post and associated content closely, and determine if it is relevant to your company's products.
 You should provide reasoning as to why or why not the content implements your company's products, then a simple true or false for whether or not it implements some.`;

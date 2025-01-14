@@ -302,6 +302,69 @@ export class TwitterClient {
   }
 
   /**
+   * Get a tweet by ID using the basic Twitter API. Will return undefined if an error occurs.
+   * @param id The tweet ID
+   * @param fields
+   * @param fields.includeMedia Whether to include media attachments in the response
+   * @returns {Promise<TweetV2SingleResult | undefined>} The tweet or undefined if an error occurs
+   */
+  private async getTweetBasicAuth(
+    id: string,
+    fields?: {
+      /**
+       * @default true
+       */
+      includeMedia?: boolean;
+    },
+  ): Promise<TweetV2SingleResult | undefined> {
+    const includeMedia =
+      fields?.includeMedia !== undefined ? fields?.includeMedia : true;
+    try {
+      const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {
+        // This allows us to access the full text of the Tweet.
+        // Access via `response.data.note_tweet.text`
+        "tweet.fields": ["note_tweet"],
+      };
+      if (includeMedia) {
+        fetchTweetOptions.expansions = ["attachments.media_keys"];
+        fetchTweetOptions["media.fields"] = ["type", "url"];
+      }
+
+      const tweetContent = await this.twitterClient.v2.singleTweet(
+        id,
+        fetchTweetOptions,
+      );
+      return tweetContent;
+    } catch (e) {
+      console.error("Failed to get tweet:", e);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get a tweet by ID using the Arcade Twitter API tool.
+   * @param id The tweet ID
+   * @param twitterUserId The user ID making the request
+   * @returns {Promise<TweetV2SingleResult>}
+   */
+  private async getTweetArcade(
+    id: string,
+    twitterUserId: string,
+  ): Promise<TweetV2SingleResult> {
+    const arcade = new Arcade({
+      apiKey: process.env.ARCADE_API_KEY,
+    });
+
+    const result = await arcade.tools.execute({
+      tool_name: "X.LookupTweetById",
+      inputs: { tweet_id: id },
+      user_id: twitterUserId,
+    });
+
+    return result.output?.value as TweetV2SingleResult;
+  }
+
+  /**
    * Retrieves a tweet by its ID. The method supports both basic Twitter authentication and Arcade authentication modes.
    *
    * When using basic Twitter auth (USE_ARCADE_AUTH="false"):
@@ -347,38 +410,34 @@ export class TwitterClient {
       ...fields,
     };
     const useArcadeAuth = process.env.USE_ARCADE_AUTH;
-    if (useArcadeAuth === "true") {
-      if (!fieldsWithDefaults.twitterUserId) {
-        throw new Error("Must provide Twitter User ID when using Arcade auth.");
+    const useTwitterApiOnly = process.env.USE_TWITTER_API_ONLY;
+
+    if (useTwitterApiOnly === "true" || useArcadeAuth !== "true") {
+      // Use the developer API account for reading tweets, not Arcade.
+      const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {
+        // This allows us to access the full text of the Tweet.
+        // Access via `response.data.note_tweet.text`
+        "tweet.fields": ["note_tweet"],
+      };
+      if (fieldsWithDefaults.includeMedia) {
+        fetchTweetOptions.expansions = ["attachments.media_keys"];
+        fetchTweetOptions["media.fields"] = ["type", "url"];
       }
 
-      const arcade = new Arcade({
-        apiKey: process.env.ARCADE_API_KEY,
+      const tweetContent = await this.getTweetBasicAuth(id, {
+        includeMedia: fieldsWithDefaults.includeMedia,
       });
 
-      const result = await arcade.tools.execute({
-        tool_name: "X.LookupTweetById",
-        inputs: { tweet_id: id },
-        user_id: fieldsWithDefaults.twitterUserId,
-      });
-
-      return result.output?.value as TweetV2SingleResult;
+      // If tweetContent is defined, return it. Otherwise fallback to Arcade.
+      if (tweetContent) {
+        return tweetContent;
+      }
     }
 
-    const fetchTweetOptions: Partial<Tweetv2FieldsParams> = {
-      // This allows us to access the full text of the Tweet.
-      // Access via `response.data.note_tweet.text`
-      "tweet.fields": ["note_tweet"],
-    };
-    if (fieldsWithDefaults.includeMedia) {
-      fetchTweetOptions.expansions = ["attachments.media_keys"];
-      fetchTweetOptions["media.fields"] = ["type", "url"];
+    if (!fieldsWithDefaults.twitterUserId) {
+      throw new Error("Must provide Twitter User ID when using Arcade auth.");
     }
 
-    const tweetContent = await this.twitterClient.v2.singleTweet(
-      id,
-      fetchTweetOptions,
-    );
-    return tweetContent;
+    return this.getTweetArcade(id, fieldsWithDefaults.twitterUserId);
   }
 }

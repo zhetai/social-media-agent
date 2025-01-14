@@ -1,4 +1,4 @@
-import { BUSINESS_CONTEXT } from "../../prompts/prompts.langchain.js";
+import { getPrompts } from "../../prompts/index.js";
 
 const STRUCTURE_GUIDELINES = `<part key="1">
 This is the introduction and summary of the content. This must include key details such as:
@@ -34,7 +34,7 @@ export const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing emplo
 You have been tasked with writing a marketing report on content submitted to you from a third party which uses your products.
 This marketing report will then be used to craft Tweets and LinkedIn posts promoting the content and your products.
 
-${BUSINESS_CONTEXT}
+${getPrompts().businessContext}
 
 The marketing report should follow the following structure guidelines. It will be made up of three main sections outlined below:
 <structure-guidelines>
