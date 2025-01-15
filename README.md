@@ -33,9 +33,8 @@ This quickstart covers how to setup the Social Media Agent in a basic setup mode
 <details>
 <summary>Running in basic setup mode will lack the following features:</summary>
 
-- Posting to Twitter & LinkedIn _(it will still generate the posts, however you will need to manually post them)_
-- Ingesting content from GitHub, Twitter or YouTube URLs
-- Ingesting data from a Slack channel
+- Parsing content from GitHub, Twitter or YouTube URLs
+- Ingesting data from Slack, or sending updates to Slack
 - Image selection & uploads
 
 </details>
