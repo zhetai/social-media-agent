@@ -4,6 +4,24 @@ This repository contains an 'agent' which can take in a URL, and generate a Twit
 
 ![Screenshot of the social media agent flow](./static/agent_flow.png)
 
+## Table of contents
+- [Quickstart](#quickstart)
+  - [Environment variables](#set-environment-variables)
+  - [LangGraph Server](#set-environment-variables)
+- [Full setup](#advanced-setup)
+  - [Environment variables](#set-environment-variables-1)
+  - [LangGraph Server](#install-langgraph-cli-1)
+  - [Twitter Auth](#twitter-developer-setup-instructions)
+  - [Arcade Auth](#arcade-setup-instructions)
+  - [LinkedIn Auth](#setup-linkedin-authentication)
+  - [Supabase](#setup-supabase)
+  - [Slack](#setup-slack)
+  - [GitHub](#setup-github)
+  - [Usage](#usage)
+- [Customization](#customization)
+  - [Prompts](#prompts)
+  - [Post Style](#post-style)
+
 # Quickstart
 
 > [!NOTE]
@@ -325,7 +343,9 @@ To add your graph to Agent Inbox:
 
 If the interrupt event does not contain a social media post, this is likely because you have not authenticated your social media account with Arcade (or you're missing the proper environment variables if not using Arcade). Open this interrupt event and follow the instructions outlined in the description.
 
-# Prompts
+# Customization
+
+## Prompts
 
 This agent is setup to generate posts for LangChain, using LangChain products as context. To use the agent for your own use case, you should update the following prompts/prompt sections inside the [`prompts`](./src/agents/generate-post/prompts/index.ts) folder:
 
@@ -335,3 +355,11 @@ This agent is setup to generate posts for LangChain, using LangChain products as
 - `POST_CONTENT_RULES` - A set of general writing style/content guidelines for the agent to follow when generating a post.
 
 The prompt for the marketing report is located in the [`generate-post/nodes/generate-report/prompts.ts`](./src/agents/generate-post/nodes/generate-report/prompts.ts) file. You likely don't need to update this, as it's already structured to be general.
+
+## Post Style
+
+There are two main prompts to modify to change the style of the posts.
+
+1. Post structure instructions (`POST_STRUCTURE_INSTRUCTIONS`). These are the instructions the LLM will follow for how to structure the post generations. This should _not_ be where you specify tone, or writing style. This prompt is used to set the structure each post should follow. By default, it's prompted to include three parts: `Header`, `Body`, `Call to action`. When experimenting with this prompt this, try removing it completely, instead relying on the few-shot examples (`TWEET_EXAMPLES`) and the content rules (`POST_CONTENT_RULES`).
+2. Few-shot examples (`TWEET_EXAMPLES`). These are the examples given to the LLM of which it's prompted to use as examples for style, content, tone and structure. This is arguably one of the most important parts of the prompt. Currently, these are set to a handful of Tweets by popular AI focused Twitter accounts. You should _definitely_ update these if you want to generate non-AI focused Tweets, instead with examples of Tweets/posts on your target content.
+3. "Business context" (`BUSINESS_CONTEXT`). This prompt is used widely throughout the agent to provide context into your main goal of the social media agent. For us at LangChain, this prompt is used to describe the different LangChain products and servives. The default prompt is focused on AI content, but should be updated/edited to match your use case. This prompt is used in verifying content is relevant for you, generating marketing reports, and generating tweets.
