@@ -5,6 +5,7 @@ This repository contains an 'agent' which can take in a URL, and generate a Twit
 ![Screenshot of the social media agent flow](./static/agent_flow.png)
 
 ## Table of contents
+
 - [Quickstart](#quickstart)
   - [Environment variables](#set-environment-variables)
   - [LangGraph Server](#set-environment-variables)
@@ -362,4 +363,4 @@ There are two main prompts to modify to change the style of the posts.
 
 1. Post structure instructions (`POST_STRUCTURE_INSTRUCTIONS`). These are the instructions the LLM will follow for how to structure the post generations. This should _not_ be where you specify tone, or writing style. This prompt is used to set the structure each post should follow. By default, it's prompted to include three parts: `Header`, `Body`, `Call to action`. When experimenting with this prompt this, try removing it completely, instead relying on the few-shot examples (`TWEET_EXAMPLES`) and the content rules (`POST_CONTENT_RULES`).
 2. Few-shot examples (`TWEET_EXAMPLES`). These are the examples given to the LLM of which it's prompted to use as examples for style, content, tone and structure. This is arguably one of the most important parts of the prompt. Currently, these are set to a handful of Tweets by popular AI focused Twitter accounts. You should _definitely_ update these if you want to generate non-AI focused Tweets, instead with examples of Tweets/posts on your target content.
-3. "Business context" (`BUSINESS_CONTEXT`). This prompt is used widely throughout the agent to provide context into your main goal of the social media agent. For us at LangChain, this prompt is used to describe the different LangChain products and servives. The default prompt is focused on AI content, but should be updated/edited to match your use case. This prompt is used in verifying content is relevant for you, generating marketing reports, and generating tweets.
+3. "Business context" (`BUSINESS_CONTEXT`). This prompt is used widely throughout the agent to provide context into your main goal of the social media agent. For us at LangChain, this prompt is used to describe the different LangChain products and services. The default prompt is focused on AI content, but should be updated/edited to match your use case. This prompt is used in verifying content is relevant for you, generating marketing reports, and generating tweets.
