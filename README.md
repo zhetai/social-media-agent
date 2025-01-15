@@ -7,7 +7,7 @@ This repository contains an 'agent' which can take in a URL, and generate a Twit
 # Quickstart
 
 > [!NOTE]
-> 🎥 For a visual guide, check out our [step-by-step video tutorial](ADD_URL_HERE) that walks you through the account setup process and project configuration.
+> 🎥 For a visual guide, check out our [step-by-step video tutorial](https://youtu.be/TmTl5FMgkCQ) that walks you through the account setup process and project configuration.
 
 This quickstart covers how to setup the Social Media Agent in a basic setup mode. This is the quickest way to get up and running, however it will lack some of the features of the full setup mode. See [here](#advanced-setup) for the full setup guide.
 
