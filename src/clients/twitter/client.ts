@@ -93,7 +93,7 @@ export class TwitterClient {
       auth_requirement: {
         provider_id: "x",
         oauth2: {
-          scopes: ["tweet.read", "tweet.write"],
+          scopes: ["tweet.write", "users.read", "tweet.read", "offline.access"],
         },
       },
     });
@@ -169,8 +169,8 @@ export class TwitterClient {
   static async fromArcade(
     twitterUserId: string,
     tokens: {
-      twitterToken: string;
-      twitterTokenSecret: string;
+      twitterToken: string | undefined;
+      twitterTokenSecret: string | undefined;
     },
     options?: {
       textOnlyMode?: boolean;
